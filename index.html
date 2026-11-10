@@ -65,13 +65,6 @@
         .neon-glow-green {
             box-shadow: 0 0 24px rgba(16, 185, 129, 0.3);
         }
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.75; transform: scale(1.04); }
-        }
-        .alert-preview-anim {
-            animation: pulseGlow 3s infinite ease-in-out;
-        }
         @keyframes alertPopIn {
             0% { opacity: 0; transform: scale(0.75) translateY(20px); }
             60% { opacity: 1; transform: scale(1.04) translateY(-4px); }
@@ -118,7 +111,7 @@
                 </div>
             </div>
 
-            <!-- التبويبات (مخفية للزائر تماماً، وتظهر فقط عند تسجيل دخول الستريمر) -->
+            <!-- التبويبات (مخفية للزائر وتظهر للستريمر بعد تسجيل الدخول) -->
             <nav id="streamer-nav-tabs" class="hidden items-center gap-1.5 bg-zinc-900/90 p-1.5 rounded-2xl border border-zinc-800 w-full md:w-auto overflow-x-auto">
                 <button type="button" onclick="switchView('visitor')" id="nav-visitor"
                     class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap bg-gradient-to-l from-libyana-600 to-purple-600 text-white shadow-md">
@@ -157,7 +150,7 @@
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- ========================================================= -->
-        <!-- 1. واجهة الزائر (صفحة الدعم الافتراضية والأساسية) -->
+        <!-- 1. واجهة الزائر (صفحة الدعم الأساسية) -->
         <!-- ========================================================= -->
         <div id="view-visitor" class="max-w-2xl mx-auto space-y-6 fade-in-up">
 
@@ -190,33 +183,18 @@
                 </div>
 
                 <form id="streamer-support-form" class="space-y-6" novalidate>
-                    <!-- اختيار الشبكة -->
+                    <!-- 1. إدخال رقم الهاتف واختيار الشبكة تلقائياً -->
                     <div>
-                        <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">1. اختر شبكة الرصيد</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <button type="button" id="btn-libyana" onclick="selectNetwork('libyana')"
-                                class="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-libyana-600 bg-libyana-600/10 text-right transition-all cursor-pointer neon-glow-purple">
-                                <div class="w-11 h-11 rounded-xl bg-libyana-600 text-white flex items-center justify-center font-black text-lg shrink-0">L</div>
-                                <div>
-                                    <div class="font-bold text-white text-sm">ليبيانا (Libyana)</div>
-                                    <div class="text-xs text-zinc-400">092 / 094</div>
-                                </div>
-                            </button>
-
-                            <button type="button" id="btn-almadar" onclick="selectNetwork('almadar')"
-                                class="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-zinc-800 bg-zinc-900/60 hover:border-almadar-500/50 text-right transition-all cursor-pointer">
-                                <div class="w-11 h-11 rounded-xl bg-almadar-600 text-white flex items-center justify-center font-black text-lg shrink-0">M</div>
-                                <div>
-                                    <div class="font-bold text-white text-sm">المدار الجديد (Almadar)</div>
-                                    <div class="text-xs text-zinc-400">091 / 093</div>
-                                </div>
-                            </button>
-                        </div>
+                        <label for="phone-input" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">1. رقم هاتف الزائر (ليبيانا / المدار)</label>
+                        <input type="tel" id="phone-input" maxlength="10" placeholder="092XXXXXXX أو 091XXXXXXX" dir="ltr"
+                            class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/90 text-white font-bold text-sm text-left tracking-wider focus:outline-none focus:border-libyana-500 transition-all">
+                        <p id="phone-hint" class="text-[11px] text-zinc-500 mt-1">يحدد نوع الشبكة تلقائياً حسب الرقم (092/094 ليبيانا - 091/093 مدار)</p>
+                        <p id="phone-error" class="hidden text-xs text-rose-400 font-semibold mt-1"></p>
                     </div>
 
-                    <!-- اختيار المبلغ -->
+                    <!-- 2. تحديد قيمة التحويل -->
                     <div>
-                        <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">2. قيمة الدعم (د.ل)</label>
+                        <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">2. قيمة التحويل (د.ل)</label>
                         <div class="grid grid-cols-4 gap-2.5 mb-3">
                             <button type="button" onclick="selectAmount(5)" class="amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all" data-amount="5">5 د.ل</button>
                             <button type="button" onclick="selectAmount(10)" class="amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all" data-amount="10">10 د.ل</button>
@@ -228,3 +206,741 @@
                                 class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/90 text-white font-bold text-sm focus:outline-none focus:border-libyana-500 transition-all">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-500">د.ل</span>
                         </div>
+                    </div>
+
+                    <!-- 3. خيار إضافة اسم ورسالة للستريمر -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label for="donor-nickname" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">3. اسمك (اختياري)</label>
+                            <input type="text" id="donor-nickname" maxlength="25" placeholder="مثال: أسد طرابلس"
+                                class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/90 text-white font-semibold text-sm focus:outline-none focus:border-libyana-500 transition-all">
+                        </div>
+                        <div>
+                            <label for="alert-message" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">4. رسالة تظهر على البث (اختياري)</label>
+                            <textarea id="alert-message" rows="2" maxlength="120" placeholder="اكتب رسالتك للستريمر لتظهر مع التنبيه..."
+                                class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/90 text-white font-medium text-sm focus:outline-none focus:border-libyana-500 transition-all resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- زر الإرسال وطلب رمز الـ OTP -->
+                    <button type="submit" id="submit-btn"
+                        class="w-full py-4 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-libyana-600/30 transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <span>متابعة وإرسال رمز التحقق (OTP)</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 2. لوحة تحكم الستريمر -->
+        <!-- ========================================================= -->
+        <div id="view-streamer" class="hidden space-y-8 fade-in-up">
+            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-l from-libyana-600 via-purple-500 to-almadar-500"></div>
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                            <span>⚙️</span> إعدادات لوحة الستريمر
+                        </h2>
+                        <p class="text-xs sm:text-sm text-zinc-400 mt-1">قم بتعديل اسم المستخدم، الروابط، وإدارة التنبيهات بكل سهولة.</p>
+                    </div>
+                    <button type="button" onclick="saveStreamerProfile()"
+                        class="px-5 py-2.5 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-extrabold text-xs transition-all cursor-pointer shadow-lg shadow-libyana-600/20">
+                        حفظ التعديلات
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="username-input" class="block text-xs font-bold text-zinc-300 mb-2">اسم المستخدم (Username)</label>
+                        <div class="relative">
+                            <input type="text" id="username-input" value="cgt_evil" dir="ltr"
+                                class="w-full px-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-white font-bold text-sm text-left focus:outline-none focus:border-libyana-500 transition-all">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-bold">@</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="streamer-display-name" class="block text-xs font-bold text-zinc-300 mb-2">الاسم الظاهر على الصفحة</label>
+                        <input type="text" id="streamer-display-name" value="cgt evil"
+                            class="w-full px-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-white font-bold text-sm focus:outline-none focus:border-libyana-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div class="rounded-2xl bg-zinc-950/90 border border-zinc-800 p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-libyana-400 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-libyana-400"></span>
+                                رابط صفحة الدعم الخاصة بك
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="donation-url" readonly dir="ltr" value="https://sanad.ly/d/cgt_evil"
+                                class="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono text-xs sm:text-sm focus:outline-none">
+                            <button type="button" onclick="copyField('donation-url', 'تم نسخ رابط صفحة الدعم بنجاح!')"
+                                class="px-4 py-2.5 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs transition-all cursor-pointer shrink-0">
+                                نسخ
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl bg-zinc-950/90 border border-zinc-800 p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-almadar-400 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-almadar-400"></span>
+                                رابط تنبيهات البث (OBS)
+                            </span>
+                            <span class="text-[11px] text-rose-400 font-semibold">سري</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <input type="password" id="obs-url" readonly dir="ltr" value="https://sanad.ly/obs/cgt_evil?key=LY_99482_SECRET"
+                                    class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono text-xs sm:text-sm focus:outline-none">
+                                <button type="button" onclick="toggleObsVisibility()" title="إظهار / إخفاء"
+                                    class="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                            </div>
+                            <button type="button" onclick="copyField('obs-url', 'تم نسخ رابط تنبيهات OBS بنجاح!')"
+                                class="px-4 py-2.5 rounded-xl bg-almadar-600 hover:bg-almadar-500 text-white font-bold text-xs transition-all cursor-pointer shrink-0">
+                                نسخ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- معاينة تنبيه OBS -->
+            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">📺 معاينة تنبيه البث (OBS Alert Box)</h2>
+                        <p class="text-xs text-zinc-400 mt-0.5">جرّب كيف سيظهر تنبيه الدعم مع الصوت على شاشة البث المباشر</p>
+                    </div>
+                    <label class="flex items-center gap-2 text-xs font-bold text-zinc-300 cursor-pointer">
+                        <input type="checkbox" id="sound-toggle" checked class="accent-almadar-500 w-4 h-4">
+                        <span>تفعيل صوت التنبيه</span>
+                    </label>
+                </div>
+
+                <div class="relative w-full h-64 rounded-2xl bg-zinc-950 border-2 border-dashed border-zinc-800 overflow-hidden flex items-center justify-center p-4">
+                    <div id="obs-idle-state" class="text-center space-y-2">
+                        <div class="text-2xl">🎬</div>
+                        <p class="text-xs font-bold text-zinc-500">في انتظار وصول تنبيه دعم...</p>
+                    </div>
+
+                    <div id="obs-alert-box" class="hidden max-w-md w-full rounded-2xl bg-zinc-900/95 border-2 p-6 text-center shadow-2xl">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black mb-3" id="alert-net-badge">ليبيانا</div>
+                        <div class="text-xl font-black text-white">
+                            <span id="alert-donor-name" class="text-libyana-400">أسد طرابلس</span>
+                            <span class="text-zinc-300 font-bold text-base mx-1">دعم البث بـ</span>
+                            <span id="alert-donor-amount" class="text-almadar-400">20 د.ل</span>!
+                        </div>
+                        <p id="alert-donor-msg" class="text-sm text-zinc-300 mt-3 bg-zinc-950/80 rounded-xl p-3 border border-zinc-800/80 italic"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- سجل أحدث التبرعات -->
+            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8">
+                <h2 class="text-lg font-extrabold text-white mb-4">📜 سجل أحدث التبرعات</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-zinc-800 text-xs font-bold text-zinc-400">
+                                <th class="pb-3 pr-2">الداعم</th>
+                                <th class="pb-3">الشبكة</th>
+                                <th class="pb-3">المبلغ</th>
+                                <th class="pb-3">الرسالة</th>
+                                <th class="pb-3">الوقت</th>
+                                <th class="pb-3 pl-2 text-left">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donations-table-body" class="divide-y divide-zinc-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 3. إعدادات أرقام استقبال الرصيد -->
+        <!-- ========================================================= -->
+        <div id="view-numbers" class="hidden space-y-8 fade-in-up">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <section class="neon-card rounded-3xl border-2 border-libyana-500/40 p-6 sm:p-7 neon-glow-purple transition-all">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-2xl bg-libyana-700 text-white flex items-center justify-center font-black text-xl">L</div>
+                            <div>
+                                <h2 class="text-lg font-black text-white">رصيد ليبيانا (Libyana)</h2>
+                                <p class="text-xs text-zinc-400">استقبال التحويلات عبر 092 / 094</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="libyana-phone" class="block text-xs font-bold text-zinc-300 mb-2">رقم هاتف ليبيانا للاستقبال</label>
+                            <input type="tel" id="libyana-phone" maxlength="10" placeholder="092XXXXXXX" dir="ltr"
+                                class="w-full px-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-white font-bold text-base text-left tracking-wider focus:outline-none focus:border-libyana-500">
+                            <p id="libyana-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5"></p>
+                        </div>
+                        <button type="button" onclick="saveNetwork('libyana')"
+                            class="w-full py-3 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-extrabold text-sm transition-all cursor-pointer">
+                            حفظ رقم ليبيانا
+                        </button>
+                    </div>
+                </section>
+
+                <section class="neon-card rounded-3xl border-2 border-almadar-500/40 p-6 sm:p-7 neon-glow-green transition-all">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-2xl bg-almadar-700 text-white flex items-center justify-center font-black text-xl">M</div>
+                            <div>
+                                <h2 class="text-lg font-black text-white">المدار الجديد (Almadar)</h2>
+                                <p class="text-xs text-zinc-400">استقبال التحويلات عبر 091 / 093</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="almadar-phone" class="block text-xs font-bold text-zinc-300 mb-2">رقم هاتف المدار للاستقبال</label>
+                            <input type="tel" id="almadar-phone" maxlength="10" placeholder="091XXXXXXX" dir="ltr"
+                                class="w-full px-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-white font-bold text-base text-left tracking-wider focus:outline-none focus:border-almadar-500">
+                            <p id="almadar-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5"></p>
+                        </div>
+                        <button type="button" onclick="saveNetwork('almadar')"
+                            class="w-full py-3 rounded-xl bg-almadar-600 hover:bg-almadar-500 text-white font-extrabold text-sm transition-all cursor-pointer">
+                            حفظ رقم المدار
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- نافذة تأكيد رمز التحقق OTP (6 أرقام) -->
+    <div id="payment-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative fade-in-up">
+            <button type="button" onclick="closeModal()" class="absolute top-5 left-5 text-zinc-500 hover:text-white p-1 cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <div class="text-center mb-5">
+                <div id="modal-net-icon" class="w-14 h-14 mx-auto rounded-2xl bg-libyana-600/20 text-libyana-400 border border-libyana-500/30 flex items-center justify-center font-black text-2xl mb-3">L</div>
+                <h3 class="text-xl font-extrabold text-white">التحقق برمز SMS (OTP)</h3>
+                <p class="text-xs text-zinc-400 mt-1">تم إرسال رمز تحقق مكون من <b>6 أرقام</b> إلى هاتفك عبر منصة رسالة</p>
+            </div>
+
+            <div class="bg-zinc-950 rounded-2xl p-4 mb-5 text-sm space-y-2 border border-zinc-800">
+                <div class="flex justify-between">
+                    <span class="text-zinc-400">المبلغ:</span>
+                    <span class="font-extrabold text-almadar-400" id="modal-amount">10 د.ل</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-zinc-400">رقم الهاتف:</span>
+                    <span class="font-bold text-white" dir="ltr" id="modal-phone">092XXXXXXX</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-xs text-zinc-400 text-center" id="otp-instruction-text">أدخل رمز الـ 6 أرقام المرسل لهاتفك:</p>
+                <input type="text" id="otp-input" maxlength="6" placeholder="------" dir="ltr"
+                    class="w-full text-center tracking-[0.35em] text-2xl font-black py-3.5 rounded-xl border border-zinc-700 bg-zinc-950 text-white focus:outline-none focus:border-libyana-500">
+                <div class="flex items-center justify-between text-[11px] px-1">
+                    <span id="otp-timer-text" class="text-zinc-500 font-semibold"></span>
+                    <button type="button" id="resend-otp-btn" onclick="sendOtpViaResala()" disabled
+                        class="text-libyana-400 hover:text-libyana-300 font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                        إعادة إرسال الرمز
+                    </button>
+                </div>
+                <p id="otp-error" class="hidden text-xs text-rose-400 text-center font-semibold">رمز التحقق غير صحيح</p>
+            </div>
+
+            <button type="button" onclick="completeDonation()" class="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-l from-libyana-600 to-almadar-600 text-white font-extrabold text-sm hover:opacity-95 transition-all cursor-pointer">
+                تأكيد الرمز وإتمام الدعم
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل دخول الستريمر عبر Google -->
+    <div id="login-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl relative fade-in-up">
+            <button type="button" onclick="closeLoginModal()" class="absolute top-5 left-5 text-zinc-500 hover:text-white p-1 cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-libyana-600/20 text-libyana-400 border border-libyana-500/30 flex items-center justify-center text-2xl mb-3">🔐</div>
+                <h3 class="text-xl font-extrabold text-white">دخول الستريمر</h3>
+                <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">يرجى تسجيل الدخول عبر حساب <span class="text-white font-bold">Google</span> لربط حسابك والوصول إلى لوحة البث وأرقام الاستقبال</p>
+            </div>
+
+            <div class="space-y-3">
+                <button type="button" id="google-login-btn" onclick="loginWithGoogle()"
+                    class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm transition-all cursor-pointer flex items-center justify-center gap-3 shadow-lg">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+                        <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+                    </svg>
+                    <span id="google-login-text">المتابعة باستخدام Google</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- إشعار عائم (Toast) -->
+    <div id="toast" class="fixed bottom-6 left-6 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-2xl bg-zinc-900 border border-zinc-700 text-white text-xs font-bold shadow-2xl toast-anim">
+        <span id="toast-dot" class="w-2.5 h-2.5 rounded-full bg-almadar-400"></span>
+        <span id="toast-msg">تمت العملية بنجاح!</span>
+    </div>
+
+    <script>
+        const RESALA_CONFIG = {
+            apiKey: 'RESALA_LIVE_API_KEY_EXAMPLE_99281',
+            senderId: 'LibyaStream'
+        };
+
+        const STORAGE_KEY = 'libya_stream_receiving_settings';
+        const AUTH_KEY = 'libya_stream_auth_session';
+        const PROFILE_KEY = 'libya_stream_profile_settings';
+        let currentNetwork = 'libyana';
+        let currentAmount = 10;
+        let alertTimeout = null;
+        let generatedPinCode = '';
+        let otpTimerInterval = null;
+        let lastDonorPhone = '';
+
+        let donations = [
+            { name: 'صقر بنغازي', network: 'almadar', amount: 50, msg: 'كفو والله، بالتوفيق في البطولة! 🏆', time: 'منذ دقيقتين' },
+            { name: 'أسد طرابلس', network: 'libyana', amount: 25, msg: 'بث أسطوري يا بطل، استمر! 🔥', time: 'منذ 8 دقائق' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadProfileSettings();
+            loadReceivingNumbers();
+            renderDonations();
+        });
+
+        document.getElementById('phone-input').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            const badge = document.getElementById('network-badge');
+            if (val.startsWith('091') || val.startsWith('093')) {
+                currentNetwork = 'almadar';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-almadar-600/20 text-almadar-400 border border-almadar-500/30';
+                badge.innerText = 'المدار الجديد';
+            } else {
+                currentNetwork = 'libyana';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30';
+                badge.innerText = 'ليبيانا';
+            }
+        });
+
+        function saveStreamerProfile() {
+            const username = document.getElementById('username-input').value.trim() || 'cgt_evil';
+            const displayName = document.getElementById('streamer-display-name').value.trim() || 'cgt evil';
+            localStorage.setItem(PROFILE_KEY, JSON.stringify({ username, displayName }));
+            
+            document.getElementById('display-streamer-name').innerText = displayName;
+            document.getElementById('auth-username-badge').innerText = `⚡ ${username}`;
+            document.getElementById('donation-url').value = `https://sanad.ly/d/${username}`;
+            document.getElementById('obs-url').value = `https://sanad.ly/obs/${username}?key=LY_SECRET_KEY`;
+            
+            showToast('تم حفظ التعديلات بنجاح!', 'green');
+        }
+
+        function loadProfileSettings() {
+            const data = localStorage.getItem(PROFILE_KEY);
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.username) {
+                        document.getElementById('username-input').value = parsed.username;
+                        document.getElementById('donation-url').value = `https://sanad.ly/d/${parsed.username}`;
+                        document.getElementById('obs-url').value = `https://sanad.ly/obs/${parsed.username}?key=LY_SECRET_KEY`;
+                    }
+                    if (parsed.displayName) {
+                        document.getElementById('streamer-display-name').value = parsed.displayName;
+                        document.getElementById('display-streamer-name').innerText = parsed.displayName;
+                        document.getElementById('auth-username-badge').innerText = `⚡ ${parsed.username || 'cgt_evil'}`;
+                    }
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        async function sendOtpViaResala() {
+            const phone = lastDonorPhone;
+            generatedPinCode = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            const instructionEl = document.getElementById('otp-instruction-text');
+            instructionEl.innerText = 'جاري إرسال رمز الـ 6 أرقام عبر منصة رسالة (SMS)...';
+
+            try {
+                const response = await fetch('https://api.resala.ly/v1/sms/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${RESALA_CONFIG.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        recipient: phone,
+                        sender_id: RESALA_CONFIG.senderId,
+                        message: `رمز التحقق الخاص بك لتأكيد الدعم على ليبيا ستريم هو: ${generatedPinCode}`
+                    })
+                });
+                
+                if (!response.ok) throw new Error('فشل إرسال الرسالة');
+                instructionEl.innerText = `تم إرسال رمز التحقق (6 أرقام) إلى الرقم ${phone} بنجاح`;
+            } catch (err) {
+                console.warn('محاكاة إرسال الرمز عبر منصة رسالة:', err);
+                instructionEl.innerText = `تم إرسال رمز الـ 6 أرقام إلى الرقم ${phone}`;
+                console.log('--- منصة رسالة (SMS OTP) ---');
+                console.log(`الهاتف: ${phone} | الكود (6 أرقام): ${generatedPinCode}`);
+                console.log('-----------------------------');
+            }
+
+            startOtpTimer();
+        }
+
+        function startOtpTimer() {
+            const btn = document.getElementById('resend-otp-btn');
+            const timerText = document.getElementById('otp-timer-text');
+            btn.disabled = true;
+            let timeLeft = 60;
+            
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerText.innerText = '';
+                    btn.disabled = false;
+                } else {
+                    timerText.innerText = `إعادة الإرسال بعد ${timeLeft} ثانية`;
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        async function verifyOtpWithResalaApi(enteredCode, phone) {
+            try {
+                const response = await fetch('https://api.resala.ly/v1/otp/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${RESALA_CONFIG.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        recipient: phone,
+                        code: enteredCode
+                    })
+                });
+                const result = await response.json();
+                return result.success === true || result.status === 'verified';
+            } catch (err) {
+                return enteredCode === generatedPinCode;
+            }
+        }
+
+        document.getElementById('streamer-support-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone-input').value.trim();
+            const phoneErr = document.getElementById('phone-error');
+            phoneErr.classList.add('hidden');
+
+            const regex = currentNetwork === 'libyana' ? /^(092|094)\d{7}$/ : /^(091|093)\d{7}$/;
+            if (!regex.test(phone)) {
+                phoneErr.innerText = currentNetwork === 'libyana' ? 'رقم ليبيانا غير صحيح (يبدأ بـ 092 أو 094 ويتكون من 10 أرقام)' : 'رقم مدار غير صحيح (يبدأ بـ 091 أو 093 ويتكون من 10 أرقام)';
+                phoneErr.classList.remove('hidden');
+                return;
+            }
+
+            lastDonorPhone = phone;
+            openModal(phone);
+        });
+
+        function openModal(phone) {
+            document.getElementById('modal-phone').innerText = phone;
+            document.getElementById('modal-amount').innerText = `${currentAmount} د.ل`;
+            const netIcon = document.getElementById('modal-net-icon');
+            
+            if (currentNetwork === 'libyana') {
+                netIcon.className = 'w-14 h-14 mx-auto rounded-2xl bg-libyana-600/20 text-libyana-400 border border-libyana-500/30 flex items-center justify-center font-black text-2xl mb-3';
+                netIcon.innerText = 'L';
+            } else {
+                netIcon.className = 'w-14 h-14 mx-auto rounded-2xl bg-almadar-600/20 text-almadar-400 border border-almadar-500/30 flex items-center justify-center font-black text-2xl mb-3';
+                netIcon.innerText = 'M';
+            }
+
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-modal').classList.add('flex');
+            
+            sendOtpViaResala();
+        }
+
+        function closeModal() {
+            document.getElementById('payment-modal').classList.remove('flex');
+            document.getElementById('payment-modal').classList.add('hidden');
+            clearInterval(otpTimerInterval);
+        }
+
+        async function completeDonation() {
+            const errorEl = document.getElementById('otp-error');
+            errorEl.classList.add('hidden');
+
+            const otpVal = document.getElementById('otp-input').value.trim();
+            if (otpVal.length !== 6) {
+                errorEl.innerText = 'يرجى إدخال رمز تحقق صحيح مكون من 6 أرقام';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const isValid = await verifyOtpWithResalaApi(otpVal, lastDonorPhone);
+            if (!isValid) {
+                errorEl.innerText = 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const nickname = document.getElementById('donor-nickname').value.trim() || 'دعم مجهول';
+            const msg = document.getElementById('alert-message').value.trim() || 'شكراً لك على دعمك!';
+            
+            donations.unshift({
+                name: nickname,
+                network: currentNetwork,
+                amount: currentAmount,
+                msg: msg,
+                time: 'الآن'
+            });
+
+            renderDonations();
+            closeModal();
+            showToast('تم عملية دعم بنجاح!', 'green');
+            triggerAlert(nickname, currentAmount, currentNetwork, msg);
+            document.getElementById('streamer-support-form').reset();
+        }
+
+        function selectAmount(amt) {
+            currentAmount = amt;
+            document.getElementById('custom-amount').value = amt;
+            document.querySelectorAll('.amount-btn').forEach(b => {
+                if (parseInt(b.dataset.amount) === amt) {
+                    b.className = 'amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all';
+                } else {
+                    b.className = 'amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all';
+                }
+            });
+        }
+
+        document.getElementById('custom-amount').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (!isNaN(val) && val > 0) currentAmount = val;
+        });
+
+        function triggerAlert(name, amount, network, msg) {
+            const idle = document.getElementById('obs-idle-state');
+            const box = document.getElementById('obs-alert-box');
+            
+            idle.classList.add('hidden');
+            box.classList.remove('hidden');
+            box.className = 'max-w-md w-full rounded-2xl bg-zinc-900/95 border-2 p-6 text-center shadow-2xl alert-pop-in ' + (network === 'libyana' ? 'border-libyana-500 neon-glow-purple' : 'border-almadar-500 neon-glow-green');
+
+            document.getElementById('alert-net-badge').innerText = network === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
+            document.getElementById('alert-net-badge').className = network === 'libyana' ? 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black mb-3 bg-libyana-600/20 text-libyana-400 border border-libyana-500/30' : 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black mb-3 bg-almadar-600/20 text-almadar-400 border border-almadar-500/30';
+            
+            document.getElementById('alert-donor-name').innerText = name;
+            document.getElementById('alert-donor-amount').innerText = `${amount} د.ل`;
+            document.getElementById('alert-donor-msg').innerText = `"${msg}"`;
+
+            if (document.getElementById('sound-toggle').checked) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.6);
+                } catch(e) {}
+            }
+
+            clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => {
+                box.classList.add('hidden');
+                idle.classList.remove('hidden');
+            }, 6000);
+        }
+
+        function renderDonations() {
+            const tbody = document.getElementById('donations-table-body');
+            tbody.innerHTML = '';
+            donations.forEach((d, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-zinc-900/50 transition-all';
+                tr.innerHTML = `
+                    <td class="py-3.5 pr-2 font-bold text-white">${d.name}</td>
+                    <td class="py-3.5">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold ${d.network === 'libyana' ? 'bg-libyana-600/20 text-libyana-400 border border-libyana-500/30' : 'bg-almadar-600/20 text-almadar-400 border border-almadar-500/30'}">
+                            ${d.network === 'libyana' ? 'ليبيانا' : 'المدار'}
+                        </span>
+                    </td>
+                    <td class="py-3.5 font-extrabold text-almadar-400">${d.amount} د.ل</td>
+                    <td class="py-3.5 text-zinc-300 italic text-xs max-w-xs truncate">"${d.msg}"</td>
+                    <td class="py-3.5 text-zinc-500 text-xs">${d.time}</td>
+                    <td class="py-3.5 pl-2 text-left">
+                        <button onclick="deleteDonation(${idx})" class="text-rose-400 hover:text-rose-300 text-xs font-bold cursor-pointer">حذف</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteDonation(idx) {
+            donations.splice(idx, 1);
+            renderDonations();
+            showToast('تم حذف السجل بنجاح', 'purple');
+        }
+
+        function switchView(viewName) {
+            document.getElementById('view-visitor').classList.add('hidden');
+            document.getElementById('view-streamer').classList.add('hidden');
+            document.getElementById('view-numbers').classList.add('hidden');
+
+            document.getElementById('nav-visitor').className = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60';
+            document.getElementById('nav-streamer').className = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60';
+            document.getElementById('nav-numbers').className = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60';
+
+            if (viewName === 'visitor') {
+                document.getElementById('view-visitor').classList.remove('hidden');
+                document.getElementById('nav-visitor').className = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap bg-gradient-to-l from-libyana-600 to-purple-600 text-white shadow-md';
+            } else if (viewName === 'streamer') {
+                document.getElementById('view-streamer').classList.remove('hidden');
+                document.getElementById('nav-streamer').className = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap bg-gradient-to-l from-libyana-600 to-purple-600 text-white shadow-md';
+            } else if (viewName === 'numbers') {
+                document.getElementById('view-numbers').classList.remove('hidden');
+                document.getElementById('nav-numbers').className = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap bg-gradient-to-l from-libyana-600 to-purple-600 text-white shadow-md';
+            }
+        }
+
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('login-modal').classList.add('flex');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.remove('flex');
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+
+        function loginWithGoogle() {
+            const btnText = document.getElementById('google-login-text');
+            btnText.innerText = 'جاري المصادقة مع Google...';
+            setTimeout(() => {
+                localStorage.setItem(AUTH_KEY, JSON.stringify({ name: 'cgt evil', email: 'cgt@stream.ly' }));
+                checkAuth();
+                closeLoginModal();
+                showToast('مرحباً بك، تم تسجيل الدخول بنجاح!', 'green');
+                switchView('streamer');
+                btnText.innerText = 'المتابعة باستخدام Google';
+            }, 1000);
+        }
+
+        function logoutStreamer() {
+            localStorage.removeItem(AUTH_KEY);
+            checkAuth();
+            switchView('visitor');
+            showToast('تم تسجيل الخروج بنجاح', 'purple');
+        }
+
+        function checkAuth() {
+            const session = localStorage.getItem(AUTH_KEY);
+            const navTabs = document.getElementById('streamer-nav-tabs');
+            const loginBtn = document.getElementById('btn-open-login');
+            const authBadge = document.getElementById('streamer-auth-badge');
+
+            if (session) {
+                navTabs.classList.remove('hidden');
+                navTabs.classList.add('flex');
+                loginBtn.classList.add('hidden');
+                authBadge.classList.remove('hidden');
+                authBadge.classList.add('flex');
+            } else {
+                navTabs.classList.remove('flex');
+                navTabs.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                authBadge.classList.remove('flex');
+                authBadge.classList.add('hidden');
+            }
+        }
+
+        function copyField(elementId, successMsg) {
+            const input = document.getElementById(elementId);
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            showToast(successMsg, 'green');
+        }
+
+        function toggleObsVisibility() {
+            const obsInput = document.getElementById('obs-url');
+            obsInput.type = obsInput.type === 'password' ? 'text' : 'password';
+        }
+
+        function loadReceivingNumbers() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (data.libyana) document.getElementById('libyana-phone').value = data.libyana;
+                    if (data.almadar) document.getElementById('almadar-phone').value = data.almadar;
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        function saveNetwork(net) {
+            const phoneInput = document.getElementById(net + '-phone');
+            const phone = phoneInput.value.trim();
+            const errEl = document.getElementById(net + '-error');
+            errEl.classList.add('hidden');
+
+            const regex = net === 'libyana' ? /^(092|094)\d{7}$/ : /^(091|093)\d{7}$/;
+            if (!regex.test(phone)) {
+                errEl.innerText = net === 'libyana' ? 'رقم ليبيانا غير صحيح (يبدأ بـ 092 أو 094)' : 'رقم مدار غير صحيح (يبدأ بـ 091 أو 093)';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            let existing = {};
+            try {
+                existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            } catch(e) {}
+            
+            existing[net] = phone;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+            showToast(`تم حفظ رقم ${net === 'libyana' ? 'ليبيانا' : 'المدار'} بنجاح!`, net === 'libyana' ? 'purple' : 'green');
+        }
+
+        function showToast(msg, colorType = 'green') {
+            const toast = document.getElementById('toast');
+            const dot = document.getElementById('toast-dot');
+            document.getElementById('toast-msg').innerText = msg;
+
+            dot.className = `w-2.5 h-2.5 rounded-full ${colorType === 'green' ? 'bg-almadar-400' : 'bg-libyana-400'}`;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+
+            setTimeout(() => {
+                toast.classList.remove('flex');
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
