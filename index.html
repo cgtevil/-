@@ -637,7 +637,8 @@
         let currentAmount = 10;
         let currentTab = 'otp';
         let alertTimeout = null;
-        let generatedOtp = '';
+        let generatedPinId = null;
+        let generatedPinCode = '';
         let otpTimerInterval = null;
         let lastDonorPhone = '';
 
@@ -653,7 +654,6 @@
             loadResalaSettings();
             renderDonations();
 
-            // إظهار نافذة تسجيل دخول الستريمر مباشرة عند فتح الصفحة إذا لم يكن مسجلاً
             if (localStorage.getItem(AUTH_KEY) !== 'true') {
                 openLoginModal();
             }
@@ -682,7 +682,7 @@
             const badge = document.getElementById('resala-status-badge');
             if (!badge) return;
             if (apiKey) {
-                badge.textContent = 'متصل ببوابة رسالة';
+                badge.textContent = 'متصل ببوابة رسالة (API)';
                 badge.className = 'px-3 py-1 rounded-full text-[11px] font-bold bg-almadar-500/20 border border-almadar-500/30 text-almadar-400';
             } else {
                 badge.textContent = 'وضع المحاكاة (تجريبي)';
@@ -710,43 +710,72 @@
             }, 1000);
         }
 
-        async function sendOtpViaResala() {
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        /**
+         * اتصال فعلي بنقطة النهاية الأولى للـ PIN (POST https://dev.resala.ly/api/v1/pins)
+         * مع معالجة الأخطاء (422 InputValidation, 401 Unauthorized, InsufficientCredit إلخ)
+         */
+        async function sendPinViaResala() {
             const instructionEl = document.getElementById('otp-instruction-text');
+            const otpErr = document.getElementById('otp-error');
+            otpErr.classList.add('hidden');
+            document.getElementById('otp-input').value = '';
+            startOtpTimer();
+
             const resalaData = JSON.parse(localStorage.getItem(RESALA_KEY) || '{}');
             const apiKey = resalaData.apiKey || '';
             const senderId = resalaData.senderId || 'LibyaStream';
 
-            document.getElementById('otp-input').value = '';
-            document.getElementById('otp-error').classList.add('hidden');
-            startOtpTimer();
+            // تحويل الرقم إلى التنسيق الدولي (مثال: 218910001234)
+            const intlPhone = lastDonorPhone.startsWith('0') ? '218' + lastDonorPhone.substring(1) : lastDonorPhone;
 
-            if (apiKey) {
-                instructionEl.textContent = `جاري إرسال رمز التحقق عبر بوابة رسالة إلى ${lastDonorPhone}...`;
+            if (apiKey && apiKey.startsWith('rsl_')) {
+                instructionEl.textContent = `جاري توليد وإرسال رمز التحقق (6 أرقام) عبر بوابة رسالة...`;
                 try {
-                    const intlPhone = '218' + lastDonorPhone.substring(1);
-                    const response = await fetch('https://api.resala.ly/v1/sms/send', {
+                    const url = new URL('https://dev.resala.ly/api/v1/pins');
+                    url.searchParams.append('sender', senderId);
+                    url.searchParams.append('len', '6');
+
+                    const response = await fetch(url.toString(), {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            to: intlPhone,
-                            sender: senderId,
-                            message: `رمز التحقق الخاص بك لدعم الستريمر هو: ${generatedOtp}`
-                        })
+                        body: JSON.stringify({ phone: intlPhone })
                     });
-                    if (response.ok) {
-                        instructionEl.innerHTML = `تم إرسال رمز التحقق (6 أرقام) عبر <span class="text-almadar-400 font-bold">بوابة رسالة</span> إلى <span dir="ltr" class="text-white font-bold">${lastDonorPhone}</span>`;
-                    } else {
-                        throw new Error('API Error');
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        // معالجة أشكال الأخطاء المطلوبة (Branch on response's type field)
+                        const errType = data.type || 'BadRequest';
+                        if (response.status === 422 && data.errors) {
+                            const firstField = Object.keys(data.errors)[0];
+                            throw new Error(`خطأ في البيانات: ${data.errors[firstField][0]}`);
+                        }
+                        if (errType === 'InsufficientCredit') {
+                            throw new Error('عذراً، رصيد حسابك في بوابة رسالة غير كافٍ.');
+                        }
+                        if (errType === 'TokenExpired' || errType === 'Unauthorized') {
+                            throw new Error('مفتاح الربط API Key منتهي أو غير صالح.');
+                        }
+                        throw new Error(data.message || `خطأ من بوابة رسالة (${errType})`);
                     }
+
+                    // استلام بيانات الاستجابة (id, pin code إلخ)
+                    generatedPinId = data.id;
+                    generatedPinCode = data.pin; // في بيئة الإنتاج قد تكون مخفية أو مرسلة عبر SMS
+                    instructionEl.innerHTML = `تم إرسال رمز التحقق (6 أرقام) بنجاح عبر <span class="text-almadar-400 font-bold">بوابة رسالة</span> إلى <span dir="ltr" class="text-white font-bold">${lastDonorPhone}</span>`;
+
                 } catch (err) {
-                    instructionEl.innerHTML = `تم إرسال رمز التحقق المكون من 6 أرقام إلى رقمك <span dir="ltr" class="text-white font-bold">${lastDonorPhone}</span>`;
+                    instructionEl.innerHTML = `<span class="text-rose-400">فشل الإرسال: ${err.message}</span>`;
+                    // التراجع لوضع المحاكاة التلقائي للاختبار التجريبي إذا فشل الـ API
+                    generatedPinCode = Math.floor(100000 + Math.random() * 900000).toString();
                 }
             } else {
-                instructionEl.innerHTML = `تم إرسال رمز التحقق المكون من 6 أرقام إلى رقمك <span dir="ltr" class="text-white font-bold">${lastDonorPhone}</span>`;
+                // وضع المحاكاة المحلي
+                generatedPinCode = Math.floor(100000 + Math.random() * 900000).toString();
+                instructionEl.innerHTML = `تم إرسال رمز التحقق المكون من 6 أرقام إلى رقمك <span dir="ltr" class="text-white font-bold">${lastDonorPhone}</span> (وضع محاكاة)`;
             }
         }
 
@@ -848,7 +877,6 @@
                     }
                 }
             });
-            // إبقاء تبويبات الستريمر مخفية إذا لم يكن مسجلاً
             if (localStorage.getItem(AUTH_KEY) !== 'true') {
                 document.getElementById('nav-streamer').classList.add('hidden');
                 document.getElementById('nav-numbers').classList.add('hidden');
@@ -938,7 +966,7 @@
                 const modal = document.getElementById('payment-modal');
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
-                sendOtpViaResala();
+                sendPinViaResala();
             });
         }
 
@@ -967,7 +995,7 @@
             if (currentTab === 'otp') {
                 const otp = document.getElementById('otp-input').value.trim();
                 const otpErr = document.getElementById('otp-error');
-                if (!/^\d{6}$/.test(otp) || (generatedOtp && otp !== generatedOtp)) {
+                if (!/^\d{6}$/.test(otp) || (generatedPinCode && otp !== generatedPinCode)) {
                     otpErr.textContent = 'رمز التحقق غير صحيح، يرجى التأكد من الرمز المرسل (6 أرقام)';
                     otpErr.classList.remove('hidden');
                     return;
