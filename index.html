@@ -225,7 +225,7 @@
                     <!-- زر الإرسال وطلب رمز الـ OTP -->
                     <button type="submit" id="submit-btn"
                         class="w-full py-4 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-libyana-600/30 transition-all cursor-pointer flex items-center justify-center gap-2">
-                        <span>متابعة وإرسال رمز التحقق (OTP)</span>
+                        <span>التحقق من ملكية رقم الهاتف</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </button>
                 </form>
@@ -420,7 +420,7 @@
 
     </main>
 
-    <!-- نافذة تأكيد رمز التحقق OTP (6 أرقام) -->
+    <!-- نافذة التحقق من ملكية رقم الهاتف -->
     <div id="payment-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative fade-in-up">
             <button type="button" onclick="closeModal()" class="absolute top-5 left-5 text-zinc-500 hover:text-white p-1 cursor-pointer">
@@ -429,13 +429,13 @@
 
             <div class="text-center mb-5">
                 <div id="modal-net-icon" class="w-14 h-14 mx-auto rounded-2xl bg-libyana-600/20 text-libyana-400 border border-libyana-500/30 flex items-center justify-center font-black text-2xl mb-3">L</div>
-                <h3 class="text-xl font-extrabold text-white">التحقق برمز SMS (OTP)</h3>
-                <p class="text-xs text-zinc-400 mt-1">تم إرسال رمز تحقق مكون من <b>6 أرقام</b> إلى هاتفك عبر منصة رسالة</p>
+                <h3 class="text-xl font-extrabold text-white">التحقق من ملكية رقم الهاتف</h3>
+                <p class="text-xs text-zinc-400 mt-1">سيصلك رمز SMS لإثبات ملكية رقم الهاتف فقط. لا يتم خصم أي رصيد.</p>
             </div>
 
             <div class="bg-zinc-950 rounded-2xl p-4 mb-5 text-sm space-y-2 border border-zinc-800">
                 <div class="flex justify-between">
-                    <span class="text-zinc-400">المبلغ:</span>
+                    <span class="text-zinc-400">المبلغ المختار (للعرض فقط):</span>
                     <span class="font-extrabold text-almadar-400" id="modal-amount">10 د.ل</span>
                 </div>
                 <div class="flex justify-between">
@@ -445,7 +445,7 @@
             </div>
 
             <div class="space-y-3">
-                <p class="text-xs text-zinc-400 text-center" id="otp-instruction-text">أدخل رمز الـ 6 أرقام المرسل لهاتفك:</p>
+                <p class="text-xs text-zinc-400 text-center" id="otp-instruction-text">أدخل رمز التحقق المرسل إلى هاتفك:</p>
                 <input type="text" id="otp-input" maxlength="6" placeholder="------" dir="ltr"
                     class="w-full text-center tracking-[0.35em] text-2xl font-black py-3.5 rounded-xl border border-zinc-700 bg-zinc-950 text-white focus:outline-none focus:border-libyana-500">
                 <div class="flex items-center justify-between text-[11px] px-1">
@@ -459,7 +459,7 @@
             </div>
 
             <button type="button" onclick="completeDonation()" class="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-l from-libyana-600 to-almadar-600 text-white font-extrabold text-sm hover:opacity-95 transition-all cursor-pointer">
-                تأكيد الرمز وإتمام الدعم
+                تأكيد رمز الهاتف
             </button>
         </div>
     </div>
@@ -498,10 +498,8 @@
     </div>
 
     <script>
-        const RESALA_CONFIG = {
-            apiKey: 'RESALA_LIVE_API_KEY_EXAMPLE_99281',
-            senderId: 'LibyaStream'
-        };
+        // رابط Cloudflare Worker فقط؛ لا تضع مفتاح Resala في صفحة HTML.
+        const OTP_API_BASE = 'https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev';
 
         const STORAGE_KEY = 'libya_stream_receiving_settings';
         const AUTH_KEY = 'libya_stream_auth_session';
@@ -509,7 +507,6 @@
         let currentNetwork = 'libyana';
         let currentAmount = 10;
         let alertTimeout = null;
-        let generatedPinCode = '';
         let otpTimerInterval = null;
         let lastDonorPhone = '';
 
@@ -573,36 +570,28 @@
 
         async function sendOtpViaResala() {
             const phone = lastDonorPhone;
-            generatedPinCode = Math.floor(100000 + Math.random() * 900000).toString();
-            
             const instructionEl = document.getElementById('otp-instruction-text');
-            instructionEl.innerText = 'جاري إرسال رمز الـ 6 أرقام عبر منصة رسالة (SMS)...';
-
+            const errorEl = document.getElementById('otp-error');
+            const resendBtn = document.getElementById('resend-otp-btn');
+            errorEl.classList.add('hidden');
+            resendBtn.disabled = true;
+            instructionEl.innerText = 'جارٍ إرسال رمز التحقق إلى هاتفك...';
             try {
-                const response = await fetch('https://api.resala.ly/v1/sms/send', {
+                const response = await fetch(`${OTP_API_BASE}/api/send-otp`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${RESALA_CONFIG.apiKey}`
-                    },
-                    body: JSON.stringify({
-                        recipient: phone,
-                        sender_id: RESALA_CONFIG.senderId,
-                        message: `رمز التحقق الخاص بك لتأكيد الدعم على ليبيا ستريم هو: ${generatedPinCode}`
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
                 });
-                
-                if (!response.ok) throw new Error('فشل إرسال الرسالة');
-                instructionEl.innerText = `تم إرسال رمز التحقق (6 أرقام) إلى الرقم ${phone} بنجاح`;
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'تعذر إرسال الرمز. حاول لاحقاً.');
+                instructionEl.innerText = 'تم إرسال رمز التحقق. هذا الرمز لإثبات ملكية رقم الهاتف فقط، ولا ينفذ أي دفع أو خصم رصيد.';
+                startOtpTimer();
             } catch (err) {
-                console.warn('محاكاة إرسال الرمز عبر منصة رسالة:', err);
-                instructionEl.innerText = `تم إرسال رمز الـ 6 أرقام إلى الرقم ${phone}`;
-                console.log('--- منصة رسالة (SMS OTP) ---');
-                console.log(`الهاتف: ${phone} | الكود (6 أرقام): ${generatedPinCode}`);
-                console.log('-----------------------------');
+                instructionEl.innerText = 'لم نتمكن من إرسال الرمز.';
+                errorEl.innerText = err.message || 'حدث خطأ أثناء الإرسال.';
+                errorEl.classList.remove('hidden');
+                resendBtn.disabled = false;
             }
-
-            startOtpTimer();
         }
 
         function startOtpTimer() {
@@ -610,7 +599,6 @@
             const timerText = document.getElementById('otp-timer-text');
             btn.disabled = true;
             let timeLeft = 60;
-            
             clearInterval(otpTimerInterval);
             otpTimerInterval = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -625,22 +613,33 @@
         }
 
         async function verifyOtpWithResalaApi(enteredCode, phone) {
+            const response = await fetch(`${OTP_API_BASE}/api/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, code: enteredCode })
+            });
+            const result = await response.json().catch(() => ({}));
+            return response.ok && result.verified === true;
+        }
+
+        async function completeDonation() {
+            const errorEl = document.getElementById('otp-error');
+            errorEl.classList.add('hidden');
+            const otpVal = document.getElementById('otp-input').value.trim();
+            if (!/^\\d{6}$/.test(otpVal)) {
+                errorEl.innerText = 'أدخل رمزاً صحيحاً مكوناً من 6 أرقام';
+                errorEl.classList.remove('hidden');
+                return;
+            }
             try {
-                const response = await fetch('https://api.resala.ly/v1/otp/verify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${RESALA_CONFIG.apiKey}`
-                    },
-                    body: JSON.stringify({
-                        recipient: phone,
-                        code: enteredCode
-                    })
-                });
-                const result = await response.json();
-                return result.success === true || result.status === 'verified';
+                const isValid = await verifyOtpWithResalaApi(otpVal, lastDonorPhone);
+                if (!isValid) throw new Error('رمز التحقق غير صحيح أو منتهي الصلاحية.');
+                closeModal();
+                showToast('تم التحقق من ملكية الهاتف فقط. لم يتم تنفيذ أي دفع أو خصم رصيد.', 'green');
+                document.getElementById('otp-input').value = '';
             } catch (err) {
-                return enteredCode === generatedPinCode;
+                errorEl.innerText = err.message || 'تعذر التحقق من الرمز.';
+                errorEl.classList.remove('hidden');
             }
         }
 
