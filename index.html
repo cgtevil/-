@@ -651,7 +651,7 @@
                         <div class="text-center">
                             <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-2xl mb-3 shadow-lg text-white font-black">📲</div>
                             <h3 class="text-xl font-black text-white" id="m-modal-title">طريقة التحويل اليدوي</h3>
-                            <p class="text-xs text-zinc-400 mt-1">قم بنسخ رمز التحويل أدناه لتنفيذ العملية من هاتفك مباشرة:</p>
+                            <p class="text-xs text-zinc-400 mt-1">قم بنسخ الرقم أو رمز التحويل أدناه لتنفيذ العملية من هاتفك مباشرة:</p>
                         </div>
 
                         <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
@@ -659,9 +659,13 @@
                                 <span>قيمة الرصيد:</span>
                                 <span id="m-modal-amount" class="text-libyana-400 font-extrabold text-sm"></span>
                             </div>
-                            <div class="flex justify-between text-xs text-zinc-400 font-bold">
+                            <div class="flex items-center justify-between text-xs text-zinc-400 font-bold pt-1 border-t border-zinc-800/80">
                                 <span>رقم الستريمر:</span>
-                                <span id="m-modal-number" class="text-white font-mono font-bold"></span>
+                                <div class="flex items-center gap-2">
+                                    <span id="m-modal-number" class="text-white font-mono font-bold text-sm"></span>
+                                    <button type="button" onclick="copyStreamerNumber()"
+                                        class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[11px] cursor-pointer">نسخ الرقم</button>
+                                </div>
                             </div>
                             <div class="space-y-1 pt-2 border-t border-zinc-800">
                                 <label class="block text-xs font-bold text-zinc-300">رمز التحويل السريع للنسخ:</label>
@@ -669,7 +673,7 @@
                                     <input type="text" id="m-modal-code" readonly dir="ltr"
                                         class="flex-1 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs text-center">
                                     <button type="button" onclick="copyTransferCode()"
-                                        class="px-4 py-2 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer">نسخ</button>
+                                        class="px-4 py-2 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer">نسخ الكود</button>
                                 </div>
                             </div>
                         </div>
@@ -690,6 +694,19 @@
             document.getElementById('m-modal-number').innerText = targetNumber;
             document.getElementById('m-modal-code').value = transferCode;
         }
+
+        window.copyStreamerNumber = function() {
+            const numEl = document.getElementById('m-modal-number');
+            if (!numEl) return;
+            const textToCopy = numEl.innerText;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            alert('تم نسخ رقم الستريمر بنجاح!');
+        };
 
         window.copyTransferCode = function() {
             const input = document.getElementById('m-modal-code');
