@@ -540,10 +540,10 @@
             const customAmountInput = document.getElementById('custom-amount');
             const amount = customAmountInput ? parseInt(customAmountInput.value) || 10 : 10;
 
-            const targetNumber = selectedNetwork === 'libyana' ? streamerData.libyanaNum : streamerData.almadarNum;
+            const targetNumber = selectedNetwork === 'libyana' ? '0944630534' : streamerData.almadarNum;
             const transferCode = selectedNetwork === 'libyana' 
-                ? `*122*218${targetNumber.substring(1)}*${amount}#`
-                : `*140*4*1#`;
+                ? `*122*218944630534*${amount}#`
+                : `*140*4*1*${amount}*0917043842#`;
 
             try {
                 if (db) {
