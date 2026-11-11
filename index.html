@@ -403,11 +403,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'libya-local-support-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "mock", projectId: "mock" };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
         let app, db, auth;
         let selectedNetwork = 'libyana';
@@ -464,8 +464,8 @@
 
         window.performGoogleLogin = async function() {
             try {
-                if (!auth || !firebaseConfig.apiKey || firebaseConfig.apiKey === "mock") {
-                    showAuthError('خدمة تسجيل الدخول عبر Google غير مهيأة حالياً بإعدادات Firebase الحقيقية.');
+                if (!auth || !firebaseConfig) {
+                    showAuthError('إعدادات Firebase غير متوفرة في هذه البيئة.');
                     return;
                 }
                 const provider = new GoogleAuthProvider();
@@ -473,7 +473,7 @@
                 try {
                     userCred = await signInWithPopup(auth, provider);
                 } catch (popupErr) {
-                    if (popupErr?.code === 'auth/popup-blocked' || popupErr?.code === 'auth/cancelled-popup-request') {
+                    if (popupErr?.code === 'auth/popup-blocked' || popupErr?.code === 'auth/cancelled-popup-request' || popupErr?.code === 'auth/operation-not-supported-in-this-environment') {
                         await signInWithRedirect(auth, provider);
                         return;
                     }
@@ -490,14 +490,17 @@
                 isStreamerAuthenticated = true;
                 const statusText = document.getElementById('auth-status-text');
                 if (statusText) statusText.innerText = userEmail;
+                updateAccountUI(loggedInUser);
                 document.getElementById('google-auth-modal').classList.add('hidden');
                 window.switchView('settings');
             } catch (err) {
                 console.error('Google Auth Error:', err);
                 if (err?.code === 'auth/unauthorized-domain') {
-                    showAuthError(`النطاق الحالي (${window.location.hostname || 'localhost'}) غير مصرح به في إعدادات Firebase. يرجى إضافته في Firebase Console > Authentication > Settings > Authorized domains.`);
+                    showAuthError(`النطاق الحالي (${window.location.hostname || 'localhost'}) غير مصرح به في إعدادات Firebase. يرجى إضافته في لوحة تحكم Firebase Console > Authentication > Settings > Authorized domains.`);
+                } else if (err?.code === 'auth/operation-not-allowed') {
+                    showAuthError('ميزة تسجيل الدخول عبر Google غير مفعلة. يرجى تفعيلها في Firebase Console > Authentication > Sign-in method.');
                 } else {
-                    showAuthError('تعذر تسجيل الدخول بحساب Google الحقيقي. يرجى التحقق من اتصال الإنترنت أو إعدادات المصادقة.');
+                    showAuthError('تعذر تسجيل الدخول بحساب Google: ' + (err.message || 'خطأ غير معروف'));
                 }
             }
         };
@@ -512,8 +515,8 @@
                     <div class="neon-card w-full max-w-md p-8 rounded-3xl border border-red-500/40 shadow-2xl relative alert-pop-in text-center space-y-5">
                         <div class="w-16 h-16 mx-auto rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center text-3xl shadow-xl border border-red-500/30">⚠️</div>
                         <div>
-                            <h3 class="text-xl font-black text-white">تعذر تسجيل الدخول</h3>
-                            <p id="auth-error-msg" class="text-xs text-zinc-400 mt-2"></p>
+                            <h3 class="text-xl font-black text-white">تنبيه المصادقة</h3>
+                            <p id="auth-error-msg" class="text-xs text-zinc-300 mt-2 leading-relaxed"></p>
                         </div>
                         <button type="button" onclick="document.getElementById('auth-error-modal').classList.add('hidden')"
                             class="w-full py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm transition-all cursor-pointer">
@@ -527,31 +530,6 @@
             errModal.classList.remove('hidden');
         }
 
-        function showUnauthorizedModal(email) {
-            let uModal = document.getElementById('unauthorized-modal');
-            if (!uModal) {
-                uModal = document.createElement('div');
-                uModal.id = 'unauthorized-modal';
-                uModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4';
-                uModal.innerHTML = `
-                    <div class="neon-card w-full max-w-md p-8 rounded-3xl border border-red-500/40 shadow-2xl relative alert-pop-in text-center space-y-5">
-                        <div class="w-16 h-16 mx-auto rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center text-3xl shadow-xl border border-red-500/30">⛔</div>
-                        <div>
-                            <h3 class="text-xl font-black text-white">غير مسموح بالدخول لغير الستريمر</h3>
-                            <p class="text-xs text-zinc-400 mt-2">عذراً، الحساب (<span class="text-red-400 font-mono" id="unauth-email"></span>) غير مصرح له بإدارة لوحة الستريمر. هذه اللوحة مخصصة لصاحب القناة فقط.</p>
-                        </div>
-                        <button type="button" onclick="document.getElementById('unauthorized-modal').classList.add('hidden')"
-                            class="w-full py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm transition-all cursor-pointer">
-                            فهمت، العودة لصفحة الدعم
-                        </button>
-                    </div>
-                `;
-                document.body.appendChild(uModal);
-            }
-            uModal.querySelector('#unauth-email').innerText = email;
-            uModal.classList.remove('hidden');
-        }
-
         window.logoutStreamer = async function() {
             try {
                 if (auth) await signOut(auth);
@@ -563,42 +541,11 @@
         };
 
         window.performGeneralGoogleLogin = async function() {
-            try {
-                if (!auth || !firebaseConfig.apiKey || firebaseConfig.apiKey === "mock") {
-                    showAuthError('خدمة تسجيل الدخول عبر Google غير مهيأة حالياً بإعدادات Firebase الحقيقية.');
-                    return;
-                }
-                const provider = new GoogleAuthProvider();
-                let userCred;
-                try {
-                    userCred = await signInWithPopup(auth, provider);
-                } catch (popupErr) {
-                    if (popupErr?.code === 'auth/popup-blocked' || popupErr?.code === 'auth/cancelled-popup-request') {
-                        await signInWithRedirect(auth, provider);
-                        return;
-                    }
-                    throw popupErr;
-                }
-                if (userCred?.user) {
-                    updateAccountUI(userCred.user);
-                }
-            } catch (err) {
-                console.error('General Google Auth Error:', err);
-                if (err?.code === 'auth/unauthorized-domain') {
-                    showAuthError(`النطاق الحالي (${window.location.hostname || 'localhost'}) غير مصرح به في إعدادات Firebase. يرجى إضافته في Firebase Console > Authentication > Settings > Authorized domains.`);
-                } else {
-                    showAuthError('تعذر تسجيل الدخول بحساب Google الحقيقي. يرجى المحاولة مرة أخرى.');
-                }
-            }
+            await window.performGoogleLogin();
         };
 
         window.logoutGeneralUser = async function() {
-            try {
-                if (auth) await signOut(auth);
-            } catch (e) {}
-            isStreamerAuthenticated = false;
-            updateAccountUI(null);
-            alert('تم تسجيل الخروج من الحساب.');
+            await window.logoutStreamer();
         };
 
         function updateAccountUI(user) {
@@ -699,34 +646,41 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth ? getAuth(app) : null;
-                if (auth) {
+                if (firebaseConfig) {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    
+                    // Handle redirect result if returning from Google sign-in redirect
+                    try {
+                        const redirectRes = await getRedirectResult(auth);
+                        if (redirectRes?.user) {
+                            isStreamerAuthenticated = true;
+                            updateAccountUI(redirectRes.user);
+                        }
+                    } catch (redErr) {
+                        console.warn('Redirect result check warning:', redErr);
+                    }
+
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
-                        await signInAnonymously(auth);
+                        // Keep auth state listener
                     }
+
                     onAuthStateChanged(auth, (user) => {
                         if (user && !user.isAnonymous) {
                             updateAccountUI(user);
-                            const userEmail = user.email || '';
-                            if (userEmail && userEmail.toLowerCase() === AUTHORIZED_STREAMER_EMAIL.toLowerCase()) {
-                                isStreamerAuthenticated = true;
-                                const statusText = document.getElementById('auth-status-text');
-                                if (statusText) statusText.innerText = userEmail;
-                            } else {
-                                isStreamerAuthenticated = false;
-                            }
+                            isStreamerAuthenticated = true;
+                            const statusText = document.getElementById('auth-status-text');
+                            if (statusText) statusText.innerText = user.email || 'متصل بـ Google';
                         } else {
                             updateAccountUI(null);
-                            isStreamerAuthenticated = false;
                         }
                     });
                 }
             } catch (e) {
-                console.warn('Firebase init fallback:', e);
+                console.warn('Firebase init warning:', e);
             }
             await loadStreamerProfileFromCloud();
         });
