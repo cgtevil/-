@@ -423,7 +423,6 @@
                 try {
                     userCred = await signInWithPopup(auth, provider);
                 } catch (popupErr) {
-                    // Fallback to redirect if popup blocked
                     await signInWithRedirect(auth, provider);
                     return;
                 }
@@ -434,7 +433,8 @@
                 // التحقق الصارم من أن البريد هو الحساب المصرح له فقط
                 if (userEmail && userEmail.toLowerCase() !== AUTHORIZED_STREAMER_EMAIL.toLowerCase()) {
                     await signOut(auth);
-                    alert(`عذراً، الحساب (${userEmail}) غير مصرح له بالدخول لوحة الستريمر. هذه اللوحة مخصصة لحساب الستريمر الأساسي (${AUTHORIZED_STREAMER_EMAIL}) فقط.`);
+                    document.getElementById('google-auth-modal').classList.add('hidden');
+                    showUnauthorizedModal(userEmail);
                     return;
                 }
 
@@ -443,12 +443,36 @@
                 window.switchView('settings');
             } catch (err) {
                 console.warn('Google Auth error:', err);
-                // Demo fallback for instant access if preview sandbox domain has restrictions, but verifying email context
-                isStreamerAuthenticated = true;
+                // Demo fallback for unauthorized or error state simulation
                 document.getElementById('google-auth-modal').classList.add('hidden');
-                window.switchView('settings');
+                showUnauthorizedModal('حساب تجريبي غير مصرح');
             }
         };
+
+        function showUnauthorizedModal(email) {
+            let uModal = document.getElementById('unauthorized-modal');
+            if (!uModal) {
+                uModal = document.createElement('div');
+                uModal.id = 'unauthorized-modal';
+                uModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4';
+                uModal.innerHTML = `
+                    <div class="neon-card w-full max-w-md p-8 rounded-3xl border border-red-500/40 shadow-2xl relative alert-pop-in text-center space-y-5">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center text-3xl shadow-xl border border-red-500/30">⛔</div>
+                        <div>
+                            <h3 class="text-xl font-black text-white">غير مسموح بالدخول لغير الستريمر</h3>
+                            <p class="text-xs text-zinc-400 mt-2">عذراً، الحساب (<span class="text-red-400 font-mono" id="unauth-email"></span>) غير مصرح له بإدارة لوحة الستريمر. هذه اللوحة مخصصة لصاحب القناة فقط.</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('unauthorized-modal').classList.add('hidden')"
+                            class="w-full py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm transition-all cursor-pointer">
+                            فهمت، العودة لصفحة الدعم
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(uModal);
+            }
+            uModal.querySelector('#unauth-email').innerText = email;
+            uModal.classList.remove('hidden');
+        }
 
         window.logoutStreamer = async function() {
             try {
