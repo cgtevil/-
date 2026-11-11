@@ -648,10 +648,14 @@
                 modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
                 modal.innerHTML = `
                     <div class="neon-card w-full max-w-md p-6 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
-                        <div class="text-center">
-                            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-2xl mb-3 shadow-lg text-white font-black">📲</div>
-                            <h3 class="text-xl font-black text-white" id="m-modal-title">طريقة التحويل اليدوي</h3>
-                            <p class="text-xs text-zinc-400 mt-1">قم بنسخ الرقم أو رمز التحويل أدناه لتنفيذ العملية من هاتفك مباشرة:</p>
+                        <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                            <h3 class="text-lg font-black text-white" id="m-modal-title">طريقة التحويل اليدوي</h3>
+                            <button type="button" onclick="closeManualModalWithoutAlert()" class="w-8 h-8 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center text-sm transition-all cursor-pointer">✕</button>
+                        </div>
+
+                        <div class="text-center pb-1">
+                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-xl mb-2 shadow-lg text-white font-black">📲</div>
+                            <p class="text-xs text-zinc-400">قم بنسخ الرقم أو رمز التحويل أدناه لتنفيذ العملية من هاتفك مباشرة:</p>
                         </div>
 
                         <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
@@ -678,10 +682,16 @@
                             </div>
                         </div>
 
-                        <button type="button" onclick="closeManualModal('${nickname}', ${amount}, '${message}', '${network}')"
-                            class="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition-all cursor-pointer">
-                            تم التحويل (عرض التنبيه على البث)
-                        </button>
+                        <div class="flex items-center gap-3 pt-2">
+                            <button type="button" onclick="closeManualModalWithoutAlert()"
+                                class="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-bold text-xs transition-all cursor-pointer">
+                                ← الرجوع
+                            </button>
+                            <button type="button" onclick="closeManualModal('${nickname}', ${amount}, '${message}', '${network}')"
+                                class="flex-1 py-3 rounded-xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-bold text-xs transition-all cursor-pointer shadow-lg shadow-libyana-600/20">
+                                تم التحويل ✓
+                            </button>
+                        </div>
                     </div>
                 `;
                 document.body.appendChild(modal);
@@ -720,6 +730,11 @@
             const modal = document.getElementById('manual-transfer-modal');
             if (modal) modal.classList.add('hidden');
             triggerObsAlert(nickname, amount, message, network);
+        };
+
+        window.closeManualModalWithoutAlert = function() {
+            const modal = document.getElementById('manual-transfer-modal');
+            if (modal) modal.classList.add('hidden');
         };
 
         function triggerObsAlert(nickname, amount, message, network) {
