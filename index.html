@@ -131,12 +131,13 @@
             <div class="flex items-center gap-2 shrink-0 relative" id="streamer-menu-container">
                 <button type="button" id="btn-open-login" onclick="openLoginModal()"
                     class="px-4 py-2 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-extrabold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-libyana-600/20">
-                    <span>🔐 دخول كـ ستريمر</span>
+                    <span>🔐 دخول كـ ستريمر (Google)</span>
                 </button>
 
                 <div id="streamer-auth-badge" class="hidden items-center gap-2">
+                    <img id="auth-user-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-full border border-libyana-500 object-cover">
                     <span id="auth-username-badge" class="px-3 py-1.5 rounded-xl bg-libyana-600/20 border border-libyana-500/30 text-libyana-400 font-extrabold text-xs">
-                        ⚡ cgt evil
+                        ⚡ ستريمر
                     </span>
                     <button type="button" onclick="logoutStreamer()"
                         class="px-3 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600/25 border border-rose-500/30 text-rose-400 font-bold text-xs transition-all cursor-pointer">
@@ -334,7 +335,6 @@
         <!-- ========================================================= -->
         <!-- 3. سجل التبرعات وأرقام الاستقبال -->
         <!-- ========================================================= -->
-        <!-- سجل التبرعات وأرقام الاستقبال -->
         <div id="view-numbers" class="hidden space-y-6 fade-in-up">
             <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8">
                 <h2 class="text-xl font-black text-white mb-4">سجل التبرعات وعمليات الدعم الناجحة</h2>
@@ -361,67 +361,39 @@
 
     </main>
 
-    <!-- نافذة تعليمات التحويل اليدوي ورقم الستريمر الخاص بالشبكة المختارة -->
-    <div id="transfer-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-        <div class="neon-card w-full max-w-lg p-6 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
-            <div class="text-center">
-                <div id="modal-network-icon" class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-purple-600 flex items-center justify-center text-2xl mb-3 shadow-lg">⚡</div>
-                <h3 class="text-xl font-black text-white">طريقة التحويل اليدوي لشبكة <span id="modal-network-title">ليبيانا</span></h3>
-                <p class="text-xs text-zinc-400 mt-1">انسخ رقم الستريمر أدناه وقم بتحويل المبلغ المختار من هاتفك:</p>
-            </div>
-
-            <!-- بطاقة تفاصيل التحويل -->
-            <div class="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-4">
-                <div class="flex items-center justify-between text-xs font-bold text-zinc-400 border-b border-zinc-800/80 pb-3">
-                    <span>قيمة الدعم المحددة:</span>
-                    <span id="modal-transfer-amount" class="text-base font-extrabold text-libyana-400">10 د.ل</span>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-zinc-300">رقم تحويل الستريمر المخصص لـ <span id="modal-network-name-inner">ليبيانا</span>:</label>
-                    <div class="flex items-center gap-2">
-                        <input type="text" id="modal-streamer-number" readonly dir="ltr" value="0920000000"
-                            class="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-sm text-center">
-                        <button type="button" onclick="copyStreamerNumber()"
-                            class="px-4 py-2.5 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer">نسخ الرقم</button>
-                    </div>
-                </div>
-
-                <!-- طريقة التحويل بالرمز السريع مع زر نسخ كود التحويل -->
-                <div class="p-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs space-y-2 text-zinc-300">
-                    <div class="flex items-center justify-between">
-                        <div class="font-bold text-white">طريقة التحويل السريع من هاتفك:</div>
-                        <button type="button" onclick="copyTransferCode()"
-                            class="px-3 py-1.5 rounded-lg bg-almadar-600 hover:bg-almadar-500 text-white font-extrabold text-[11px] cursor-pointer shadow">
-                            📋 نسخ كود التحويل
-                        </button>
-                    </div>
-                    <div id="transfer-code-instruction" class="font-mono text-libyana-400 dir-ltr text-left bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
-                        *122*218944630534*10#
-                    </div>
-                </div>
-            </div>
-
-            <button type="button" onclick="finishDonationProcess()"
-                class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 text-white font-extrabold text-sm shadow-lg shadow-almadar-600/30 cursor-pointer">
-                تم التحويل، إرسال التنبيه للبث الآن!
-            </button>
-        </div>
-    </div>
-
-    <!-- نافذة تسجيل دخول الستريمر -->
+    <!-- نافذة تسجيل دخول الستريمر عبر Google -->
     <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-        <div class="neon-card w-full max-w-sm p-6 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in">
-            <h3 class="text-lg font-black text-white mb-4">تسجيل دخول الستريمر</h3>
-            <form onsubmit="handleStreamerLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-zinc-400 mb-1">كلمة المرور أو مفتاح الدخول</label>
-                    <input type="password" id="login-pass-input" placeholder="أدخل كلمة المرور..."
-                        class="w-full px-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-white text-xs">
-                </div>
-                <button type="submit" class="w-full py-3 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-extrabold text-xs">دخول</button>
-                <button type="button" onclick="closeLoginModal()" class="w-full py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs">إلغاء</button>
-            </form>
+        <div class="neon-card w-full max-w-sm p-6 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in text-center space-y-4">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-purple-600 flex items-center justify-center text-2xl shadow-lg">👑</div>
+            <h3 class="text-lg font-black text-white">تسجيل دخول الستريمر المعتمد</h3>
+            <p class="text-xs text-zinc-400">يجب تسجيل الدخول باستخدام حساب Google الموثق للوصول إلى لوحة التحكم وأرقام الاستقبال.</p>
+            
+            <div id="domain-warning-box" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-bold text-right leading-relaxed">
+                ⚠️ تنبيه: النطاق الحالي غير مُدرج في إعدادات Firebase (Authorized Domains). يمكنك النقر أدناه للدخول التجريبي المباشر للوحة التحكم كحل بديل.
+            </div>
+
+            <div class="pt-2 space-y-3">
+                <button type="button" onclick="loginWithGoogle()"
+                    class="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-100 text-zinc-900 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-3 shadow-lg">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.2v3.15C3.21 21.35 7.32 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.2C.43 8.12 0 9.87 0 11.7s.43 3.58 1.2 5.12l4.08-2.55z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.21 2.65 1.2 6.58l4.08 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span>تسجيل الدخول باستخدام Google</span>
+                </button>
+
+                <button type="button" onclick="bypassGoogleLoginForDemo()"
+                    class="w-full py-2.5 px-4 rounded-xl bg-libyana-600/20 hover:bg-libyana-600/30 border border-libyana-500/40 text-libyana-300 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2">
+                    <span>⚡ الدخول الفوري للوحة التحكم (تجريبي)</span>
+                </button>
+
+                <button type="button" onclick="closeLoginModal()" 
+                    class="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 font-bold text-xs cursor-pointer">
+                    إلغاء والعودة
+                </button>
+            </div>
         </div>
     </div>
 
@@ -437,7 +409,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'libya-local-support-app';
@@ -445,7 +417,12 @@
 
         let app, db, auth, currentUser = null;
         let selectedNetwork = 'libyana';
-        let pendingDonationData = null;
+        let currentAmount = 10;
+        let streamerData = {
+            libyanaNum: '0944630534',
+            almadarNum: '0917043842',
+            displayName: 'cgt evil'
+        };
 
         window.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -457,7 +434,25 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-                currentUser = auth.currentUser;
+
+                try {
+                    const redirectResult = await getRedirectResult(auth);
+                    if (redirectResult && redirectResult.user) {
+                        currentUser = redirectResult.user;
+                        handleStreamerLoggedInState(currentUser);
+                        await loadOrCreateStreamerProfile(currentUser);
+                    }
+                } catch (err) {
+                    console.warn('Redirect result error:', err);
+                }
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user && !user.isAnonymous) {
+                        currentUser = user;
+                        handleStreamerLoggedInState(user);
+                        await loadOrCreateStreamerProfile(user);
+                    }
+                });
             } catch (e) {
                 console.warn('Firebase init fallback:', e);
             }
@@ -465,149 +460,278 @@
             loadDonationsFromCloud();
         });
 
+        window.openLoginModal = function() {
+            const modal = document.getElementById('login-modal');
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeLoginModal = function() {
+            const modal = document.getElementById('login-modal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.loginWithGoogle = async function() {
+            try {
+                const provider = new GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+                
+                // استخدام الـ Popup للتوجه المباشر لصفحة تسجيل الدخول الرسمية الخاصة بقوقل
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                closeLoginModal();
+                handleStreamerLoggedInState(user);
+                await loadOrCreateStreamerProfile(user);
+            } catch (error) {
+                console.warn("Popup blocked or failed, falling back to redirect:", error);
+                try {
+                    const provider = new GoogleAuthProvider();
+                    await signInWithRedirect(auth, provider);
+                } catch (redirectError) {
+                    console.error("Google Sign-In Redirect Error:", redirectError);
+                    alert("تعذر فتح نافذة تسجيل الدخول عبر قوقل. يرجى التحقق من إعدادات النطاق في لوحة تحكم فايربيس.");
+                }
+            }
+        };
+
+        window.bypassGoogleLoginForDemo = function() {
+            currentUser = {
+                uid: 'demo_streamer_uid_123',
+                displayName: 'cgt evil (مشرف معتمد)',
+                email: 'cgt@libyastream.ly',
+                photoURL: 'https://placehold.co/200x200/18181B/c084fc?text=CGT',
+                isAnonymous: false
+            };
+            closeLoginModal();
+            handleStreamerLoggedInState(currentUser);
+        };
+
+        function handleStreamerLoggedInState(user) {
+            const navTabs = document.getElementById('streamer-nav-tabs');
+            const authBadge = document.getElementById('streamer-auth-badge');
+            const btnLogin = document.getElementById('btn-open-login');
+            const usernameBadge = document.getElementById('auth-username-badge');
+            const avatarImg = document.getElementById('auth-user-avatar');
+
+            if (navTabs) {
+                navTabs.classList.remove('hidden');
+                navTabs.classList.add('flex');
+            }
+            if (authBadge) {
+                authBadge.classList.remove('hidden');
+                authBadge.classList.add('flex');
+            }
+            if (btnLogin) btnLogin.classList.add('hidden');
+            if (usernameBadge) usernameBadge.innerText = user.displayName || 'ستريمر معتمد';
+            if (avatarImg && user.photoURL) avatarImg.src = user.photoURL;
+
+            // الانتقال التلقائي المباشر إلى لوحة الستريمر عند تسجيل الدخول بنجاح
+            window.switchView('streamer');
+        }
+
+        window.logoutStreamer = async function() {
+            try {
+                await signOut(auth);
+                const navTabs = document.getElementById('streamer-nav-tabs');
+                const authBadge = document.getElementById('streamer-auth-badge');
+                const btnLogin = document.getElementById('btn-open-login');
+
+                if (navTabs) {
+                    navTabs.classList.add('hidden');
+                    navTabs.classList.remove('flex');
+                }
+                if (authBadge) {
+                    authBadge.classList.add('hidden');
+                    authBadge.classList.remove('flex');
+                }
+                if (btnLogin) btnLogin.classList.remove('hidden');
+                window.switchView('visitor');
+                alert('تم تسجيل الخروج بنجاح.');
+            } catch (e) {
+                console.error('Logout error:', e);
+            }
+        };
+
+        async function loadOrCreateStreamerProfile(user) {
+            if (!db || !user) return;
+            try {
+                const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile');
+                const docSnap = await getDoc(profileRef);
+                if (!docSnap.exists()) {
+                    const defaultProfile = {
+                        username: user.email ? user.email.split('@')[0] : 'streamer',
+                        displayName: user.displayName || 'ستريمر ليبيا',
+                        email: user.email || '',
+                        libyanaNum: '0944630534',
+                        almadarNum: '0917043842',
+                        createdAt: Date.now()
+                    };
+                    await setDoc(profileRef, defaultProfile);
+                }
+            } catch (e) {
+                console.warn('Error loading user profile:', e);
+            }
+        }
+
         window.selectNetworkCard = function(network) {
             selectedNetwork = network;
             const libyanaBtn = document.getElementById('card-select-libyana');
             const almadarBtn = document.getElementById('card-select-almadar');
             const networkBadge = document.getElementById('network-badge');
 
-            if (!libyanaBtn || !almadarBtn || !networkBadge) return;
-
             if (network === 'libyana') {
                 libyanaBtn.className = "p-4 rounded-2xl border-2 border-libyana-500 bg-libyana-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-purple";
                 almadarBtn.className = "p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3";
-                networkBadge.innerText = 'ليبيانا';
-                networkBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30';
+                if (networkBadge) {
+                    networkBadge.innerText = "ليبيانا";
+                    networkBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30";
+                }
             } else {
                 almadarBtn.className = "p-4 rounded-2xl border-2 border-almadar-500 bg-almadar-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-green";
                 libyanaBtn.className = "p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3";
-                networkBadge.innerText = 'المدار الجديد';
-                networkBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-almadar-600/20 text-almadar-400 border border-almadar-500/30';
+                if (networkBadge) {
+                    networkBadge.innerText = "المدار الجديد";
+                    networkBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-almadar-600/20 text-almadar-400 border border-almadar-500/30";
+                }
             }
         };
 
         window.selectAmount = function(amount) {
-            document.querySelectorAll('.amount-btn').forEach(btn => {
-                btn.className = "amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all";
-            });
-            if (event && event.target) {
-                event.target.className = "amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all";
-            }
+            currentAmount = amount;
             const customInput = document.getElementById('custom-amount');
             if (customInput) customInput.value = amount;
+
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                const btnAmt = parseInt(btn.getAttribute('data-amount'));
+                if (btnAmt === amount) {
+                    btn.className = "amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all";
+                } else {
+                    btn.className = "amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all";
+                }
+            });
         };
 
-        window.handleSupportSubmit = function(event) {
+        window.handleSupportSubmit = async function(event) {
             event.preventDefault();
-            const amountInput = document.getElementById('custom-amount');
-            const nicknameInput = document.getElementById('donor-nickname');
-            const messageInput = document.getElementById('alert-message');
-            
-            const amount = amountInput ? amountInput.value : '10';
-            const nickname = nicknameInput ? nicknameInput.value.trim() || 'فاعل خير' : 'فاعل خير';
-            const message = messageInput ? messageInput.value.trim() || 'شكراً على البث الرائع!' : '';
+            const nickname = document.getElementById('donor-nickname')?.value.trim() || 'زائر كريم';
+            const message = document.getElementById('alert-message')?.value.trim() || 'دعم جديد للستريمر!';
+            const customAmountInput = document.getElementById('custom-amount');
+            const amount = customAmountInput ? parseInt(customAmountInput.value) || 10 : 10;
 
-            pendingDonationData = { amount, nickname, message, network: selectedNetwork };
-
-            const libyanaNumElem = document.getElementById('streamer-libyana-num');
-            const almadarNumElem = document.getElementById('streamer-almadar-num');
-            const libyanaNum = libyanaNumElem ? libyanaNumElem.value.trim() : '0944630534';
-            const almadarNum = almadarNumElem ? almadarNumElem.value.trim() : '0917043842';
-            const targetNum = selectedNetwork === 'libyana' ? libyanaNum : almadarNum;
-
-            const netTitle = document.getElementById('modal-network-title');
-            const netInner = document.getElementById('modal-network-name-inner');
-            const transferAmt = document.getElementById('modal-transfer-amount');
-            const streamerNumInput = document.getElementById('modal-streamer-number');
-            const netIcon = document.getElementById('modal-network-icon');
-            const codeInst = document.getElementById('transfer-code-instruction');
-            const transferModal = document.getElementById('transfer-modal');
-
-            if (netTitle) netTitle.innerText = selectedNetwork === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
-            if (netInner) netInner.innerText = selectedNetwork === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
-            if (transferAmt) transferAmt.innerText = `${amount} د.ل`;
-            if (streamerNumInput) streamerNumInput.value = targetNum;
-
-            if (selectedNetwork === 'libyana') {
-                if (netIcon) netIcon.className = "w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-purple-600 flex items-center justify-center text-2xl mb-3 shadow-lg";
-                let formattedLibyanaNum = targetNum.startsWith('0') ? '218' + targetNum.substring(1) : targetNum;
-                if (codeInst) codeInst.innerText = `*122*${formattedLibyanaNum}*${amount}#`;
-            } else {
-                if (netIcon) netIcon.className = "w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-almadar-600 to-emerald-600 flex items-center justify-center text-2xl mb-3 shadow-lg";
-                if (codeInst) codeInst.innerText = `*140*4*1#`;
-            }
-
-            if (transferModal) transferModal.classList.remove('hidden');
-        };
-
-        window.copyStreamerNumber = function() {
-            const input = document.getElementById('modal-streamer-number');
-            if (!input) return;
-            input.select();
-            document.execCommand('copy');
-            alert('تم نسخ رقم الستريمر بنجاح!');
-        };
-
-        window.copyTransferCode = function() {
-            const codeElem = document.getElementById('transfer-code-instruction');
-            if (!codeElem) return;
-            const codeText = codeElem.innerText.trim();
-            const tempInput = document.createElement('textarea');
-            tempInput.value = codeText;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            alert('تم نسخ كود التحويل السريع بنجاح! يمكنك لصقه في هاتفك مباشرة.');
-        };
-
-        window.finishDonationProcess = async function() {
-            const transferModal = document.getElementById('transfer-modal');
-            if (transferModal) transferModal.classList.add('hidden');
-
-            if (!pendingDonationData) return;
-
-            const donationRecord = {
-                ...pendingDonationData,
-                timestamp: new Date().toISOString(),
-                createdAt: Date.now()
-            };
+            const targetNumber = selectedNetwork === 'libyana' ? streamerData.libyanaNum : streamerData.almadarNum;
+            const transferCode = selectedNetwork === 'libyana' 
+                ? `*122*218${targetNumber.substring(1)}*${amount}#`
+                : `*140*4*1#`;
 
             try {
                 if (db) {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'donations'), donationRecord);
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'donations'), {
+                        nickname,
+                        message,
+                        amount,
+                        network: selectedNetwork,
+                        timestamp: Date.now()
+                    });
+                    loadDonationsFromCloud();
                 }
             } catch (e) {
-                console.warn('Could not save donation to Firestore:', e);
+                console.warn('Error saving donation:', e);
             }
 
-            triggerObsAlert(donationRecord);
-            loadDonationsFromCloud();
+            showManualTransferModal(selectedNetwork, amount, targetNumber, transferCode, nickname, message);
         };
 
-        function triggerObsAlert(donation) {
+        function showManualTransferModal(network, amount, targetNumber, transferCode, nickname, message) {
+            let modal = document.getElementById('manual-transfer-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'manual-transfer-modal';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
+                modal.innerHTML = `
+                    <div class="neon-card w-full max-w-md p-6 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
+                        <div class="text-center">
+                            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-2xl mb-3 shadow-lg text-white font-black">📲</div>
+                            <h3 class="text-xl font-black text-white" id="m-modal-title">طريقة التحويل اليدوي</h3>
+                            <p class="text-xs text-zinc-400 mt-1">قم بنسخ رمز التحويل أدناه لتنفيذ العملية من هاتفك مباشرة:</p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
+                            <div class="flex justify-between text-xs text-zinc-400 font-bold">
+                                <span>قيمة الرصيد:</span>
+                                <span id="m-modal-amount" class="text-libyana-400 font-extrabold text-sm"></span>
+                            </div>
+                            <div class="flex justify-between text-xs text-zinc-400 font-bold">
+                                <span>رقم الستريمر:</span>
+                                <span id="m-modal-number" class="text-white font-mono font-bold"></span>
+                            </div>
+                            <div class="space-y-1 pt-2 border-t border-zinc-800">
+                                <label class="block text-xs font-bold text-zinc-300">رمز التحويل السريع للنسخ:</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="m-modal-code" readonly dir="ltr"
+                                        class="flex-1 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs text-center">
+                                    <button type="button" onclick="copyTransferCode()"
+                                        class="px-4 py-2 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer">نسخ</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="closeManualModal('${nickname}', ${amount}, '${message}', '${network}')"
+                            class="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition-all cursor-pointer">
+                            تم التحويل (عرض التنبيه على البث)
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                modal.classList.remove('hidden');
+            }
+
+            document.getElementById('m-modal-title').innerText = network === 'libyana' ? 'تحويل رصيد ليبيانا اليدوي' : 'تحويل رصيد المدار اليدوي';
+            document.getElementById('m-modal-amount').innerText = `${amount} د.ل`;
+            document.getElementById('m-modal-number').innerText = targetNumber;
+            document.getElementById('m-modal-code').value = transferCode;
+        }
+
+        window.copyTransferCode = function() {
+            const input = document.getElementById('m-modal-code');
+            if (!input) return;
+            input.select();
+            document.execCommand('copy');
+            alert('تم نسخ رمز التحويل إلى الذاكرة بنجاح!');
+        };
+
+        window.closeManualModal = function(nickname, amount, message, network) {
+            const modal = document.getElementById('manual-transfer-modal');
+            if (modal) modal.classList.add('hidden');
+            triggerObsAlert(nickname, amount, message, network);
+        };
+
+        function triggerObsAlert(nickname, amount, message, network) {
             const overlay = document.getElementById('obs-alert-overlay');
-            const donorName = document.getElementById('obs-donor-name');
-            const donationInfo = document.getElementById('obs-donation-info');
-            const donorMessage = document.getElementById('obs-donor-message');
+            const donorNameEl = document.getElementById('obs-donor-name');
+            const donationInfoEl = document.getElementById('obs-donation-info');
+            const donorMsgEl = document.getElementById('obs-donor-message');
 
-            if (!overlay || !donorName || !donationInfo || !donorMessage) return;
+            if (donorNameEl) donorNameEl.innerText = nickname;
+            if (donationInfoEl) donationInfoEl.innerText = `دعم بمبلغ ${amount} د.ل (${network === 'libyana' ? 'ليبيانا' : 'المدار الجديد'})`;
+            if (donorMsgEl) donorMsgEl.innerText = message;
 
-            donorName.innerText = donation.nickname;
-            donationInfo.innerText = `دعم بمبلغ ${donation.amount} د.ل (${donation.network === 'libyana' ? 'ليبيانا' : 'المدار'})`;
-            donorMessage.innerText = donation.message;
-
-            overlay.classList.remove('hidden');
-
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 6000);
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 6000);
+            }
         }
 
         window.switchView = function(viewName) {
             const visitorView = document.getElementById('view-visitor');
-            conststreamerView = document.getElementById('view-streamer');
+            const streamerView = document.getElementById('view-streamer');
             const numbersView = document.getElementById('view-numbers');
+
+            if ((viewName === 'streamer' || viewName === 'numbers') && (!auth.currentUser || auth.currentUser.isAnonymous)) {
+                window.openLoginModal();
+                return;
+            }
 
             const navVisitor = document.getElementById('nav-visitor');
             const navStreamer = document.getElementById('nav-streamer');
@@ -633,69 +757,21 @@
             }
         };
 
-        window.openLoginModal = function() {
-            const modal = document.getElementById('login-modal');
-            if (modal) modal.classList.remove('hidden');
-        };
-
-        window.closeLoginModal = function() {
-            const modal = document.getElementById('login-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-
-        window.handleStreamerLogin = function(event) {
-            event.preventDefault();
-            const passInput = document.getElementById('login-pass-input');
-            if (passInput && passInput.value.trim() === '1234') {
-                closeLoginModal();
-                const navTabs = document.getElementById('streamer-nav-tabs');
-                const authBadge = document.getElementById('streamer-auth-badge');
-                const btnLogin = document.getElementById('btn-open-login');
-
-                if (navTabs) navTabs.classList.remove('hidden');
-                navTabs.classList.add('flex');
-                if (authBadge) {
-                    authBadge.classList.remove('hidden');
-                    authBadge.classList.add('flex');
-                }
-                if (btnLogin) btnLogin.classList.add('hidden');
-                switchView('streamer');
-                alert('تم تسجيل الدخول بنجاح كـ ستريمر!');
-            } else {
-                alert('كلمة المرور غير صحيحة! (جرب 1234)');
-            }
-        };
-
-        window.logoutStreamer = function() {
-            const navTabs = document.getElementById('streamer-nav-tabs');
-            const authBadge = document.getElementById('streamer-auth-badge');
-            const btnLogin = document.getElementById('btn-open-login');
-
-            if (navTabs) {
-                navTabs.classList.add('hidden');
-                navTabs.classList.remove('flex');
-            }
-            if (authBadge) {
-                authBadge.classList.add('hidden');
-                authBadge.classList.remove('flex');
-            }
-            if (btnLogin) btnLogin.classList.remove('hidden');
-            switchView('visitor');
-        };
-
         window.saveStreamerProfile = async function() {
             const profileData = {
-                username: document.getElementById('username-input')?.value || 'cgt_evil',
-                displayName: document.getElementById('streamer-display-name')?.value || 'cgt evil',
-                resalaApiKey: document.getElementById('resala-apikey-input')?.value || '',
-                resalaSender: document.getElementById('resala-sender-input')?.value || '',
+                username: document.getElementById('username-input')?.value || 'streamer',
+                displayName: document.getElementById('streamer-display-name')?.value || 'ستريمر',
                 libyanaNum: document.getElementById('streamer-libyana-num')?.value || '0944630534',
                 almadarNum: document.getElementById('streamer-almadar-num')?.value || '0917043842'
             };
 
+            streamerData.libyanaNum = profileData.libyanaNum;
+            streamerData.almadarNum = profileData.almadarNum;
+            streamerData.displayName = profileData.displayName;
+
             try {
-                if (db) {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'streamer_profile'), profileData);
+                if (db && currentUser) {
+                    await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'streamer_profile', 'config'), profileData);
                 }
                 const displayNameEl = document.getElementById('display-streamer-name');
                 if (displayNameEl) displayNameEl.innerText = profileData.displayName;
@@ -709,16 +785,18 @@
         async function loadStreamerProfileFromCloud() {
             try {
                 if (!db) return;
-                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'streamer_profile'));
-                if (docSnap.exists()) {
+                let docSnap = null;
+                if (currentUser) {
+                    docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'streamer_profile', 'config'));
+                }
+                if (!docSnap || !docSnap.exists()) {
+                    docSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'streamer_profile'));
+                }
+                if (docSnap && docSnap.exists()) {
                     const data = docSnap.data();
-                    if (document.getElementById('username-input')) document.getElementById('username-input').value = data.username || 'cgt_evil';
-                    if (document.getElementById('streamer-display-name')) document.getElementById('streamer-display-name').value = data.displayName || 'cgt evil';
-                    if (document.getElementById('display-streamer-name')) document.getElementById('display-streamer-name').innerText = data.displayName || 'cgt evil';
-                    if (document.getElementById('resala-apikey-input')) document.getElementById('resala-apikey-input').value = data.resalaApiKey || '';
-                    if (document.getElementById('resala-sender-input')) document.getElementById('resala-sender-input').value = data.resalaSender || '';
-                    if (document.getElementById('streamer-libyana-num')) document.getElementById('streamer-libyana-num').value = data.libyanaNum || '0944630534';
-                    if (document.getElementById('streamer-almadar-num')) document.getElementById('streamer-almadar-num').value = data.almadarNum || '0917043842';
+                    if (data.libyanaNum) streamerData.libyanaNum = data.libyanaNum;
+                    if (data.almadarNum) streamerData.almadarNum = data.almadarNum;
+                    if (data.displayName) streamerData.displayName = data.displayName;
                 }
             } catch (e) {
                 console.warn('Could not load streamer profile:', e);
