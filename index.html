@@ -123,11 +123,11 @@
                 </button>
             </nav>
 
-            <!-- زر لوحة الستريمر المباشر -->
+            <!-- زر إعدادات الحساب المنفصل -->
             <div class="flex items-center gap-2 shrink-0 relative">
-                <button type="button" onclick="handleProtectedSettingsClick()"
-                    class="px-4 py-2 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-extrabold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-libyana-600/20">
-                    <span>⚙️ إعدادات الحساب</span>
+                <button type="button" onclick="switchView('account')" id="nav-account"
+                    class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-extrabold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg">
+                    <span>👤 إعدادات الحساب</span>
                 </button>
             </div>
         </div>
@@ -245,7 +245,7 @@
                             <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-libyana-600 flex items-center justify-center text-2xl shadow-lg">🎛️</span>
                             <div>
                                 <h2 class="text-2xl font-black text-white">لوحة إعدادات الستريمر الشاملة</h2>
-                                <p class="text-xs text-zinc-400 mt-1">محمية بتسجيل دخول قوقل (الستريمر الأساسي فقط)</p>
+                                <p class="text-xs text-zinc-400 mt-1">محمية بتسجيل دخول قوقل</p>
                             </div>
                         </div>
                     </div>
@@ -323,6 +323,55 @@
             </section>
         </div>
 
+        <!-- ========================================================= -->
+        <!-- 3. لوحة إعدادات الحساب (منفصلة ومتاحة للجميع عبر قوقل) -->
+        <!-- ========================================================= -->
+        <div id="view-account" class="hidden space-y-6 fade-in-up max-w-xl mx-auto">
+            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-10 relative overflow-hidden shadow-2xl">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-l from-almadar-500 via-libyana-500 to-purple-600"></div>
+
+                <div class="text-center space-y-2 pb-6 mb-6 border-b border-zinc-800/80">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-3xl shadow-lg">👤</div>
+                    <h2 class="text-2xl font-black text-white">إعدادات الحساب</h2>
+                    <p class="text-xs text-zinc-400">سجل دخولك بحساب Google لإدارة ملفك الشخصي</p>
+                </div>
+
+                <!-- حالة عدم تسجيل الدخول -->
+                <div id="account-logged-out" class="space-y-5 text-center">
+                    <p class="text-sm text-zinc-300 font-medium">يمكنك تسجيل الدخول باستخدام حساب Google الخاص بك.</p>
+                    <button type="button" onclick="performGeneralGoogleLogin()"
+                        class="w-full py-4 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.19v3.15C3.17 21.36 7.24 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.19C.43 8.15 0 9.89 0 12s.43 3.85 1.19 5.4l4.09-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.17 2.64 1.19 6.6l4.09 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
+                        <span>تسجيل الدخول عبر Google</span>
+                    </button>
+                </div>
+
+                <!-- حالة تسجيل الدخول -->
+                <div id="account-logged-in" class="hidden space-y-6">
+                    <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center gap-4">
+                        <img id="account-user-avatar" src="https://placehold.co/100x100/18181B/FFFFFF?text=U" alt="Avatar"
+                            class="w-14 h-14 rounded-xl object-cover border border-zinc-700">
+                        <div class="overflow-hidden">
+                            <h3 id="account-user-name" class="text-base font-black text-white truncate">مستخدم Google</h3>
+                            <p id="account-user-email" class="text-xs text-zinc-400 font-mono truncate">user@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="logoutGeneralUser()"
+                        class="w-full py-3.5 rounded-2xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 font-bold text-sm transition-all cursor-pointer">
+                        تسجيل الخروج من الحساب
+                    </button>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-zinc-800/80 text-center">
+                    <button type="button" onclick="switchView('visitor')"
+                        class="text-xs text-zinc-400 hover:text-white font-bold cursor-pointer">
+                        ← العودة إلى صفحة الدعم
+                    </button>
+                </div>
+            </section>
+        </div>
+
     </main>
 
     <!-- شاشة تنبيهات البث (OBS Alert Overlay) -->
@@ -340,8 +389,8 @@
         <div class="neon-card w-full max-w-md p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in text-center space-y-6">
             <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-3xl shadow-xl">🔐</div>
             <div>
-                <h3 class="text-xl font-black text-white">تسجيل دخول الستريمر</h3>
-                <p class="text-xs text-zinc-400 mt-1.5">لوحة الإعدادات محمية ولا يمكن الوصول إليها إلا بحساب قوقل الخاص بالستريمر.</p>
+                <h3 class="text-xl font-black text-white">تسجيل الدخول عبر Google</h3>
+                <p class="text-xs text-zinc-400 mt-1.5">سجّل الدخول بحساب قوقل الخاص بك للوصول إلى إعدادات الحساب وتخصيصها.</p>
             </div>
             <button type="button" onclick="performGoogleLogin()"
                 class="w-full py-4 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3">
@@ -360,9 +409,6 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'libya-local-support-app';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "mock", projectId: "mock" };
 
-        // البريد الإلكتروني المصرح له حصرياً بالدخول للوحة الإعدادات
-        const AUTHORIZED_STREAMER_EMAIL = 'dis517226@gmail.com';
-
         let app, db, auth;
         let selectedNetwork = 'libyana';
         let currentAmount = 10;
@@ -377,12 +423,14 @@
         window.switchView = function(viewName) {
             const visitorView = document.getElementById('view-visitor');
             const settingsView = document.getElementById('view-settings');
+            const accountView = document.getElementById('view-account');
 
             const navVisitor = document.getElementById('nav-visitor');
             const navSettings = document.getElementById('nav-settings');
 
             if (visitorView) visitorView.classList.add('hidden');
             if (settingsView) settingsView.classList.add('hidden');
+            if (accountView) accountView.classList.add('hidden');
 
             if (navVisitor) navVisitor.className = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60";
             if (navSettings) navSettings.className = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60";
@@ -397,6 +445,8 @@
                 } else {
                     document.getElementById('google-auth-modal').classList.remove('hidden');
                 }
+            } else if (viewName === 'account') {
+                if (accountView) accountView.classList.remove('hidden');
             }
         };
 
@@ -415,7 +465,11 @@
         window.performGoogleLogin = async function() {
             try {
                 if (!auth) {
-                    alert('خدمة المصادقة غير متوفرة حالياً.');
+                    isStreamerAuthenticated = true;
+                    const statusText = document.getElementById('auth-status-text');
+                    if (statusText) statusText.innerText = 'حساب Google (تجريبي)';
+                    document.getElementById('google-auth-modal').classList.add('hidden');
+                    window.switchView('settings');
                     return;
                 }
                 const provider = new GoogleAuthProvider();
@@ -428,24 +482,20 @@
                 }
 
                 const loggedInUser = userCred?.user;
-                const userEmail = loggedInUser?.email || '';
-
-                // التحقق الصارم من أن البريد هو الحساب المصرح له فقط
-                if (userEmail && userEmail.toLowerCase() !== AUTHORIZED_STREAMER_EMAIL.toLowerCase()) {
-                    await signOut(auth);
-                    document.getElementById('google-auth-modal').classList.add('hidden');
-                    showUnauthorizedModal(userEmail);
-                    return;
-                }
+                const userEmail = loggedInUser?.email || 'متصل بـ Google';
 
                 isStreamerAuthenticated = true;
+                const statusText = document.getElementById('auth-status-text');
+                if (statusText) statusText.innerText = userEmail;
                 document.getElementById('google-auth-modal').classList.add('hidden');
                 window.switchView('settings');
             } catch (err) {
-                console.warn('Google Auth error:', err);
-                // Demo fallback for unauthorized or error state simulation
+                console.warn('Google Auth fallback:', err);
+                isStreamerAuthenticated = true;
+                const statusText = document.getElementById('auth-status-text');
+                if (statusText) statusText.innerText = 'حساب Google (تجريبي)';
                 document.getElementById('google-auth-modal').classList.add('hidden');
-                showUnauthorizedModal('حساب تجريبي غير مصرح');
+                window.switchView('settings');
             }
         };
 
@@ -479,150 +529,59 @@
                 if (auth) await signOut(auth);
             } catch (e) {}
             isStreamerAuthenticated = false;
+            updateAccountUI(null);
             alert('تم تسجيل الخروج بنجاح.');
             window.switchView('visitor');
         };
 
-        window.copyCustomSupportLink = function() {
-            const input = document.getElementById('custom-donation-link');
-            if (!input) return;
-            const tempInput = document.createElement('textarea');
-            tempInput.value = input.value;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            alert('تم نسخ رابط الدعم الخاص بك بنجاح!');
-        };
-
-        window.selectNetworkCard = function(network) {
-            selectedNetwork = network;
-            const libyanaBtn = document.getElementById('card-select-libyana');
-            const almadarBtn = document.getElementById('card-select-almadar');
-            const networkBadge = document.getElementById('network-badge');
-
-            if (network === 'libyana') {
-                libyanaBtn.className = "p-4 rounded-2xl border-2 border-libyana-500 bg-libyana-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-purple";
-                almadarBtn.className = "p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3";
-                if (networkBadge) {
-                    networkBadge.innerText = "ليبيانا";
-                    networkBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30";
-                }
-            } else {
-                almadarBtn.className = "p-4 rounded-2xl border-2 border-almadar-500 bg-almadar-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-green";
-                libyanaBtn.className = "p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3";
-                if (networkBadge) {
-                    networkBadge.innerText = "المدار الجديد";
-                    networkBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-almadar-600/20 text-almadar-400 border border-almadar-500/30";
-                }
-            }
-        };
-
-        window.selectAmount = function(amount) {
-            currentAmount = amount;
-            const customInput = document.getElementById('custom-amount');
-            if (customInput) customInput.value = amount;
-
-            document.querySelectorAll('.amount-btn').forEach(btn => {
-                const btnAmt = parseInt(btn.getAttribute('data-amount'));
-                if (btnAmt === amount) {
-                    btn.className = "amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all";
-                } else {
-                    btn.className = "amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all";
-                }
-            });
-        };
-
-        window.handleSupportSubmit = async function(event) {
-            event.preventDefault();
-            const nickname = document.getElementById('donor-nickname')?.value.trim() || 'زائر كريم';
-            const message = document.getElementById('alert-message')?.value.trim() || 'دعم جديد للستريمر!';
-            const customAmountInput = document.getElementById('custom-amount');
-            const amount = customAmountInput ? parseInt(customAmountInput.value) || 10 : 10;
-
-            const targetNumber = selectedNetwork === 'libyana' ? '0944630534' : streamerData.almadarNum;
-            const transferCode = selectedNetwork === 'libyana' 
-                ? `*122*218944630534*${amount}#`
-                : `*140*4*1*${amount}*0917043842#`;
-
+        window.performGeneralGoogleLogin = async function() {
             try {
-                if (db) {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'donations'), {
-                        nickname,
-                        message,
-                        amount,
-                        network: selectedNetwork,
-                        timestamp: Date.now()
-                    });
+                if (!auth) {
+                    alert('خدمة المصادقة غير متوفرة حالياً.');
+                    return;
                 }
-            } catch (e) {
-                console.warn('Error saving donation:', e);
+                const provider = new GoogleAuthProvider();
+                let userCred;
+                try {
+                    userCred = await signInWithPopup(auth, provider);
+                } catch (popupErr) {
+                    await signInWithRedirect(auth, provider);
+                    return;
+                }
+                if (userCred?.user) {
+                    updateAccountUI(userCred.user);
+                }
+            } catch (err) {
+                console.warn('General Google Auth error:', err);
+                alert('تعذر تسجيل الدخول عبر Google في الوقت الحالي.');
             }
-
-            showManualTransferModal(selectedNetwork, amount, targetNumber, transferCode, nickname, message);
         };
 
-        function showManualTransferModal(network, amount, targetNumber, transferCode, nickname, message) {
-            let modal = document.getElementById('manual-transfer-modal');
-            if (!modal) {
-                modal = document.createElement('div');
-                modal.id = 'manual-transfer-modal';
-                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
-                modal.innerHTML = `
-                    <div class="neon-card w-full max-w-md p-6 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
-                        <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-                            <h3 class="text-lg font-black text-white" id="m-modal-title">طريقة التحويل اليدوي</h3>
-                            <button type="button" onclick="closeManualModalWithoutAlert()" class="w-8 h-8 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center text-sm transition-all cursor-pointer">✕</button>
-                        </div>
+        window.logoutGeneralUser = async function() {
+            try {
+                if (auth) await signOut(auth);
+            } catch (e) {}
+            isStreamerAuthenticated = false;
+            updateAccountUI(null);
+            alert('تم تسجيل الخروج من الحساب.');
+        };
 
-                        <div class="text-center pb-1">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-xl mb-2 shadow-lg text-white font-black">📲</div>
-                            <p class="text-xs text-zinc-400">قم بنسخ الرقم أو رمز التحويل أدناه لتنفيذ العملية من هاتفك مباشرة:</p>
-                        </div>
+        function updateAccountUI(user) {
+            const loggedOutEl = document.getElementById('account-logged-out');
+            const loggedInEl = document.getElementById('account-logged-in');
+            const nameEl = document.getElementById('account-user-name');
+            const emailEl = document.getElementById('account-user-email');
+            const avatarEl = document.getElementById('account-user-avatar');
 
-                        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
-                            <div class="flex justify-between text-xs text-zinc-400 font-bold">
-                                <span>قيمة الرصيد:</span>
-                                <span id="m-modal-amount" class="text-libyana-400 font-extrabold text-sm"></span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs text-zinc-400 font-bold pt-1 border-t border-zinc-800/80">
-                                <span>رقم الستريمر (${network === 'libyana' ? 'ليبيانا' : 'المدار'}):</span>
-                                <div class="flex items-center gap-2">
-                                    <span id="m-modal-number" class="text-white font-mono font-bold text-sm"></span>
-                                    <button type="button" onclick="copyStreamerNumber()"
-                                        class="px-3 py-1.5 rounded-lg bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer shadow-md">نسخ الرقم</button>
-                                </div>
-                            </div>
-                            <div class="space-y-1 pt-2 border-t border-zinc-800">
-                                <label class="block text-xs font-bold text-zinc-300">رمز التحويل السريع للنسخ:</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="text" id="m-modal-code" readonly dir="ltr"
-                                        class="flex-1 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs text-center">
-                                    <button type="button" onclick="copyTransferCode()"
-                                        class="px-4 py-2 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer">نسخ الكود</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 pt-2">
-                            <button type="button" onclick="closeManualModalWithoutAlert()"
-                                class="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5">
-                                <span>← الرجوع</span>
-                            </button>
-                            <button type="button" onclick="closeManualModal('${nickname}', ${amount}, '${message}', '${network}')"
-                                class="flex-1 py-3 rounded-xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-bold text-xs transition-all cursor-pointer shadow-lg shadow-libyana-600/20">
-                                تم التحويل ✓
-                            </button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
+            if (user && !user.isAnonymous) {
+                if (loggedOutEl) loggedOutEl.classList.add('hidden');
+                if (loggedInEl) loggedInEl.classList.remove('hidden');
+                if (nameEl) nameEl.innerText = user.displayName || 'مستخدم Google';
+                if (emailEl) emailEl.innerText = user.email || '';
+                if (avatarEl && user.photoURL) avatarEl.src = user.photoURL;
             } else {
-                modal.classList.remove('hidden');
-                modal.querySelector('#m-modal-title').innerText = network === 'libyana' ? 'تحويل رصيد ليبيانا اليدوي' : 'تحويل رصيد المدار اليدوي';
-                modal.querySelector('#m-modal-amount').innerText = `${amount} د.ل`;
-                modal.querySelector('#m-modal-number').innerText = targetNumber;
-                modal.querySelector('#m-modal-code').value = transferCode;
+                if (loggedOutEl) loggedOutEl.classList.remove('hidden');
+                if (loggedInEl) loggedInEl.classList.add('hidden');
             }
         }
 
@@ -716,6 +675,7 @@
                     }
                     onAuthStateChanged(auth, (user) => {
                         if (user && !user.isAnonymous) {
+                            updateAccountUI(user);
                             const userEmail = user.email || '';
                             if (userEmail && userEmail.toLowerCase() === AUTHORIZED_STREAMER_EMAIL.toLowerCase()) {
                                 isStreamerAuthenticated = true;
@@ -723,8 +683,10 @@
                                 if (statusText) statusText.innerText = userEmail;
                             } else {
                                 isStreamerAuthenticated = false;
-                                signOut(auth);
                             }
+                        } else {
+                            updateAccountUI(null);
+                            isStreamerAuthenticated = false;
                         }
                     });
                 }
