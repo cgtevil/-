@@ -1,0 +1,16 @@
+name = "cgtevil-phone-otp"
+main = "src/index.js"
+compatibility_date = "2026-11-11"
+
+[vars]
+ALLOWED_ORIGIN = "https://cgtevil.github.io"
+RESALA_SERVICE_NAME = "CGTEVIL"
+RESALA_TEST = "true"
+
+[[durable_objects.bindings]]
+name = "OTP_STORE"
+class_name = "OtpStore"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["OtpStore"]
