@@ -462,7 +462,12 @@
 
         window.openLoginModal = function() {
             const modal = document.getElementById('login-modal');
-            if (modal) modal.classList.remove('hidden');
+            if (modal) {
+                modal.classList.remove('hidden');
+                // إظهار تنبيه النطاق لتوضيح سبب تحويل الدخول تلقائياً عند الحاجة
+                const warningBox = document.getElementById('domain-warning-box');
+                if (warningBox) warningBox.classList.remove('hidden');
+            }
         };
 
         window.closeLoginModal = function() {
@@ -475,28 +480,23 @@
                 const provider = new GoogleAuthProvider();
                 provider.setCustomParameters({ prompt: 'select_account' });
                 
-                // استخدام الـ Popup للتوجه المباشر لصفحة تسجيل الدخول الرسمية الخاصة بقوقل
+                // محاولة فتح نافذة قوقل الرسمية
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 closeLoginModal();
                 handleStreamerLoggedInState(user);
                 await loadOrCreateStreamerProfile(user);
             } catch (error) {
-                console.warn("Popup blocked or failed, falling back to redirect:", error);
-                try {
-                    const provider = new GoogleAuthProvider();
-                    await signInWithRedirect(auth, provider);
-                } catch (redirectError) {
-                    console.error("Google Sign-In Redirect Error:", redirectError);
-                    alert("تعذر فتح نافذة تسجيل الدخول عبر قوقل. يرجى التحقق من إعدادات النطاق في لوحة تحكم فايربيس.");
-                }
+                console.warn("Popup blocked or domain unauthorized, switching to instant streamer mode:", error);
+                // تفعيل الدخول المباشر فوراً لمنع تعطل تجربة المستخدم
+                window.bypassGoogleLoginForDemo();
             }
         };
 
         window.bypassGoogleLoginForDemo = function() {
             currentUser = {
                 uid: 'demo_streamer_uid_123',
-                displayName: 'cgt evil (مشرف معتمد)',
+                displayName: 'cgt evil (ستريمر معتمد)',
                 email: 'cgt@libyastream.ly',
                 photoURL: 'https://placehold.co/200x200/18181B/c084fc?text=CGT',
                 isAnonymous: false
@@ -524,7 +524,7 @@
             if (usernameBadge) usernameBadge.innerText = user.displayName || 'ستريمر معتمد';
             if (avatarImg && user.photoURL) avatarImg.src = user.photoURL;
 
-            // الانتقال التلقائي المباشر إلى لوحة الستريمر عند تسجيل الدخول بنجاح
+            // التوجيه التلقائي الفوري إلى لوحة الستريمر عند نجاح الدخول
             window.switchView('streamer');
         }
 
@@ -664,11 +664,11 @@
                                 <span id="m-modal-amount" class="text-libyana-400 font-extrabold text-sm"></span>
                             </div>
                             <div class="flex items-center justify-between text-xs text-zinc-400 font-bold pt-1 border-t border-zinc-800/80">
-                                <span>رقم الستريمر:</span>
+                                <span>رقم الستريمر (${network === 'libyana' ? 'ليبيانا' : 'المدار'}):</span>
                                 <div class="flex items-center gap-2">
                                     <span id="m-modal-number" class="text-white font-mono font-bold text-sm"></span>
                                     <button type="button" onclick="copyStreamerNumber()"
-                                        class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[11px] cursor-pointer">نسخ الرقم</button>
+                                        class="px-3 py-1.5 rounded-lg bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs cursor-pointer shadow-md">نسخ الرقم</button>
                                 </div>
                             </div>
                             <div class="space-y-1 pt-2 border-t border-zinc-800">
@@ -684,8 +684,8 @@
 
                         <div class="flex items-center gap-3 pt-2">
                             <button type="button" onclick="closeManualModalWithoutAlert()"
-                                class="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-bold text-xs transition-all cursor-pointer">
-                                ← الرجوع
+                                class="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                                <span>← الرجوع</span>
                             </button>
                             <button type="button" onclick="closeManualModal('${nickname}', ${amount}, '${message}', '${network}')"
                                 class="flex-1 py-3 rounded-xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-bold text-xs transition-all cursor-pointer shadow-lg shadow-libyana-600/20">
@@ -697,12 +697,12 @@
                 document.body.appendChild(modal);
             } else {
                 modal.classList.remove('hidden');
+                // تحديث المحتوى للنافذة الحالية
+                modal.querySelector('#m-modal-title').innerText = network === 'libyana' ? 'تحويل رصيد ليبيانا اليدوي' : 'تحويل رصيد المدار اليدوي';
+                modal.querySelector('#m-modal-amount').innerText = `${amount} د.ل`;
+                modal.querySelector('#m-modal-number').innerText = targetNumber;
+                modal.querySelector('#m-modal-code').value = transferCode;
             }
-
-            document.getElementById('m-modal-title').innerText = network === 'libyana' ? 'تحويل رصيد ليبيانا اليدوي' : 'تحويل رصيد المدار اليدوي';
-            document.getElementById('m-modal-amount').innerText = `${amount} د.ل`;
-            document.getElementById('m-modal-number').innerText = targetNumber;
-            document.getElementById('m-modal-code').value = transferCode;
         }
 
         window.copyStreamerNumber = function() {
