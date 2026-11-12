@@ -12,7 +12,7 @@ const json = (data, status = 200, origin = "*") => new Response(JSON.stringify(d
   }
 });
 function validPhone(value) {
-  return typeof value === "string" && /^(091|093|092|094)\\d{7}$/.test(value);
+  return typeof value === "string" && /^(091|093|092|094)\d{7}$/.test(value);
 }
 function normalizePhone(local) { return "218" + local.slice(1); }
 async function otpHash(value, secret) {
@@ -74,7 +74,7 @@ export default {
     if (url.pathname === "/api/verify-otp") {
       if (!env.RESALA_API_KEY) return json({ error: "إعدادات الخادم غير مكتملة." }, 503, origin);
       const code = body?.code;
-      if (typeof code !== "string" || !/^\\d{6}$/.test(code)) {
+      if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
         return json({ error: "الرمز يجب أن يتكون من 6 أرقام." }, 400, origin);
       }
       const checked = await store.fetch("https://otp-store/verify", {
