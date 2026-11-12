@@ -53,7 +53,8 @@ export default {
 
       // Resala expects service_name, len, and test as URL query parameters.
       const params = new URLSearchParams({ service_name: env.RESALA_SERVICE_NAME, len: "6" });
-      const testFlag = env.RESALA_TEST === "true" ? "&test" : "";
+      const testMode = env.RESALA_TEST !== "false"; // Safe default: test mode unless explicitly disabled.
+      const testFlag = testMode ? "&test" : "";
       const sms = await fetch(`https://dev.resala.ly/api/v1/pins?${params.toString()}${testFlag}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${env.RESALA_API_KEY}`, "Content-Type": "application/json" },
@@ -68,7 +69,7 @@ export default {
         body: JSON.stringify({ pinHash: await otpHash(String(pin), env.RESALA_API_KEY) })
       });
       if (!saved.ok) return json({ error: "تعذر حفظ الرمز بأمان." }, 500, origin);
-      return json({ sent: true, expiresIn: 300, testMode: env.RESALA_TEST === "true" }, 200, origin);
+      return json({ sent: true, expiresIn: 300, testMode }, 200, origin);
     }
 
     if (url.pathname === "/api/verify-otp") {
