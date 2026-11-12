@@ -458,7 +458,7 @@
                 <p id="otp-error" class="hidden text-xs text-rose-400 text-center font-semibold">رمز التحقق غير صحيح</p>
             </div>
 
-            <button type="button" onclick="completeDonation()" class="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-l from-libyana-600 to-almadar-600 text-white font-extrabold text-sm hover:opacity-95 transition-all cursor-pointer">
+            <button type="button" onclick="verifyPhoneOwnership()" class="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-l from-libyana-600 to-almadar-600 text-white font-extrabold text-sm hover:opacity-95 transition-all cursor-pointer">
                 تأكيد رمز الهاتف
             </button>
         </div>
@@ -573,8 +573,10 @@
             const instructionEl = document.getElementById('otp-instruction-text');
             const errorEl = document.getElementById('otp-error');
             const resendBtn = document.getElementById('resend-otp-btn');
+            const confirmBtn = document.getElementById('confirm-otp-btn');
             errorEl.classList.add('hidden');
             resendBtn.disabled = true;
+            confirmBtn.disabled = true;
             instructionEl.innerText = 'جارٍ إرسال رمز التحقق إلى هاتفك...';
             try {
                 const response = await fetch(`${OTP_API_BASE}/api/send-otp`, {
@@ -584,7 +586,13 @@
                 });
                 const result = await response.json().catch(() => ({}));
                 if (!response.ok) throw new Error(result.error || 'تعذر إرسال الرمز. حاول لاحقاً.');
+                if (result.testMode === true) {
+                    instructionEl.innerText = 'وضع الاختبار مفعّل: قبلت Resala الطلب دون إرسال SMS أو خصم رصيد. لا يمكن إدخال رمز فعلي حتى تعطيل وضع الاختبار.';
+                    resendBtn.disabled = false;
+                    return;
+                }
                 instructionEl.innerText = 'تم إرسال رمز التحقق. هذا الرمز لإثبات ملكية رقم الهاتف فقط، ولا ينفذ أي دفع أو خصم رصيد.';
+                confirmBtn.disabled = false;
                 startOtpTimer();
             } catch (err) {
                 instructionEl.innerText = 'لم نتمكن من إرسال الرمز.';
@@ -622,7 +630,7 @@
             return response.ok && result.verified === true;
         }
 
-        async function completeDonation() {
+        async function verifyPhoneOwnership() {
             const errorEl = document.getElementById('otp-error');
             errorEl.classList.add('hidden');
             const otpVal = document.getElementById('otp-input').value.trim();
@@ -683,42 +691,6 @@
             document.getElementById('payment-modal').classList.remove('flex');
             document.getElementById('payment-modal').classList.add('hidden');
             clearInterval(otpTimerInterval);
-        }
-
-        async function completeDonation() {
-            const errorEl = document.getElementById('otp-error');
-            errorEl.classList.add('hidden');
-
-            const otpVal = document.getElementById('otp-input').value.trim();
-            if (otpVal.length !== 6) {
-                errorEl.innerText = 'يرجى إدخال رمز تحقق صحيح مكون من 6 أرقام';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
-            const isValid = await verifyOtpWithResalaApi(otpVal, lastDonorPhone);
-            if (!isValid) {
-                errorEl.innerText = 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
-            const nickname = document.getElementById('donor-nickname').value.trim() || 'دعم مجهول';
-            const msg = document.getElementById('alert-message').value.trim() || 'شكراً لك على دعمك!';
-            
-            donations.unshift({
-                name: nickname,
-                network: currentNetwork,
-                amount: currentAmount,
-                msg: msg,
-                time: 'الآن'
-            });
-
-            renderDonations();
-            closeModal();
-            showToast('تم عملية دعم بنجاح!', 'green');
-            triggerAlert(nickname, currentAmount, currentNetwork, msg);
-            document.getElementById('streamer-support-form').reset();
         }
 
         function selectAmount(amt) {
