@@ -458,7 +458,7 @@
                 <p id="otp-error" class="hidden text-xs text-rose-400 text-center font-semibold">رمز التحقق غير صحيح</p>
             </div>
 
-            <button type="button" id="confirm-otp-btn" onclick="verifyPhoneOwnership()" class="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-l from-libyana-600 to-almadar-600 text-white font-extrabold text-sm hover:opacity-95 transition-all cursor-pointer">
+            <button type="button" id="confirm-otp-btn" onclick="verifyPhoneOwnership()" class="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-l from-libyana-600 to-almadar-600 text-white font-extrabold text-sm hover:opacity-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 تأكيد رمز الهاتف
             </button>
         </div>
@@ -588,7 +588,7 @@
                 if (!response.ok) throw new Error(result.error || 'تعذر إرسال الرمز. حاول لاحقاً.');
                 if (result.testMode === true) {
                     instructionEl.innerText = 'وضع الاختبار مفعّل: قبلت Resala الطلب دون إرسال SMS أو خصم رصيد. لا يمكن إدخال رمز فعلي حتى تعطيل وضع الاختبار.';
-                    resendBtn.disabled = false;
+                    startOtpTimer();
                     return;
                 }
                 instructionEl.innerText = 'تم إرسال رمز التحقق. هذا الرمز لإثبات ملكية رقم الهاتف فقط، ولا ينفذ أي دفع أو خصم رصيد.';
