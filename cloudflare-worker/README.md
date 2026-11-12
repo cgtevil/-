@@ -10,17 +10,16 @@ npm install -g wrangler
 wrangler login
 ```
 
-Set the Resala API key as a Worker secret before deploying:
-```sh
-wrangler secret put RESALA_API_KEY
-```
-The CLI prompts for the value. Never put the key in HTML, GitHub source, or chat.
-
-Then deploy:
+Deploy the Worker once to create it in your Cloudflare account:
 ```sh
 wrangler deploy
 ```
-Copy the deployed Worker URL shown by Wrangler.
+
+Then add the Resala API key as a Worker secret:
+```sh
+wrangler secret put RESALA_API_KEY
+```
+The CLI prompts for the value. This command creates and deploys a new Worker version. Never put the key in HTML, GitHub source, or chat. Copy the Worker URL shown by Wrangler.
 
 ## Resala configuration
 - `RESALA_SERVICE_NAME` is the app/service label appended to the OTP message; set it to the desired CGTEVIL label in `wrangler.toml`.
