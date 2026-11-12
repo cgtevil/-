@@ -12,11 +12,15 @@ const json = (data, status = 200, origin = "*") => new Response(JSON.stringify(d
   }
 });
 function validPhone(value) {
-  return typeof value === "string" && /^(091|093|092|094)\d{7}$/.test(value);
+  return typeof value === "string" && /^(091|093|092|094)\\d{7}$/.test(value);
 }
 function normalizePhone(local) { return "218" + local.slice(1); }
-async function sha256(value) {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+async function otpHash(value, secret) {
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, "0")).join("");
 }
 function allowedOrigin(env) { return env.ALLOWED_ORIGIN || "https://cgtevil.github.io"; }
@@ -47,13 +51,13 @@ export default {
       const reservation = await store.fetch("https://otp-store/reserve", { method: "POST" });
       if (!reservation.ok) return json({ error: "انتظر دقيقة قبل طلب رمز جديد." }, 429, origin);
 
-      const sms = await fetch("https://dev.resala.ly/api/v1/pins", {
+      // Resala expects service_name, len, and test as URL query parameters.
+      const params = new URLSearchParams({ service_name: env.RESALA_SERVICE_NAME, len: "6" });
+      const testFlag = env.RESALA_TEST === "true" ? "&test" : "";
+      const sms = await fetch(`https://dev.resala.ly/api/v1/pins?${params.toString()}${testFlag}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${env.RESALA_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: normalizePhone(phone), service_name: env.RESALA_SERVICE_NAME, len: 6,
-          ...(env.RESALA_TEST === "true" ? { test: true } : {})
-        })
+        body: JSON.stringify({ phone: normalizePhone(phone) })
       });
       const payload = await sms.json().catch(() => ({}));
       const pin = payload?.pin ?? payload?.data?.pin;
@@ -61,20 +65,21 @@ export default {
 
       const saved = await store.fetch("https://otp-store/save", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pinHash: await sha256(String(pin)) })
+        body: JSON.stringify({ pinHash: await otpHash(String(pin), env.RESALA_API_KEY) })
       });
       if (!saved.ok) return json({ error: "تعذر حفظ الرمز بأمان." }, 500, origin);
-      return json({ sent: true, expiresIn: 300 }, 200, origin);
+      return json({ sent: true, expiresIn: 300, testMode: env.RESALA_TEST === "true" }, 200, origin);
     }
 
     if (url.pathname === "/api/verify-otp") {
+      if (!env.RESALA_API_KEY) return json({ error: "إعدادات الخادم غير مكتملة." }, 503, origin);
       const code = body?.code;
-      if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
+      if (typeof code !== "string" || !/^\\d{6}$/.test(code)) {
         return json({ error: "الرمز يجب أن يتكون من 6 أرقام." }, 400, origin);
       }
       const checked = await store.fetch("https://otp-store/verify", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ codeHash: await sha256(code) })
+        body: JSON.stringify({ codeHash: await otpHash(code, env.RESALA_API_KEY) })
       });
       const result = await checked.json().catch(() => ({}));
       if (!checked.ok || result.verified !== true) {
