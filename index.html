@@ -8,6 +8,9 @@
     <!-- تحميل Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- تحميل مكتبة Supabase الرسمية -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- تحميل خط Cairo و Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,11 +129,15 @@
                 </button>
             </nav>
 
-            <!-- زر إعدادات الحساب المنفصل -->
+            <!-- زر تسجيل الدخول / إعدادات الحساب المنفصل -->
             <div class="flex items-center gap-2 shrink-0 relative">
+                <button type="button" onclick="openAuthModal()" id="header-login-btn"
+                    class="px-4 py-2 rounded-xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-libyana-600/20">
+                    <span>🔐 تسجيل الدخول</span>
+                </button>
                 <button type="button" onclick="switchView('account')" id="nav-account"
                     class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-extrabold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg">
-                    <span>👤 إعدادات الحساب</span>
+                    <span id="header-account-label">👤 الحساب</span>
                 </button>
             </div>
         </div>
@@ -164,7 +171,6 @@
                         <span>🏆</span> قائمة أفضل 3 داعمين (Top 3 Supporters)
                     </h3>
                     <div id="top3-supporters-container" class="space-y-2">
-                        <!-- سيتم تعبئتها ديناميكياً -->
                         <div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-400 text-center">
                             لا يوجد داعمون حتى الآن. كن الأول!
                         </div>
@@ -305,16 +311,16 @@
                             <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-libyana-600 flex items-center justify-center text-2xl shadow-lg">🎛️</span>
                             <div>
                                 <h2 class="text-2xl font-black text-white">لوحة إعدادات الستريمر الشاملة</h2>
-                                <p class="text-xs text-zinc-400 mt-1">محمية بتسجيل دخول قوقل</p>
+                                <p class="text-xs text-zinc-400 mt-1">محمية بنظام مصادقة Supabase</p>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <span id="auth-status-badge" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span id="auth-status-text">متصل بـ Google</span>
+                            <span id="auth-status-text">متصل بـ Supabase</span>
                         </span>
-                        <button type="button" onclick="logoutStreamer()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs cursor-pointer">خروج</button>
+                        <button type="button" onclick="logoutSupabaseUser()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs cursor-pointer">خروج</button>
                     </div>
                 </div>
 
@@ -393,7 +399,7 @@
         </div>
 
         <!-- ========================================================= -->
-        <!-- 3. لوحة إعدادات الحساب (منفصلة ومتاحة للجميع عبر قوقل) -->
+        <!-- 3. لوحة إعدادات الحساب وتسجيل الدخول (Supabase Auth) -->
         <!-- ========================================================= -->
         <div id="view-account" class="hidden space-y-6 fade-in-up max-w-xl mx-auto">
             <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-10 relative overflow-hidden shadow-2xl">
@@ -401,32 +407,61 @@
 
                 <div class="text-center space-y-2 pb-6 mb-6 border-b border-zinc-800/80">
                     <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-3xl shadow-lg">👤</div>
-                    <h2 class="text-2xl font-black text-white">إعدادات الحساب</h2>
-                    <p class="text-xs text-zinc-400">سجل دخولك بحساب Google لإدارة ملفك الشخصي</p>
+                    <h2 class="text-2xl font-black text-white">حساب المستخدم (Supabase)</h2>
+                    <p class="text-xs text-zinc-400">سجل دخولك أو أنشئ حساباً جديداً لإدارة إعدادات البث والدعم</p>
                 </div>
 
                 <!-- حالة عدم تسجيل الدخول -->
-                <div id="account-logged-out" class="space-y-5 text-center">
-                    <p class="text-sm text-zinc-300 font-medium">يمكنك تسجيل الدخول باستخدام حساب Google الخاص بك.</p>
-                    <button type="button" onclick="performGeneralGoogleLogin()"
-                        class="w-full py-4 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3">
+                <div id="account-logged-out" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-400 mb-1.5">البريد الإلكتروني</label>
+                        <input type="email" id="acc-email-input" placeholder="example@email.com" dir="ltr"
+                            class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-400 mb-1.5">كلمة المرور</label>
+                        <input type="password" id="acc-password-input" placeholder="••••••••" dir="ltr"
+                            class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button type="button" onclick="handleSupabaseLogin('acc')"
+                            class="py-3.5 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer">
+                            تسجيل الدخول
+                        </button>
+                        <button type="button" onclick="handleSupabaseSignup('acc')"
+                            class="py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-extrabold text-sm transition-all cursor-pointer">
+                            إنشاء حساب جديد
+                        </button>
+                    </div>
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                        <span class="flex-shrink mx-3 text-zinc-500 text-xs">أو</span>
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                    </div>
+                    <button type="button" onclick="handleSupabaseGoogleLogin()"
+                        class="w-full py-3.5 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3">
                         <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.19v3.15C3.17 21.36 7.24 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.19C.43 8.15 0 9.89 0 12s.43 3.85 1.19 5.4l4.09-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.17 2.64 1.19 6.6l4.09 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
-                        <span>تسجيل الدخول عبر Google</span>
+                        <span>المتابعة عبر Google</span>
                     </button>
                 </div>
 
                 <!-- حالة تسجيل الدخول -->
                 <div id="account-logged-in" class="hidden space-y-6">
                     <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center gap-4">
-                        <img id="account-user-avatar" src="https://placehold.co/100x100/18181B/FFFFFF?text=U" alt="Avatar"
+                        <img id="account-user-avatar" src="https://placehold.co/100x100/18181B/34d399?text=SB" alt="Avatar"
                             class="w-14 h-14 rounded-xl object-cover border border-zinc-700">
                         <div class="overflow-hidden">
-                            <h3 id="account-user-name" class="text-base font-black text-white truncate">مستخدم Google</h3>
-                            <p id="account-user-email" class="text-xs text-zinc-400 font-mono truncate">user@gmail.com</p>
+                            <h3 id="account-user-name" class="text-base font-black text-white truncate">مستخدم Supabase</h3>
+                            <p id="account-user-email" class="text-xs text-zinc-400 font-mono truncate">user@example.com</p>
                         </div>
                     </div>
 
-                    <button type="button" onclick="logoutGeneralUser()"
+                    <button type="button" onclick="switchView('settings')"
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer">
+                        ⚙️ الانتقال إلى إعدادات الستريمر
+                    </button>
+
+                    <button type="button" onclick="logoutSupabaseUser()"
                         class="w-full py-3.5 rounded-2xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 font-bold text-sm transition-all cursor-pointer">
                         تسجيل الخروج من الحساب
                     </button>
@@ -457,42 +492,88 @@
         </div>
     </div>
 
-    <!-- نافذة تسجيل الدخول عبر قوقل لحماية إعدادات الستريمر -->
-    <div id="google-auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
-        <div class="neon-card w-full max-w-md p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in text-center space-y-6">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-3xl shadow-xl">🔐</div>
-            <div>
-                <h3 class="text-xl font-black text-white">تسجيل الدخول عبر Google</h3>
-                <p class="text-xs text-zinc-400 mt-1.5">سجّل الدخول بحساب قوقل الخاص بك للوصول إلى إعدادات الحساب وتخصيصها.</p>
+    <!-- ========================================================= -->
+    <!-- قائمة / نافذة تسجيل الدخول المنبثقة (Supabase Auth Modal) -->
+    <!-- تظهر تلقائياً عند فتح الموقع أو عند النقر على تسجيل الدخول -->
+    <!-- ========================================================= -->
+    <div id="supabase-auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="neon-card w-full max-w-md p-7 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
+            <button type="button" onclick="closeAuthModal()" title="إغلاق"
+                class="absolute top-5 left-5 w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer">
+                ✕
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-2xl shadow-xl">🔐</div>
+                <h3 class="text-xl font-black text-white">تسجيل الدخول إلى المنصة</h3>
+                <p class="text-xs text-zinc-400">سجل دخولك أو أنشئ حساباً جديداً عبر Supabase للمتابعة</p>
             </div>
-            <button type="button" onclick="performGoogleLogin()"
-                class="w-full py-4 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3">
+
+            <div class="space-y-3.5 text-right">
+                <div>
+                    <label for="modal-email-input" class="block text-xs font-bold text-zinc-400 mb-1">البريد الإلكتروني</label>
+                    <input type="email" id="modal-email-input" placeholder="name@example.com" dir="ltr"
+                        class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500 transition-all">
+                </div>
+                <div>
+                    <label for="modal-password-input" class="block text-xs font-bold text-zinc-400 mb-1">كلمة المرور</label>
+                    <input type="password" id="modal-password-input" placeholder="أدخل كلمة المرور (6 أحرف على الأقل)" dir="ltr"
+                        class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500 transition-all">
+                </div>
+
+                <p id="modal-auth-message" class="text-xs font-bold text-center min-h-[18px]"></p>
+
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    <button type="button" onclick="handleSupabaseLogin('modal')" id="modal-login-btn"
+                        class="py-3.5 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg shadow-almadar-600/20 transition-all cursor-pointer">
+                        تسجيل الدخول
+                    </button>
+                    <button type="button" onclick="handleSupabaseSignup('modal')" id="modal-signup-btn"
+                        class="py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg shadow-libyana-600/20 transition-all cursor-pointer">
+                        إنشاء حساب
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t border-zinc-800"></div>
+                <span class="flex-shrink mx-3 text-zinc-500 text-xs">أو الدخول السريع</span>
+                <div class="flex-grow border-t border-zinc-800"></div>
+            </div>
+
+            <button type="button" onclick="handleSupabaseGoogleLogin()"
+                class="w-full py-3.5 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-extrabold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.19v3.15C3.17 21.36 7.24 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.19C.43 8.15 0 9.89 0 12s.43 3.85 1.19 5.4l4.09-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.17 2.64 1.19 6.6l4.09 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
                 <span>تسجيل الدخول باستخدام Google</span>
             </button>
-            <button type="button" onclick="closeGoogleAuthModal()" class="text-xs text-zinc-500 hover:text-zinc-300 font-bold cursor-pointer">إلغاء والعودة لصفحة الدعم</button>
+
+            <div class="text-center pt-1">
+                <button type="button" onclick="closeAuthModal()" class="text-xs text-zinc-500 hover:text-zinc-300 font-bold cursor-pointer">
+                    تخطي الآن والمتابعة كزائر ←
+                </button>
+            </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    <script>
+        // =========================================================
+        // إعدادات مشروع Supabase الخاصة بك
+        // =========================================================
+        const SUPABASE_URL = 'https://pqnfczfdaouqkygiohdo.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_cR8G0ycCZKwy4w8RWIDWQw_fGPUF-Av';
 
-        let appId = typeof __app_id !== 'undefined' ? __app_id : 'libya-local-support-app';
-        let firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        // تهيئة عميل Supabase
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-        let app, db, auth;
         let selectedNetwork = 'libyana';
         let currentAmount = 10;
-        let currentUserId = null;
+        let currentUser = null;
         let currentStreamerUsername = 'cgtevil';
         let streamerData = {
             displayName: 'cgt evil',
             alertVideo: ''
         };
-        let isStreamerAuthenticated = false;
-        let localDonationsCache = [];
+        let localDonationsCache = JSON.parse(localStorage.getItem('libya_support_donations') || '[]');
 
         // دالة إشعارات مخصصة بديلة عن alert()
         function showToast(message, type = 'success') {
@@ -512,7 +593,7 @@
                 toast.style.transform = 'translateY(10px)';
                 toast.style.transition = 'all 0.25s ease';
                 setTimeout(() => toast.remove(), 250);
-            }, 3200);
+            }, 3500);
         }
 
         // دالة نسخ احتياطية متوافقة مع iFrame
@@ -532,8 +613,173 @@
             document.body.removeChild(tempInput);
         }
 
+        // فتح وإغلاق قائمة تسجيل الدخول
+        function openAuthModal() {
+            const modal = document.getElementById('supabase-auth-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('supabase-auth-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // تحديث واجهة المستخدم بناءً على حالة تسجيل الدخول في Supabase
+        function updateAuthUI(user) {
+            currentUser = user;
+            const headerLoginBtn = document.getElementById('header-login-btn');
+            const headerAccountLabel = document.getElementById('header-account-label');
+            const accountLoggedIn = document.getElementById('account-logged-in');
+            const accountLoggedOut = document.getElementById('account-logged-out');
+            const userNameEl = document.getElementById('account-user-name');
+            const userEmailEl = document.getElementById('account-user-email');
+
+            if (user) {
+                if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
+                if (headerAccountLabel) headerAccountLabel.innerText = '👤 ' + (user.email ? user.email.split('@')[0] : 'حسابي');
+                if (accountLoggedIn) accountLoggedIn.classList.remove('hidden');
+                if (accountLoggedOut) accountLoggedOut.classList.add('hidden');
+                if (userNameEl) userNameEl.innerText = user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم Supabase';
+                if (userEmailEl) userEmailEl.innerText = user.email || '';
+
+                // تحميل بيانات الستريمر المحفوظة في بيانات المستخدم أو التخزين المحلي
+                const savedProfile = user.user_metadata?.streamer_profile || JSON.parse(localStorage.getItem('streamer_profile_' + user.id) || 'null');
+                if (savedProfile) {
+                    streamerData.displayName = savedProfile.displayName || 'cgt evil';
+                    streamerData.alertVideo = savedProfile.alertVideo || '';
+                    const nameInput = document.getElementById('streamer-display-name');
+                    const videoInput = document.getElementById('streamer-alert-video');
+                    const displayNameEl = document.getElementById('display-streamer-name');
+                    if (nameInput) nameInput.value = streamerData.displayName;
+                    if (videoInput) videoInput.value = streamerData.alertVideo;
+                    if (displayNameEl) displayNameEl.innerText = streamerData.displayName;
+                }
+            } else {
+                if (headerLoginBtn) headerLoginBtn.classList.remove('hidden');
+                if (headerAccountLabel) headerAccountLabel.innerText = '👤 الحساب';
+                if (accountLoggedIn) accountLoggedIn.classList.add('hidden');
+                if (accountLoggedOut) accountLoggedOut.classList.remove('hidden');
+            }
+        }
+
+        // 1. تسجيل الدخول بالبريد الإلكتروني وكلمة المرور عبر Supabase
+        async function handleSupabaseLogin(source) {
+            const emailEl = document.getElementById(source === 'modal' ? 'modal-email-input' : 'acc-email-input');
+            const passwordEl = document.getElementById(source === 'modal' ? 'modal-password-input' : 'acc-password-input');
+            const msgEl = document.getElementById('modal-auth-message');
+
+            const email = emailEl?.value.trim();
+            const password = passwordEl?.value;
+
+            if (!email || !password) {
+                if (msgEl && source === 'modal') {
+                    msgEl.className = 'text-xs font-bold text-center text-red-400';
+                    msgEl.innerText = 'الرجاء إدخال البريد الإلكتروني وكلمة المرور.';
+                }
+                showToast('الرجاء إدخال البريد الإلكتروني وكلمة المرور', 'error');
+                return;
+            }
+
+            if (msgEl && source === 'modal') {
+                msgEl.className = 'text-xs font-bold text-center text-zinc-400';
+                msgEl.innerText = 'جاري التحقق وتسجيل الدخول...';
+            }
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                if (msgEl && source === 'modal') {
+                    msgEl.className = 'text-xs font-bold text-center text-red-400';
+                    msgEl.innerText = 'خطأ: ' + error.message;
+                }
+                showToast('فشل تسجيل الدخول: ' + error.message, 'error');
+            } else {
+                if (msgEl && source === 'modal') {
+                    msgEl.className = 'text-xs font-bold text-center text-emerald-400';
+                    msgEl.innerText = 'تم تسجيل الدخول بنجاح!';
+                }
+                updateAuthUI(data.user);
+                closeAuthModal();
+                showToast('مرحباً بك! تم تسجيل الدخول بنجاح');
+            }
+        }
+
+        // 2. إنشاء حساب جديد عبر Supabase
+        async function handleSupabaseSignup(source) {
+            const emailEl = document.getElementById(source === 'modal' ? 'modal-email-input' : 'acc-email-input');
+            const passwordEl = document.getElementById(source === 'modal' ? 'modal-password-input' : 'acc-password-input');
+            const msgEl = document.getElementById('modal-auth-message');
+
+            const email = emailEl?.value.trim();
+            const password = passwordEl?.value;
+
+            if (!email || !password) {
+                if (msgEl && source === 'modal') {
+                    msgEl.className = 'text-xs font-bold text-center text-red-400';
+                    msgEl.innerText = 'الرجاء إدخال البريد الإلكتروني وكلمة المرور.';
+                }
+                showToast('الرجاء إدخال البريد الإلكتروني وكلمة المرور', 'error');
+                return;
+            }
+
+            if (msgEl && source === 'modal') {
+                msgEl.className = 'text-xs font-bold text-center text-zinc-400';
+                msgEl.innerText = 'جاري إنشاء الحساب...';
+            }
+
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                if (msgEl && source === 'modal') {
+                    msgEl.className = 'text-xs font-bold text-center text-red-400';
+                    msgEl.innerText = 'خطأ: ' + error.message;
+                }
+                showToast('خطأ في إنشاء الحساب: ' + error.message, 'error');
+            } else {
+                if (data.session) {
+                    updateAuthUI(data.user);
+                    closeAuthModal();
+                    showToast('تم إنشاء الحساب وتسجيل الدخول بنجاح!');
+                } else {
+                    if (msgEl && source === 'modal') {
+                        msgEl.className = 'text-xs font-bold text-center text-emerald-400';
+                        msgEl.innerText = 'تم إنشاء الحساب! يرجى تأكيد بريدك الإلكتروني.';
+                    }
+                    showToast('تم إنشاء الحساب! تحقق من بريدك الإلكتروني لتأكيد التسجيل.');
+                }
+            }
+        }
+
+        // 3. تسجيل الدخول عبر Google OAuth في Supabase
+        async function handleSupabaseGoogleLogin() {
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.href
+                }
+            });
+
+            if (error) {
+                showToast('تعذر الاتصال بـ Google: ' + error.message, 'error');
+            }
+        }
+
+        // 4. تسجيل الخروج
+        async function logoutSupabaseUser() {
+            await supabaseClient.auth.signOut();
+            updateAuthUI(null);
+            switchView('visitor');
+            showToast('تم تسجيل الخروج بنجاح');
+        }
+
         // التبديل بين الواجهات
-        window.switchView = function(viewName) {
+        function switchView(viewName) {
             const vVisitor = document.getElementById('view-visitor');
             const vSettings = document.getElementById('view-settings');
             const vAccount = document.getElementById('view-account');
@@ -544,34 +790,26 @@
 
             if (viewName === 'visitor' && vVisitor) vVisitor.classList.remove('hidden');
             if (viewName === 'settings') {
-                if (isStreamerAuthenticated) {
+                if (currentUser) {
                     if (vSettings) vSettings.classList.remove('hidden');
                 } else {
-                    openGoogleAuthModal();
+                    openAuthModal();
+                    showToast('يرجى تسجيل الدخول للوصول إلى إعدادات الستريمر', 'error');
                     return;
                 }
             }
             if (viewName === 'account' && vAccount) vAccount.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.handleProtectedSettingsClick = function() {
-            if (isStreamerAuthenticated) {
-                window.switchView('settings');
-            } else {
-                openGoogleAuthModal();
-            }
-        };
-
-        function openGoogleAuthModal() {
-            const modal = document.getElementById('google-auth-modal');
-            if (modal) modal.classList.remove('hidden');
         }
 
-        window.closeGoogleAuthModal = function() {
-            const modal = document.getElementById('google-auth-modal');
-            if (modal) modal.classList.add('hidden');
-        };
+        function handleProtectedSettingsClick() {
+            if (currentUser) {
+                switchView('settings');
+            } else {
+                openAuthModal();
+                showToast('يرجى تسجيل الدخول أولاً لفتح لوحة الستريمر', 'error');
+            }
+        }
 
         // استخراج اسم الستريمر من الرابط
         function parseStreamerFromUrl() {
@@ -581,7 +819,7 @@
                 currentStreamerUsername = match[1].toLowerCase();
             } else {
                 const hash = window.location.hash.replace('#', '');
-                if (hash && hash.length > 0) {
+                if (hash && hash.length > 0 && !hash.includes('access_token')) {
                     currentStreamerUsername = hash.toLowerCase();
                 }
             }
@@ -593,7 +831,7 @@
         }
 
         // اختيار الشبكة (ليبيانا أو المدار الجديد)
-        window.selectNetworkCard = function(network) {
+        function selectNetworkCard(network) {
             selectedNetwork = network;
             const libyanaCard = document.getElementById('card-select-libyana');
             const almadarCard = document.getElementById('card-select-almadar');
@@ -617,10 +855,10 @@
                 }
                 if (submitBtn) submitBtn.className = "w-full py-4 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-almadar-600/30 transition-all cursor-pointer flex items-center justify-center gap-2";
             }
-        };
+        }
 
         // اختيار المبلغ
-        window.selectAmount = function(amount) {
+        function selectAmount(amount) {
             currentAmount = amount;
             const customInput = document.getElementById('custom-amount');
             if (customInput) customInput.value = amount;
@@ -633,10 +871,10 @@
                     btn.className = "amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all";
                 }
             });
-        };
+        }
 
-        // إرسال النموذج وعرض نافذة التحويل اليدوي بالرقم المحدث للمدار 0917043842
-        window.handleSupportSubmit = function(event) {
+        // إرسال النموذج وعرض نافذة التحويل اليدوي
+        function handleSupportSubmit(event) {
             event.preventDefault();
             const nickname = document.getElementById('donor-nickname')?.value || 'مشجع';
             const message = document.getElementById('alert-message')?.value || 'دعم مباشر للبث';
@@ -651,7 +889,6 @@
             const modalCopyBtn = document.getElementById('m-modal-copy-code-btn');
             const modalConfirmBtn = document.getElementById('m-modal-confirm-btn');
 
-            // رقم ليبيانا يبقى 0944630534، ورقم المدار المحدث هو 0917043842
             let receiverNum = selectedNetwork === 'libyana' ? '0944630534' : '0917043842';
             let transferCode = '';
 
@@ -684,56 +921,47 @@
             }
 
             if (modal) modal.classList.remove('hidden');
-        };
+        }
 
         function escapeHtml(text) {
             return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        window.closeManualModal = async function(nickname, amount, message, network) {
+        async function closeManualModal(nickname, amount, message, network) {
             const modal = document.getElementById('manual-transfer-modal');
             if (modal) modal.classList.add('hidden');
 
-            await saveDonationToCloud(nickname, amount, message, network);
+            await saveDonationRecord(nickname, amount, message, network);
             triggerObsAlert(nickname, amount, message, network);
             showToast('تم إرسال تنبيه الدعم بنجاح إلى الستريمر!');
-        };
+        }
 
-        window.closeManualModalWithoutAlert = function() {
+        function closeManualModalWithoutAlert() {
             const modal = document.getElementById('manual-transfer-modal');
             if (modal) modal.classList.add('hidden');
-        };
+        }
 
-        window.copyStreamerNumber = function() {
+        function copyStreamerNumber() {
             const num = document.getElementById('m-modal-number')?.innerText || '';
-            if (num) {
-                fallbackCopyText(num, 'تم نسخ الرقم بنجاح: ' + num);
-            }
-        };
+            if (num) fallbackCopyText(num, 'تم نسخ الرقم بنجاح: ' + num);
+        }
 
-        window.copyTransferCode = function() {
+        function copyTransferCode() {
             const codeInput = document.getElementById('m-modal-code');
-            if (codeInput) {
-                fallbackCopyText(codeInput.value, 'تم نسخ رمز التحويل بنجاح');
-            }
-        };
+            if (codeInput) fallbackCopyText(codeInput.value, 'تم نسخ رمز التحويل بنجاح');
+        }
 
-        window.copyCustomSupportLink = function() {
+        function copyCustomSupportLink() {
             const input = document.getElementById('custom-donation-link');
-            if (input) {
-                fallbackCopyText(input.value, 'تم نسخ رابط الدعم الخاص بك');
-            }
-        };
+            if (input) fallbackCopyText(input.value, 'تم نسخ رابط الدعم الخاص بك');
+        }
 
-        window.copyTikTokStudioLink = function() {
+        function copyTikTokStudioLink() {
             const input = document.getElementById('custom-donation-link');
-            if (input) {
-                const widgetUrl = input.value + '?widget=true';
-                fallbackCopyText(widgetUrl, 'تم نسخ رابط تيك توك ستوديو (Widget URL) بنجاح');
-            }
-        };
+            if (input) fallbackCopyText(input.value + '?widget=true', 'تم نسخ رابط تيك توك ستوديو (Widget URL) بنجاح');
+        }
 
-        window.handleVideoFileUpload = function(event) {
+        function handleVideoFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -744,11 +972,12 @@
                 };
                 reader.readAsDataURL(file);
             }
-        };
+        }
 
-        async function saveDonationToCloud(nickname, amount, message, network) {
-            const streamerKey = currentStreamerUsername || 'cgtevil';
+        // حفظ سجل الدعم في Supabase (إن وجد جدول donations) مع حفظ محلي فوري
+        async function saveDonationRecord(nickname, amount, message, network) {
             const donationObj = {
+                streamer_username: currentStreamerUsername || 'cgtevil',
                 nickname,
                 amount: Number(amount),
                 message,
@@ -756,132 +985,124 @@
                 timestamp: Date.now()
             };
             localDonationsCache.push(donationObj);
+            localStorage.setItem('libya_support_donations', JSON.stringify(localDonationsCache));
+
             try {
-                if (db) {
-                    await addDoc(collection(db, 'artifacts', appId, 'public_data', streamerKey, 'donations'), donationObj);
-                }
+                await supabaseClient.from('donations').insert([donationObj]);
             } catch (e) {
-                console.warn('Could not save donation to cloud, using local cache:', e);
+                // في حال لم يتم إنشاء جدول donations بعد في Supabase، يعمل التخزين المحلي بسلاسة
             }
+
             loadTop3Supporters();
             loadStreamerDonorsList();
         }
 
         async function loadTop3Supporters() {
-            const streamerKey = currentStreamerUsername || 'cgtevil';
             const container = document.getElementById('top3-supporters-container');
             if (!container) return;
 
+            let donationsList = [...localDonationsCache];
             try {
-                let donationsList = [...localDonationsCache];
-                if (db) {
-                    const qRef = collection(db, 'artifacts', appId, 'public_data', streamerKey, 'donations');
-                    const snap = await getDocs(qRef);
-                    donationsList = [];
-                    snap.forEach(docSnap => {
-                        donationsList.push(docSnap.data());
-                    });
+                const { data, error } = await supabaseClient
+                    .from('donations')
+                    .select('*')
+                    .eq('streamer_username', currentStreamerUsername || 'cgtevil');
+                if (!error && data && data.length > 0) {
+                    donationsList = data;
                 }
+            } catch (e) {}
 
-                if (donationsList.length === 0) {
-                    container.innerHTML = `<div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-400 text-center">لا يوجد داعمون حتى الآن. كن الأول!</div>`;
-                    return;
-                }
-
-                const summaryMap = {};
-                donationsList.forEach(d => {
-                    const name = d.nickname || 'فاعل خير';
-                    if (!summaryMap[name]) summaryMap[name] = 0;
-                    summaryMap[name] += Number(d.amount || 0);
-                });
-
-                const sorted = Object.keys(summaryMap)
-                    .map(name => ({ name, total: summaryMap[name] }))
-                    .sort((a, b) => b.total - a.total)
-                    .slice(0, 3);
-
-                let html = '';
-                sorted.forEach((item, index) => {
-                    const medals = ['🥇', '🥈', '🥉'];
-                    const colors = ['border-amber-500/40 bg-amber-500/10 text-amber-300', 'border-zinc-400/40 bg-zinc-400/10 text-zinc-200', 'border-amber-700/40 bg-amber-700/10 text-amber-500'];
-                    html += `
-                        <div class="p-3 rounded-2xl border ${colors[index] || 'border-zinc-800 bg-zinc-900'} flex items-center justify-between">
-                            <div class="flex items-center gap-2.5">
-                                <span class="text-base">${medals[index] || '🏅'}</span>
-                                <span class="font-extrabold text-white text-xs">${item.name}</span>
-                            </div>
-                            <span class="font-mono font-black text-xs text-libyana-400">${item.total} د.ل</span>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (e) {
-                console.warn('Error loading top 3:', e);
+            if (donationsList.length === 0) {
+                container.innerHTML = `<div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-400 text-center">لا يوجد داعمون حتى الآن. كن الأول!</div>`;
+                return;
             }
+
+            const summaryMap = {};
+            donationsList.forEach(d => {
+                const name = d.nickname || 'فاعل خير';
+                if (!summaryMap[name]) summaryMap[name] = 0;
+                summaryMap[name] += Number(d.amount || 0);
+            });
+
+            const sorted = Object.keys(summaryMap)
+                .map(name => ({ name, total: summaryMap[name] }))
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 3);
+
+            let html = '';
+            sorted.forEach((item, index) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const colors = ['border-amber-500/40 bg-amber-500/10 text-amber-300', 'border-zinc-400/40 bg-zinc-400/10 text-zinc-200', 'border-amber-700/40 bg-amber-700/10 text-amber-500'];
+                html += `
+                    <div class="p-3 rounded-2xl border ${colors[index] || 'border-zinc-800 bg-zinc-900'} flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-base">${medals[index] || '🏅'}</span>
+                            <span class="font-extrabold text-white text-xs">${item.name}</span>
+                        </div>
+                        <span class="font-mono font-black text-xs text-libyana-400">${item.total} د.ل</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
-        window.loadStreamerDonorsList = async function() {
+        async function loadStreamerDonorsList() {
             const container = document.getElementById('streamer-donors-list-container');
             if (!container) return;
-            const streamerKey = currentStreamerUsername || 'cgtevil';
 
+            let donationsList = [...localDonationsCache];
             try {
-                let donationsList = [...localDonationsCache];
-                if (db) {
-                    const qRef = collection(db, 'artifacts', appId, 'public_data', streamerKey, 'donations');
-                    const snap = await getDocs(qRef);
-                    donationsList = [];
-                    snap.forEach(docSnap => {
-                        donationsList.push({ id: docSnap.id, ...docSnap.data() });
-                    });
+                const { data, error } = await supabaseClient
+                    .from('donations')
+                    .select('*')
+                    .eq('streamer_username', currentStreamerUsername || 'cgtevil');
+                if (!error && data && data.length > 0) {
+                    donationsList = data;
                 }
+            } catch (e) {}
 
-                if (donationsList.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-zinc-500 text-center py-4">لا توجد سجلات دعم مسجلة حتى الآن.</div>`;
-                    return;
-                }
+            if (donationsList.length === 0) {
+                container.innerHTML = `<div class="text-xs text-zinc-500 text-center py-4">لا توجد سجلات دعم مسجلة حتى الآن.</div>`;
+                return;
+            }
 
-                donationsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            donationsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-                let html = '';
-                donationsList.forEach(d => {
-                    const dateStr = d.timestamp ? new Date(d.timestamp).toLocaleString('ar-LY', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }) : 'وقت غير معروف';
+            let html = '';
+            donationsList.forEach(d => {
+                const dateStr = d.timestamp ? new Date(d.timestamp).toLocaleString('ar-LY', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'وقت غير معروف';
 
-                    const networkName = d.network === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
-                    const networkBadgeColor = d.network === 'libyana' ? 'bg-libyana-600/20 text-libyana-400 border-libyana-500/30' : 'bg-almadar-600/20 text-almadar-400 border-almadar-500/30';
+                const networkName = d.network === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
+                const networkBadgeColor = d.network === 'libyana' ? 'bg-libyana-600/20 text-libyana-400 border-libyana-500/30' : 'bg-almadar-600/20 text-almadar-400 border-almadar-500/30';
 
-                    html += `
-                        <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="font-black text-white text-sm">👤 ${d.nickname || 'فاعل خير'}</span>
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${networkBadgeColor}">${networkName}</span>
-                                </div>
-                                <div class="text-zinc-300 font-medium bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800/80 inline-block">
-                                    💬 "${d.message || 'بدون رسالة'}"
-                                </div>
-                                <div class="text-[10px] text-zinc-500">📅 ${dateStr}</div>
+                html += `
+                    <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-black text-white text-sm">👤 ${d.nickname || 'فاعل خير'}</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${networkBadgeColor}">${networkName}</span>
                             </div>
-                            <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
-                                <div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 font-mono font-black text-emerald-400 text-sm">
-                                    +${d.amount || 0} د.ل
-                                </div>
+                            <div class="text-zinc-300 font-medium bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800/80 inline-block">
+                                💬 "${d.message || 'بدون رسالة'}"
+                            </div>
+                            <div class="text-[10px] text-zinc-500">📅 ${dateStr}</div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 font-mono font-black text-emerald-400 text-sm">
+                                +${d.amount || 0} د.ل
                             </div>
                         </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (e) {
-                console.warn('Error loading donors list:', e);
-                container.innerHTML = `<div class="text-xs text-red-400 text-center py-4">تعذر جلب سجل الداعمين.</div>`;
-            }
-        };
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
         function triggerObsAlert(nickname, amount, message, network) {
             const overlay = document.getElementById('obs-alert-overlay');
@@ -924,15 +1145,14 @@
             }
         }
 
-        window.saveStreamerProfile = async function() {
-            const uid = currentUserId || auth?.currentUser?.uid;
-            if (!uid) {
+        // حفظ إعدادات الستريمر في Supabase User Metadata
+        async function saveStreamerProfile() {
+            if (!currentUser) {
                 showToast('يرجى تسجيل الدخول أولاً لحفظ إعداداتك الخاصة.', 'error');
                 return;
             }
 
             const profileData = {
-                userId: uid,
                 username: currentStreamerUsername,
                 displayName: document.getElementById('streamer-display-name')?.value || 'قناة الستريمر',
                 alertVideo: document.getElementById('streamer-alert-video')?.value || '',
@@ -944,131 +1164,45 @@
             streamerData.alertVideo = profileData.alertVideo;
 
             try {
-                if (db) {
-                    await setDoc(doc(db, 'artifacts', appId, 'users', uid), profileData, { merge: true });
-                }
+                // حفظ في Supabase Auth User Metadata
+                await supabaseClient.auth.updateUser({
+                    data: { streamer_profile: profileData }
+                });
+                localStorage.setItem('streamer_profile_' + currentUser.id, JSON.stringify(profileData));
+
                 const displayNameEl = document.getElementById('display-streamer-name');
                 if (displayNameEl) displayNameEl.innerText = profileData.displayName;
 
-                showToast('تم حفظ إعداداتك وتحديث صفحة الدعم بنجاح!');
-                window.switchView('visitor');
+                showToast('تم حفظ إعداداتك في Supabase وتحديث الصفحة بنجاح!');
+                switchView('visitor');
             } catch (e) {
-                console.error('Error saving profile:', e);
                 showToast('حدث خطأ أثناء حفظ الإعدادات: ' + e.message, 'error');
-            }
-        };
-
-        window.performGoogleLogin = async function() {
-            if (!auth) {
-                currentUserId = 'mock-user-' + Math.random().toString(36).substring(2, 9);
-                isStreamerAuthenticated = true;
-                window.closeGoogleAuthModal();
-                window.switchView('settings');
-                
-                const accountLoggedIn = document.getElementById('account-logged-in');
-                const accountLoggedOut = document.getElementById('account-logged-out');
-                if (accountLoggedIn) accountLoggedIn.classList.remove('hidden');
-                if (accountLoggedOut) accountLoggedOut.classList.add('hidden');
-                const nameEl = document.getElementById('account-user-name');
-                if (nameEl) nameEl.innerText = 'مستخدم Google (وضع المعاينة)';
-                
-                showToast('تم تسجيل الدخول بنجاح!');
-                return;
-            }
-            try {
-                const provider = new GoogleAuthProvider();
-                const result = await signInWithPopup(auth, provider);
-                currentUserId = result.user.uid;
-                isStreamerAuthenticated = true;
-                window.closeGoogleAuthModal();
-                window.switchView('settings');
-                loadUserData(currentUserId);
-                showToast('تم تسجيل الدخول عبر Google بنجاح');
-            } catch (e) {
-                console.warn('Google login error, switching to simulation:', e);
-                currentUserId = 'mock-user-' + Math.random().toString(36).substring(2, 9);
-                isStreamerAuthenticated = true;
-                window.closeGoogleAuthModal();
-                window.switchView('settings');
-                showToast('تم تفعيل وضع المعاينة المحلي بنجاح');
-            }
-        };
-
-        window.performGeneralGoogleLogin = async function() {
-            window.performGoogleLogin();
-        };
-
-        window.logoutStreamer = async function() {
-            if (auth) {
-                await signOut(auth);
-            }
-            currentUserId = null;
-            isStreamerAuthenticated = false;
-            const accountLoggedIn = document.getElementById('account-logged-in');
-            const accountLoggedOut = document.getElementById('account-logged-out');
-            if (accountLoggedIn) accountLoggedIn.classList.add('hidden');
-            if (accountLoggedOut) accountLoggedOut.classList.remove('hidden');
-            window.switchView('visitor');
-            showToast('تم تسجيل الخروج بنجاح');
-        };
-
-        window.logoutGeneralUser = function() {
-            window.logoutStreamer();
-        };
-
-        async function loadUserData(uid) {
-            try {
-                if (db) {
-                    const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', uid));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        streamerData.displayName = data.displayName || 'cgt evil';
-                        streamerData.alertVideo = data.alertVideo || '';
-                        
-                        const nameInput = document.getElementById('streamer-display-name');
-                        const videoInput = document.getElementById('streamer-alert-video');
-                        const displayNameEl = document.getElementById('display-streamer-name');
-
-                        if (nameInput) nameInput.value = streamerData.displayName;
-                        if (videoInput) videoInput.value = streamerData.alertVideo;
-                        if (displayNameEl) displayNameEl.innerText = streamerData.displayName;
-                    }
-                }
-            } catch (e) {
-                console.warn('Could not load user data:', e);
             }
         }
 
+        // تهيئة الصفحة عند التحميل ومراقبة جلسة Supabase
         window.addEventListener('DOMContentLoaded', async () => {
             parseStreamerFromUrl();
-            try {
-                if (firebaseConfig && firebaseConfig.apiKey) {
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
 
-                    onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            currentUserId = user.uid;
-                            isStreamerAuthenticated = true;
-                            loadUserData(user.uid);
-                            const accountLoggedIn = document.getElementById('account-logged-in');
-                            const accountLoggedOut = document.getElementById('account-logged-out');
-                            if (accountLoggedIn) accountLoggedIn.classList.remove('hidden');
-                            if (accountLoggedOut) accountLoggedOut.classList.add('hidden');
-
-                            const avatar = document.getElementById('account-user-avatar');
-                            const nameEl = document.getElementById('account-user-name');
-                            const emailEl = document.getElementById('account-user-email');
-                            if (avatar && user.photoURL) avatar.src = user.photoURL;
-                            if (nameEl) nameEl.innerText = user.displayName || 'مستخدم Google';
-                            if (emailEl) emailEl.innerText = user.email || '';
-                        }
-                    });
-                }
-            } catch (e) {
-                console.warn('Init warning, running standalone:', e);
+            // التحقق من وجود جلسة مسجلة مسبقاً في Supabase
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                updateAuthUI(session.user);
+                closeAuthModal(); // إغلاق نافذة تسجيل الدخول تلقائياً إذا كان المستخدم مسجلاً بالفعل
+            } else {
+                openAuthModal(); // إظهار قائمة تسجيل الدخول مباشرة عند فتح الموقع
             }
+
+            // الاستماع لتغييرات حالة تسجيل الدخول
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+                if (session && session.user) {
+                    updateAuthUI(session.user);
+                    closeAuthModal();
+                } else {
+                    updateAuthUI(null);
+                }
+            });
+
             loadTop3Supporters();
             loadStreamerDonorsList();
         });
