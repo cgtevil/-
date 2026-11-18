@@ -470,7 +470,7 @@
                     <span class="w-9 h-9 rounded-xl bg-libyana-600/20 border border-libyana-500/30 text-libyana-400 flex items-center justify-center font-black">🔐</span>
                     <div>
                         <h3 class="text-base font-black text-white">دخول لوحة الستريمر</h3>
-                        <p class="text-[11px] text-zinc-400">أدخل بيانات الاعتماد الخاصة بك</p>
+                        <p class="text-[11px] text-zinc-400">أدخل بيانات الاعتماد الخاصة بك للوصول</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeAuthModal()" class="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer">✕</button>
@@ -479,17 +479,17 @@
             <form onsubmit="handleStreamerLogin(event)" class="space-y-4">
                 <div>
                     <label for="auth-username" class="block text-xs font-bold text-zinc-400 mb-1.5">اسم المستخدم</label>
-                    <input type="text" id="auth-username" required autocomplete="off" placeholder="أدخل اسم المستخدم..."
+                    <input type="text" id="auth-username" required autocomplete="off" placeholder="اسم المستخدم..."
                         class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold text-sm focus:outline-none focus:border-libyana-500">
                 </div>
                 <div>
                     <label for="auth-password" class="block text-xs font-bold text-zinc-400 mb-1.5">كلمة المرور</label>
-                    <input type="password" id="auth-password" required autocomplete="off" placeholder="أدخل كلمة المرور..."
+                    <input type="password" id="auth-password" required autocomplete="current-password" placeholder="كلمة المرور..."
                         class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold text-sm focus:outline-none focus:border-libyana-500">
                 </div>
                 <button type="submit"
                     class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg shadow-libyana-600/30 cursor-pointer">
-                    دخول إلى لوحة التحكم
+                    تسجيل الدخول
                 </button>
             </form>
         </div>
@@ -521,7 +521,7 @@
             : null;
 
         const CORRECT_STREAMER_USER = 'cgtevil';
-        const CORRECT_STREAMER_PASS = 'cgtevil2025';
+        const CORRECT_STREAMER_PASS = '0918064401Ee';
         const STREAMER_PHONES = {
             libyana: '0944630534',
             almadar: '0914630534'
@@ -1162,6 +1162,12 @@
             if (!supabaseClient) return;
 
             try {
+                // التحقق من أن بيئة التشغيل ليست داخل iframe أو منع اتصال الـ WebSocket المباشر
+                if (window.self !== window.top && window.location.hostname.includes('google')) {
+                    console.info('Supabase Realtime skipped inside sandbox preview iframe.');
+                    return;
+                }
+
                 supabaseClient
                     .channel('public:donations')
                     .on(
@@ -1186,7 +1192,7 @@
                     )
                     .subscribe();
             } catch (err) {
-                console.warn('Realtime subscription skipped in restricted sandbox environment.');
+                console.warn('Realtime subscription bypassed safely.');
             }
         }
 
