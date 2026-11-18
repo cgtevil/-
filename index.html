@@ -160,14 +160,14 @@
     <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- ========================================================= -->
-        <!-- 1. واجهة الزائر الأصلية الكاملة (صفحة الدعم) -->
+        <!-- 1. واجهة الزائر النظيفة (صفحة الدعم) -->
         <!-- ========================================================= -->
         <div id="view-visitor" class="max-w-2xl mx-auto space-y-6 fade-in-up">
 
             <!-- ترويسة ملف الستريمر -->
-            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8 text-center relative overflow-hidden">
+            <section class="neon-card rounded-3xl border border-zinc-800/80 p-6 sm:p-8 text-center relative overflow-hidden shadow-xl">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-l from-libyana-600 via-purple-500 to-almadar-500"></div>
-                <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 p-1 shadow-xl neon-glow-purple mb-4">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 p-1 shadow-lg neon-glow-purple mb-4">
                     <img src="https://placehold.co/200x200/18181B/c084fc?text=CGT"
                          onerror="this.src='https://placehold.co/200x200/18181B/FFFFFF?text=CGT'"
                          alt="cgt evil"
@@ -177,12 +177,12 @@
                     <h1 id="display-streamer-name" class="text-2xl sm:text-3xl font-black text-white">cgt evil</h1>
                     <svg class="w-5 h-5 text-libyana-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                 </div>
-                <p class="text-sm font-bold text-almadar-400 mt-1.5">ادعم الستريمر برصيد الهاتف عبر التحويل اليدوي المباشر</p>
+                <p class="text-xs sm:text-sm font-semibold text-zinc-400 mt-1">ادعم الستريمر برصيد الهاتف عبر التحويل السريع وأظهر رسالتك على البث المباشر</p>
 
                 <!-- قسم قائمة Top 3 الداعمين -->
                 <div class="mt-6 pt-6 border-t border-zinc-800/80 text-right">
                     <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                        <span>🏆</span> قائمة أفضل 3 داعمين (Top 3 Supporters)
+                        <span>🏆</span> قائمة أفضل الداعمين (Top Supporters)
                     </h3>
                     <div id="top3-supporters-container" class="space-y-2">
                         <div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-400 text-center">
@@ -193,11 +193,11 @@
             </section>
 
             <!-- نموذج الدعم -->
-            <div class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8 shadow-2xl">
+            <div class="neon-card rounded-3xl border border-zinc-800/80 p-6 sm:p-8 shadow-2xl">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="text-xl font-extrabold text-white">أرسل دعمك على البث</h2>
-                        <p class="text-xs text-zinc-400 mt-0.5">اختر الشبكة، قيمة الرصيد، واسمك للحصول على كود التحويل فوراً</p>
+                        <h2 class="text-xl font-extrabold text-white">إرسال دعم للبث</h2>
+                        <p class="text-xs text-zinc-400 mt-0.5">اختر الشبكة، قيمة الرصيد، واسمك للحصول على كود التحويل</p>
                     </div>
                     <span id="network-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30">
                         ليبيانا
@@ -248,12 +248,12 @@
                     <!-- 3. الاسم والرسالة -->
                     <div class="grid grid-cols-1 gap-4">
                         <div>
-                            <label for="donor-nickname" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">3. اسمك الذي سيظهر على البث</label>
+                            <label for="donor-nickname" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">3. اسمك الظاهر على البث</label>
                             <input type="text" id="donor-nickname" maxlength="25" placeholder="مثال: أسد طرابلس" required
                                 class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/90 text-white font-semibold text-sm focus:outline-none focus:border-libyana-500 transition-all">
                         </div>
                         <div>
-                            <label for="alert-message" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">4. رسالة تظهر على البث (اختياري)</label>
+                            <label for="alert-message" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">4. رسالتك مع التنبيه (اختياري)</label>
                             <textarea id="alert-message" rows="2" maxlength="120" placeholder="اكتب رسالتك للستريمر..."
                                 class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/90 text-white font-medium text-sm focus:outline-none focus:border-libyana-500 transition-all resize-none"></textarea>
                         </div>
@@ -261,7 +261,7 @@
 
                     <button type="submit" id="submit-btn"
                         class="w-full py-4 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-libyana-600/30 transition-all cursor-pointer flex items-center justify-center gap-2">
-                        <span>عرض طريقة التحويل اليدوي</span>
+                        <span>إظهار كود التحويل السريع</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </button>
                 </form>
@@ -328,7 +328,7 @@
                             <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-libyana-600 flex items-center justify-center text-2xl shadow-lg">🎛️</span>
                             <div>
                                 <h2 class="text-2xl font-black text-white">لوحة تحكم البث والدونيشن</h2>
-                                <p class="text-xs text-zinc-400 mt-1">تستقبل الطلبات لحظياً وتعرضها على TikTok Live Studio بضغطة زر</p>
+                                <p class="text-xs text-zinc-400 mt-1">تستقبل الطلبات لحظياً وتعرضها على TikTok Live Studio تلقائياً</p>
                             </div>
                         </div>
                     </div>
@@ -367,266 +367,204 @@
                 <div class="space-y-3 mb-8">
                     <div class="flex items-center justify-between">
                         <label class="block text-sm font-black text-emerald-400 flex items-center gap-2">
-                            <span>📥</span> طلبات الدعم الواردة (اضغط "قبول" لعرضها على البث)
+                            <span>📥</span> طلبات الدعم الواردة (تُعرض تلقائياً على البث)
                         </label>
-                        <button type="button" onclick="loadStreamerDonorsList()" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs cursor-pointer">
-                            🔄 تحديث القائمة
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="resetAllSupportersData()" class="px-3 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-300 font-bold text-xs cursor-pointer">
+                                🧹 تصفير قائمة الداعمين
+                            </button>
+                            <button type="button" onclick="loadStreamerDonorsList()" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs cursor-pointer">
+                                🔄 تحديث القائمة
+                            </button>
+                        </div>
                     </div>
-                    <div class="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 max-h-96 overflow-y-auto space-y-3" id="streamer-donors-list-container">
-                        <div class="text-xs text-zinc-500 text-center py-6">لا توجد سجلات دعم مسجلة حتى الآن.</div>
+                    <div id="streamer-donors-list" class="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                        <div class="p-4 rounded-2xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-400 text-center">
+                            لا توجد طلبات دعم حالياً.
+                        </div>
                     </div>
                 </div>
 
-                <!-- إعدادات المظهر والفيديو -->
-                <div class="space-y-5 pt-6 border-t border-zinc-800">
-                    <h3 class="text-sm font-black text-white">⚙️ تخصيص الهوية وفيديو التنبيه</h3>
-
+                <!-- إعدادات التنبيه والملف الشخصي -->
+                <div class="space-y-4 pt-6 border-t border-zinc-800/80">
+                    <h3 class="text-sm font-black text-purple-300 flex items-center gap-2">
+                        <span>🎬</span> تخصيص التنبيه والملف الشخصي
+                    </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="space-y-1.5">
-                            <label for="streamer-display-name" class="block text-xs font-bold text-zinc-300">👑 اسم الستريمر الظاهر</label>
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-400 mb-1.5">الاسم المعروض للستريمر</label>
                             <input type="text" id="streamer-display-name" value="cgt evil"
-                                class="w-full px-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-white font-bold text-sm focus:outline-none focus:border-libyana-500">
+                                class="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white font-bold text-sm focus:outline-none focus:border-libyana-500">
                         </div>
-                        <div class="space-y-1.5">
-                            <label for="custom-donation-link" class="block text-xs font-bold text-zinc-300">🔗 رابط صفحة الدعم للجمهور</label>
-                            <div class="flex gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-400 mb-1.5">رابط صفحة الدعم للجمهور</label>
+                            <div class="flex items-center gap-2">
                                 <input type="text" id="custom-donation-link" readonly dir="ltr"
-                                    class="w-full px-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-zinc-300 font-mono text-xs">
-                                <button type="button" onclick="copyCustomSupportLink()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold shrink-0 cursor-pointer">نسخ</button>
+                                    class="flex-1 px-3 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 font-mono text-xs select-all">
+                                <button type="button" onclick="copyCustomSupportLink()" class="px-3 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs cursor-pointer shrink-0">نسخ</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <label for="streamer-alert-video" class="block text-xs font-bold text-amber-400 flex items-center gap-2">
-                            <span>🎬</span> فيديو أو صورة GIF عند ظهور التنبيه (رابط مباشر أو رفع ملف)
-                        </label>
-                        <div class="flex flex-col sm:flex-row items-center gap-3">
-                            <input type="text" id="streamer-alert-video" value="" placeholder="https://example.com/alert.mp4 أو ارفع ملفاً..." dir="ltr"
-                                class="w-full px-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-white font-mono text-xs focus:outline-none focus:border-amber-500">
-                            <label class="w-full sm:w-auto px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-amber-400 font-bold text-xs cursor-pointer text-center shrink-0">
-                                📁 رفع ملف
-                                <input type="file" id="streamer-video-file-input" accept="video/*,image/gif" class="hidden" onchange="handleVideoFileUpload(event)">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-400 mb-1.5">فيديو أو صورة GIF عند ظهور التنبيه (رابط مباشر أو رفع ملف يصل إلى 5MB)</label>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="streamer-alert-video" dir="ltr" placeholder="https://example.com/alert.mp4"
+                                class="flex-1 px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 font-mono text-xs focus:outline-none focus:border-libyana-500">
+                            <label class="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs cursor-pointer flex items-center justify-center gap-1.5 shrink-0">
+                                <span>📁 رفع ملف (حتى 5MB)</span>
+                                <input type="file" accept="video/mp4,video/webm,image/gif" onchange="handleVideoFileUpload(event)" class="hidden">
                             </label>
                         </div>
                     </div>
 
-                    <div class="pt-4 flex flex-col sm:flex-row items-center gap-3">
-                        <button type="button" onclick="saveStreamerProfile()"
-                            class="w-full sm:flex-1 py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg shadow-libyana-600/30 transition-all cursor-pointer">
-                            💾 حفظ الإعدادات وتطبيقها
-                        </button>
-                        <button type="button" onclick="switchView('visitor')"
-                            class="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-bold text-sm cursor-pointer">
-                            العودة لصفحة الدعم
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- ========================================================= -->
-        <!-- 3. لوحة إعدادات الحساب وتسجيل الدخول بكلمة المرور الخاصة -->
-        <!-- ========================================================= -->
-        <div id="view-account" class="hidden space-y-6 fade-in-up max-w-xl mx-auto">
-            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-10 relative overflow-hidden shadow-2xl">
-                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-l from-almadar-500 via-libyana-500 to-purple-600"></div>
-
-                <div class="text-center space-y-2 pb-6 mb-6 border-b border-zinc-800/80">
-                    <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-3xl shadow-lg">👤</div>
-                    <h2 class="text-2xl font-black text-white">تسجيل دخول الستريمر</h2>
-                    <p class="text-xs text-zinc-400">أدخل اسم المستخدم وكلمة المرور الخاصة بقناتك (`cgtevil`)</p>
-                </div>
-
-                <!-- حالة عدم تسجيل الدخول -->
-                <div id="account-logged-out" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-zinc-400 mb-1.5">اسم مستخدم الستريمر (Username)</label>
-                        <input type="text" id="acc-username-input" value="" placeholder="أدخل اسم المستخدم..." dir="ltr"
-                            class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-zinc-400 mb-1.5">كلمة المرور (Password)</label>
-                        <input type="password" id="acc-password-input" value="" placeholder="أدخل كلمة المرور..." dir="ltr"
-                            class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500">
-                    </div>
                     <div class="pt-2">
-                        <button type="button" onclick="handleStreamerCustomLogin('acc')"
-                            class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer">
-                            🔓 تسجيل دخول الستريمر وحفظ الجلسة
+                        <button type="button" onclick="saveStreamerSettings()"
+                            class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg shadow-libyana-600/25 cursor-pointer">
+                            💾 حفظ الإعدادات
                         </button>
                     </div>
-                </div>
-
-                <!-- حالة تسجيل الدخول -->
-                <div id="account-logged-in" class="hidden space-y-6">
-                    <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center gap-4">
-                        <img id="account-user-avatar" src="https://placehold.co/100x100/18181B/34d399?text=CGT" alt="Avatar"
-                            class="w-14 h-14 rounded-xl object-cover border border-zinc-700">
-                        <div class="overflow-hidden">
-                            <h3 id="account-user-name" class="text-base font-black text-white truncate">cgt evil</h3>
-                            <p id="account-user-email" class="text-xs text-zinc-400 font-mono truncate">حساب الستريمر الرئيسي (محفوظ)</p>
-                        </div>
-                    </div>
-
-                    <button type="button" onclick="switchView('settings')"
-                        class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer">
-                        ⚙️ الانتقال إلى لوحة تحكم البث
-                    </button>
-
-                    <button type="button" onclick="logoutStreamerUser()"
-                        class="w-full py-3.5 rounded-2xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 font-bold text-sm transition-all cursor-pointer">
-                        تسجيل الخروج وحذف البيانات المحفوظة
-                    </button>
-                </div>
-
-                <div class="pt-6 mt-6 border-t border-zinc-800/80 text-center">
-                    <button type="button" onclick="switchView('visitor')"
-                        class="text-xs text-zinc-400 hover:text-white font-bold cursor-pointer">
-                        ← العودة إلى صفحة الدعم
-                    </button>
                 </div>
             </section>
         </div>
 
+        <!-- ========================================================= -->
+        <!-- 3. صفحة الحساب -->
+        <!-- ========================================================= -->
+        <div id="view-account" class="hidden max-w-lg mx-auto fade-in-up">
+            <section class="neon-card rounded-3xl border border-zinc-800 p-6 sm:p-8 text-center space-y-5 shadow-2xl">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-purple-600 flex items-center justify-center text-2xl font-black text-white shadow-lg">
+                    👤
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-white" id="account-username-display">حساب الستريمر</h2>
+                    <p class="text-xs text-zinc-400 mt-1" id="account-status-subtitle">سجل الدخول للوصول إلى لوحة التحكم وإدارة التنبيهات</p>
+                </div>
+                <div id="account-logged-out-actions" class="pt-2">
+                    <button type="button" onclick="openAuthModal()"
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 text-white font-extrabold text-sm shadow-lg cursor-pointer">
+                        🔐 تسجيل الدخول للوحة الستريمر
+                    </button>
+                </div>
+                <div id="account-logged-in-actions" class="hidden space-y-3 pt-2">
+                    <button type="button" onclick="switchView('settings')"
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 text-white font-extrabold text-sm shadow-lg cursor-pointer">
+                        ⚙️ الانتقال إلى لوحة التحكم
+                    </button>
+                    <button type="button" onclick="logoutStreamerUser()"
+                        class="w-full py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-red-400 font-bold text-xs cursor-pointer">
+                        🚪 تسجيل الخروج
+                    </button>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- ========================================================= -->
-    <!-- شاشة تنبيهات البث المباشر (OBS / TikTok Studio Alert Overlay) -->
+    <!-- نافذة تسجيل دخول الستريمر (Auth Modal) -->
     <!-- ========================================================= -->
-    <div id="obs-alert-overlay" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none hidden p-4">
-        <div id="obs-alert-box" class="neon-card border-2 border-libyana-500 px-8 py-6 rounded-3xl text-center shadow-2xl neon-glow-purple alert-pop-in max-w-lg w-full space-y-4">
-            <div id="obs-media-container" class="w-full max-h-56 overflow-hidden rounded-2xl flex items-center justify-center bg-zinc-950/80 py-3">
-                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-4xl shadow-lg animate-bounce">⚡</div>
-            </div>
-            <div>
-                <div class="inline-block px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-1">
-                    🎉 دعم جديد على البث!
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="neon-card w-full max-w-md p-6 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-libyana-600/20 border border-libyana-500/30 text-libyana-400 flex items-center justify-center font-black">🔐</span>
+                    <div>
+                        <h3 class="text-base font-black text-white">دخول لوحة الستريمر</h3>
+                        <p class="text-[11px] text-zinc-400">أدخل بيانات الاعتماد الخاصة بك</p>
+                    </div>
                 </div>
-                <h2 id="obs-donor-name" class="text-3xl font-black text-white mb-1 drop-shadow">اسم الداعم</h2>
-                <p id="obs-donation-info" class="text-xl font-extrabold text-libyana-400 mb-3">دعم بمبلغ 10 د.ل</p>
-                <p id="obs-donor-message" class="text-base font-bold text-zinc-100 bg-zinc-950/90 px-5 py-3.5 rounded-2xl border border-zinc-800 shadow-inner">رسالة الداعم هنا...</p>
+                <button type="button" onclick="closeAuthModal()" class="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer">✕</button>
             </div>
+
+            <form onsubmit="handleStreamerLogin(event)" class="space-y-4">
+                <div>
+                    <label for="auth-username" class="block text-xs font-bold text-zinc-400 mb-1.5">اسم المستخدم</label>
+                    <input type="text" id="auth-username" required autocomplete="off" placeholder="أدخل اسم المستخدم..."
+                        class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold text-sm focus:outline-none focus:border-libyana-500">
+                </div>
+                <div>
+                    <label for="auth-password" class="block text-xs font-bold text-zinc-400 mb-1.5">كلمة المرور</label>
+                    <input type="password" id="auth-password" required autocomplete="off" placeholder="أدخل كلمة المرور..."
+                        class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold text-sm focus:outline-none focus:border-libyana-500">
+                </div>
+                <button type="submit"
+                    class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg shadow-libyana-600/30 cursor-pointer">
+                    دخول إلى لوحة التحكم
+                </button>
+            </form>
         </div>
     </div>
 
     <!-- ========================================================= -->
-    <!-- نافذة تسجيل الدخول المنبثقة للستريمر -->
+    <!-- حاوية عرض التنبيهات المباشرة (Overlay Alert Box) -->
     <!-- ========================================================= -->
-    <div id="supabase-auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
-        <div class="neon-card w-full max-w-md p-7 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
-            <button type="button" onclick="closeAuthModal()" title="إغلاق"
-                class="absolute top-5 left-5 w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer">
-                ✕
-            </button>
-
-            <div class="text-center space-y-2">
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-2xl shadow-xl">🔐</div>
-                <h3 class="text-xl font-black text-white">تسجيل دخول الستريمر</h3>
-                <p class="text-xs text-zinc-400">أدخل اسم المستخدم وكلمة المرور الخاصة بقناتك (`cgtevil`)</p>
-            </div>
-
-            <div class="space-y-3.5 text-right">
-                <div>
-                    <label for="modal-username-input" class="block text-xs font-bold text-zinc-400 mb-1">اسم المستخدم (Username)</label>
-                    <input type="text" id="modal-username-input" value="" placeholder="أدخل اسم المستخدم..." dir="ltr"
-                        class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500 transition-all">
+    <div id="live-alert-overlay" class="fixed inset-0 z-[80] flex items-center justify-center pointer-events-none p-6 hidden">
+        <div id="live-alert-card" class="max-w-md w-full rounded-3xl bg-zinc-950/95 border-2 border-libyana-500 p-5 text-center shadow-2xl neon-glow-purple alert-pop-in space-y-3">
+            <div id="alert-media-container" class="w-full max-h-56 rounded-2xl overflow-hidden bg-black flex items-center justify-center mx-auto hidden"></div>
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-libyana-600/25 border border-libyana-500/40 text-libyana-300 text-xs font-black">
+                    <span>⚡ دعم جديد</span>
+                    <span>•</span>
+                    <span id="alert-amount-display">10 د.ل</span>
                 </div>
-                <div>
-                    <label for="modal-password-input" class="block text-xs font-bold text-zinc-400 mb-1">كلمة المرور (Password)</label>
-                    <input type="password" id="modal-password-input" value="" placeholder="أدخل كلمة المرور..." dir="ltr"
-                        class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 text-white text-sm focus:outline-none focus:border-libyana-500 transition-all">
-                </div>
-
-                <p id="modal-auth-message" class="text-xs font-bold text-center min-h-[18px]"></p>
-
-                <div class="pt-1">
-                    <button type="button" onclick="handleStreamerCustomLogin('modal')"
-                        class="w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer">
-                        🔓 تسجيل الدخول وحفظ البيانات تلقائياً
-                    </button>
-                </div>
+                <h2 id="alert-donor-name" class="text-2xl font-black text-white tracking-tight">اسم الداعم</h2>
+                <p id="alert-donor-message" class="text-sm font-semibold text-zinc-300 break-words"></p>
             </div>
         </div>
     </div>
 
     <script>
-        const CORRECT_STREAMER_USER = 'cgtevil';
-        const CORRECT_STREAMER_PASS = '0918064401Ee';
-
         const SUPABASE_URL = 'https://pqnfczfdaouqkygiohdo.supabase.co';
-        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_cR8G0ycCZKwy4w8RWIDWQw_fGPUF-Av';
-        
-        let supabaseClient = null;
-        try {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-        } catch (e) {}
+        const SUPABASE_ANON_KEY = 'sb_publishable_cR8G0ycCZKwy4w8RWIDWQw_fGPUF-Av';
+        const supabaseClient = (typeof supabase !== 'undefined' && SUPABASE_URL !== 'https://placeholder.supabase.co')
+            ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            : null;
 
-        let selectedNetwork = 'libyana';
-        let currentAmount = 10;
+        const CORRECT_STREAMER_USER = 'cgtevil';
+        const CORRECT_STREAMER_PASS = 'cgtevil2025';
+        const STREAMER_PHONES = {
+            libyana: '0944630534',
+            almadar: '0914630534'
+        };
+        const DEFAULT_SUKUNA_VIDEO_URL = 'https://media.tenor.com/Z4G1t_r7jE0AAAPo/sukuna-jujutsu-kaisen.mp4';
+
         let currentUser = null;
+        let selectedNetwork = 'libyana';
         let currentStreamerUsername = 'cgtevil';
         let isWidgetMode = false;
-
-        let streamerData = {
-            displayName: 'cgt evil',
-            alertVideo: localStorage.getItem('cgtevil_alert_video') || ''
+        let alertQueue = [];
+        let isAlertPlaying = false;
+        let localDonationsCache = [];
+        let playedAlertIds = new Set();
+        let cloudStreamerSettings = {
+            display_name: 'cgt evil',
+            alert_video_url: DEFAULT_SUKUNA_VIDEO_URL
         };
 
-        // قائمة تبرعات فارغة ونظيفة للزوار الجدد لتبدأ حقيقية 100%
-        let localDonationsStore = JSON.parse(localStorage.getItem('cgtevil_donations_v2') || 'null') || [];
-
-        function persistLocalStore() {
-            localStorage.setItem('cgtevil_donations_v2', JSON.stringify(localDonationsStore));
-        }
-
-        const alertQueue = [];
-        let isAlertPlaying = false;
-        const playedAlertIds = new Set();
-
-        function playDefaultChime() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const now = ctx.currentTime;
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((freq, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                    gain.gain.setValueAtTime(0.16, now + i * 0.1);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.42);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(now + i * 0.1);
-                    osc.stop(now + i * 0.1 + 0.45);
-                });
-            } catch (e) {}
-        }
-
-        function showToast(message, type = 'success') {
+        function showToast(message, type = 'info') {
             if (isWidgetMode) return;
             const container = document.getElementById('toast-container');
             if (!container) return;
 
+            const colors = {
+                success: 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200',
+                error: 'bg-red-950/95 border-red-500/50 text-red-200',
+                info: 'bg-zinc-900/95 border-purple-500/50 text-purple-200'
+            };
+
             const toast = document.createElement('div');
-            const borderColor = type === 'error' ? 'border-red-500/50 text-red-300' : 'border-emerald-500/50 text-emerald-300';
-            const icon = type === 'error' ? '⚠️' : '✅';
-
-            toast.className = `toast-anim neon-card border ${borderColor} px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2.5 max-w-xs`;
-            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
-
+            toast.className = `toast-anim px-4 py-3 rounded-2xl border text-xs font-extrabold shadow-2xl max-w-sm ${colors[type] || colors.info}`;
+            toast.textContent = message;
             container.appendChild(toast);
+
             setTimeout(() => {
                 toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                toast.style.transition = 'all 0.25s ease';
+                toast.style.transition = 'opacity 0.25s ease';
                 setTimeout(() => toast.remove(), 250);
             }, 3500);
         }
 
-        function fallbackCopyText(text, successMsg) {
+        function copyTextFallback(text) {
             const tempInput = document.createElement('textarea');
             tempInput.value = text;
             tempInput.style.position = 'fixed';
@@ -635,629 +573,632 @@
             tempInput.select();
             try {
                 document.execCommand('copy');
-                showToast(successMsg);
-            } catch (err) {
-                showToast('تعذر النسخ التلقائي، يرجى النسخ يدوياً', 'error');
-            }
+            } catch (e) {}
             document.body.removeChild(tempInput);
-        }
-
-        function openAuthModal() {
-            const modal = document.getElementById('supabase-auth-modal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeAuthModal() {
-            const modal = document.getElementById('supabase-auth-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function updateAuthUI(user) {
-            currentUser = user;
-            const headerLoginBtn = document.getElementById('header-login-btn');
-            const headerAccountLabel = document.getElementById('header-account-label');
-            const accountLoggedIn = document.getElementById('account-logged-in');
-            const accountLoggedOut = document.getElementById('account-logged-out');
-            const userNameEl = document.getElementById('account-user-name');
-
-            if (user) {
-                if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
-                if (headerAccountLabel) headerAccountLabel.innerText = '👤 cgt evil';
-                if (accountLoggedIn) accountLoggedIn.classList.remove('hidden');
-                if (accountLoggedOut) accountLoggedOut.classList.add('hidden');
-                if (userNameEl) userNameEl.innerText = 'cgt evil (الستريمر)';
-
-                const savedProfile = JSON.parse(localStorage.getItem('streamer_profile_cgtevil') || 'null');
-                if (savedProfile) {
-                    streamerData.displayName = savedProfile.displayName || 'cgt evil';
-                    streamerData.alertVideo = savedProfile.alertVideo || '';
-                    localStorage.setItem('cgtevil_alert_video', streamerData.alertVideo);
-                    const nameInput = document.getElementById('streamer-display-name');
-                    const videoInput = document.getElementById('streamer-alert-video');
-                    const displayNameEl = document.getElementById('display-streamer-name');
-                    if (nameInput) nameInput.value = streamerData.displayName;
-                    if (videoInput) videoInput.value = streamerData.alertVideo;
-                    if (displayNameEl) displayNameEl.innerText = streamerData.displayName;
-                }
-            } else {
-                if (headerLoginBtn) headerLoginBtn.classList.remove('hidden');
-                if (headerAccountLabel) headerAccountLabel.innerText = '👤 الحساب';
-                if (accountLoggedIn) accountLoggedIn.classList.add('hidden');
-                if (accountLoggedOut) accountLoggedOut.classList.remove('hidden');
-            }
-        }
-
-        function handleStreamerCustomLogin(source) {
-            const usernameInput = document.getElementById(source === 'modal' ? 'modal-username-input' : 'acc-username-input');
-            const passwordInput = document.getElementById(source === 'modal' ? 'modal-password-input' : 'acc-password-input');
-            const msgEl = document.getElementById('modal-auth-message');
-
-            const uVal = usernameInput?.value.trim();
-            const pVal = passwordInput?.value.trim();
-
-            if (uVal === CORRECT_STREAMER_USER && pVal === CORRECT_STREAMER_PASS) {
-                const streamerSession = { username: uVal, loggedInAt: Date.now() };
-                localStorage.setItem('cgtevil_streamer_session', JSON.stringify(streamerSession));
-                
-                currentUser = { username: uVal };
-                updateAuthUI(currentUser);
-                closeAuthModal();
-                switchView('settings');
-                showToast('🔓 تم تسجيل دخول الستريمر بنجاح وتم حفظ الجلسة تلقائياً!');
-            } else {
-                if (msgEl && source === 'modal') {
-                    msgEl.className = 'text-xs font-bold text-center text-red-400';
-                    msgEl.innerText = 'خطأ: اسم المستخدم أو كلمة المرور غير صحيحة.';
-                }
-                showToast('خطأ: كلمة المرور أو اسم المستخدم غير صحيح', 'error');
-            }
-        }
-
-        function logoutStreamerUser() {
-            localStorage.removeItem('cgtevil_streamer_session');
-            currentUser = null;
-            updateAuthUI(null);
-            switchView('visitor');
-            showToast('تم تسجيل الخروج بنجاح وحذف الجلسة المحفوظة');
-        }
-
-        function switchView(viewName) {
-            const vVisitor = document.getElementById('view-visitor');
-            const vSettings = document.getElementById('view-settings');
-            const vAccount = document.getElementById('view-account');
-            const navVisitor = document.getElementById('nav-visitor');
-            const navSettings = document.getElementById('nav-settings');
-
-            if (vVisitor) vVisitor.classList.add('hidden');
-            if (vSettings) vSettings.classList.add('hidden');
-            if (vAccount) vAccount.classList.add('hidden');
-
-            const activeNavClass = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap bg-gradient-to-l from-libyana-600 to-purple-600 text-white shadow-md flex items-center justify-center gap-1.5";
-            const inactiveNavClass = "flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60 flex items-center justify-center gap-1.5";
-
-            if (viewName === 'visitor') {
-                if (vVisitor) vVisitor.classList.remove('hidden');
-                if (navVisitor) navVisitor.className = activeNavClass;
-                if (navSettings) navSettings.className = inactiveNavClass;
-            }
-            if (viewName === 'settings') {
-                if (currentUser) {
-                    if (vSettings) vSettings.classList.remove('hidden');
-                    if (navSettings) navSettings.className = activeNavClass;
-                    if (navVisitor) navVisitor.className = inactiveNavClass;
-                    loadStreamerDonorsList();
-                } else {
-                    openAuthModal();
-                    return;
-                }
-            }
-            if (viewName === 'account') {
-                if (vAccount) vAccount.classList.remove('hidden');
-                if (navVisitor) navVisitor.className = inactiveNavClass;
-                if (navSettings) navSettings.className = inactiveNavClass;
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function handleProtectedSettingsClick() {
-            if (currentUser) {
-                switchView('settings');
-            } else {
-                openAuthModal();
-            }
-        }
-
-        function toggleWidgetPreview(enable) {
-            isWidgetMode = enable;
-            const header = document.getElementById('main-header');
-            const main = document.getElementById('main-content');
-            const exitBar = document.getElementById('widget-preview-exit-bar');
-
-            if (enable) {
-                document.body.classList.add('widget-mode');
-                if (header) header.classList.add('hidden');
-                if (main) main.classList.add('hidden');
-                if (exitBar) exitBar.classList.remove('hidden');
-                sendTestAlert();
-            } else {
-                document.body.classList.remove('widget-mode');
-                if (header) header.classList.remove('hidden');
-                if (main) main.classList.remove('hidden');
-                if (exitBar) exitBar.classList.add('hidden');
-            }
         }
 
         function parseUrlAndInitMode() {
             const urlParams = new URLSearchParams(window.location.search);
             isWidgetMode = urlParams.get('widget') === 'true';
 
-            const path = window.location.pathname;
-            const match = path.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                currentStreamerUsername = match[1].toLowerCase();
-            } else {
-                const hash = window.location.hash.replace('#', '');
-                if (hash && hash.length > 0 && !hash.includes('access_token')) {
-                    const cleanHash = hash.replace(/^\/?d\//, '');
-                    if (cleanHash) currentStreamerUsername = cleanHash.toLowerCase();
-                }
+            const hash = window.location.hash || '';
+            if (hash.startsWith('#/d/')) {
+                const slug = hash.replace('#/d/', '').trim();
+                if (slug) currentStreamerUsername = slug;
             }
 
-            const baseUrl = window.location.origin + window.location.pathname;
-            const publicUrl = `${baseUrl}#/d/${currentStreamerUsername}`;
-            const widgetUrl = `${baseUrl}?widget=true#/d/${currentStreamerUsername}`;
+            const savedName = localStorage.getItem('cgtevil_display_name');
+            if (savedName) {
+                cloudStreamerSettings.display_name = savedName;
+                const displayNameEl = document.getElementById('display-streamer-name');
+                const inputNameEl = document.getElementById('streamer-display-name');
+                if (displayNameEl) displayNameEl.textContent = savedName;
+                if (inputNameEl) inputNameEl.value = savedName;
+            }
 
-            const customLinkInput = document.getElementById('custom-donation-link');
+            const savedVideo = localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
+            cloudStreamerSettings.alert_video_url = savedVideo;
+            const videoInputEl = document.getElementById('streamer-alert-video');
+            if (videoInputEl) videoInputEl.value = savedVideo;
+
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            const widgetUrl = `${baseUrl}?widget=true#/d/${currentStreamerUsername}`;
+            const supportUrl = `${baseUrl}#/d/${currentStreamerUsername}`;
+
             const widgetPreviewInput = document.getElementById('widget-url-preview');
-            if (customLinkInput) customLinkInput.value = publicUrl;
             if (widgetPreviewInput) widgetPreviewInput.value = widgetUrl;
+
+            const customDonationInput = document.getElementById('custom-donation-link');
+            if (customDonationInput) customDonationInput.value = supportUrl;
 
             if (isWidgetMode) {
                 document.body.classList.add('widget-mode');
                 const header = document.getElementById('main-header');
-                const main = document.getElementById('main-content');
-                const authModal = document.getElementById('supabase-auth-modal');
-                if (header) header.remove();
-                if (main) main.remove();
-                if (authModal) authModal.remove();
+                const mainContent = document.getElementById('main-content');
+                if (header) header.classList.add('hidden');
+                if (mainContent) mainContent.classList.add('hidden');
             }
+        }
+
+        async function loadStreamerCloudSettings() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('streamer_settings')
+                    .select('*')
+                    .eq('streamer_username', currentStreamerUsername)
+                    .maybeSingle();
+
+                if (!error && data) {
+                    if (data.display_name) {
+                        cloudStreamerSettings.display_name = data.display_name;
+                        localStorage.setItem('cgtevil_display_name', data.display_name);
+                        const displayNameEl = document.getElementById('display-streamer-name');
+                        const inputNameEl = document.getElementById('streamer-display-name');
+                        if (displayNameEl) displayNameEl.textContent = data.display_name;
+                        if (inputNameEl) inputNameEl.value = data.display_name;
+                    }
+                    if (data.alert_video_url) {
+                        cloudStreamerSettings.alert_video_url = data.alert_video_url;
+                        localStorage.setItem('cgtevil_alert_video', data.alert_video_url);
+                        const videoInputEl = document.getElementById('streamer-alert-video');
+                        if (videoInputEl) videoInputEl.value = data.alert_video_url;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function switchView(viewName) {
+            const views = ['visitor', 'settings', 'account'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById(`view-${viewName}`);
+            if (target) target.classList.remove('hidden');
+
+            const navVisitor = document.getElementById('nav-visitor');
+            const navSettings = document.getElementById('nav-settings');
+
+            const activeClasses = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap bg-gradient-to-l from-libyana-600 to-purple-600 text-white shadow-md flex items-center justify-center gap-1.5';
+            const inactiveClasses = 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60 flex items-center justify-center gap-1.5';
+
+            if (navVisitor) navVisitor.className = viewName === 'visitor' ? activeClasses : inactiveClasses;
+            if (navSettings) navSettings.className = viewName === 'settings' ? activeClasses : inactiveClasses;
+
+            if (viewName === 'settings') {
+                loadStreamerDonorsList();
+            }
+        }
+
+        function updateAuthUIState() {
+            const isLogged = sessionStorage.getItem('cgtevil_logged_in') === 'true';
+            currentUser = isLogged ? { username: CORRECT_STREAMER_USER } : null;
+
+            const loginBtn = document.getElementById('header-login-btn');
+            const accountLabel = document.getElementById('header-account-label');
+            const loggedOutBox = document.getElementById('account-logged-out-actions');
+            const loggedInBox = document.getElementById('account-logged-in-actions');
+            const accountTitle = document.getElementById('account-username-display');
+            const accountSubtitle = document.getElementById('account-status-subtitle');
+
+            if (isLogged) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (accountLabel) accountLabel.textContent = `👤 ${CORRECT_STREAMER_USER}`;
+                if (loggedOutBox) loggedOutBox.classList.add('hidden');
+                if (loggedInBox) loggedInBox.classList.remove('hidden');
+                if (accountTitle) accountTitle.textContent = `مرحباً، ${CORRECT_STREAMER_USER}`;
+                if (accountSubtitle) accountSubtitle.textContent = 'أنت متصل الآن بصلاحيات الستريمر الكاملة';
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (accountLabel) accountLabel.textContent = '👤 الحساب';
+                if (loggedOutBox) loggedOutBox.classList.remove('hidden');
+                if (loggedInBox) loggedInBox.classList.add('hidden');
+                if (accountTitle) accountTitle.textContent = 'حساب الستريمر';
+                if (accountSubtitle) accountSubtitle.textContent = 'سجل الدخول للوصول إلى لوحة التحكم وإدارة التنبيهات';
+            }
+        }
+
+        function openAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) modal.classList.remove('hidden');
+            const userInput = document.getElementById('auth-username');
+            if (userInput) userInput.focus();
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handleProtectedSettingsClick() {
+            if (sessionStorage.getItem('cgtevil_logged_in') === 'true') {
+                switchView('settings');
+            } else {
+                openAuthModal();
+            }
+        }
+
+        function handleStreamerLogin(event) {
+            event.preventDefault();
+            const username = (document.getElementById('auth-username').value || '').trim();
+            const password = (document.getElementById('auth-password').value || '').trim();
+
+            if (username === CORRECT_STREAMER_USER && password === CORRECT_STREAMER_PASS) {
+                sessionStorage.setItem('cgtevil_logged_in', 'true');
+                updateAuthUIState();
+                closeAuthModal();
+                switchView('settings');
+                showToast('تم تسجيل الدخول إلى لوحة الستريمر بنجاح!', 'success');
+            } else {
+                showToast('اسم المستخدم أو كلمة المرور غير صحيحة.', 'error');
+            }
+        }
+
+        function logoutStreamerUser() {
+            sessionStorage.removeItem('cgtevil_logged_in');
+            updateAuthUIState();
+            switchView('visitor');
+            showToast('تم تسجيل الخروج بنجاح.', 'info');
         }
 
         function selectNetworkCard(network) {
             selectedNetwork = network;
-            const libyanaCard = document.getElementById('card-select-libyana');
-            const almadarCard = document.getElementById('card-select-almadar');
-            const networkBadge = document.getElementById('network-badge');
+            const libCard = document.getElementById('card-select-libyana');
+            const madCard = document.getElementById('card-select-almadar');
+            const badge = document.getElementById('network-badge');
             const submitBtn = document.getElementById('submit-btn');
 
             if (network === 'libyana') {
-                if (libyanaCard) libyanaCard.className = "p-4 rounded-2xl border-2 border-libyana-500 bg-libyana-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-purple";
-                if (almadarCard) almadarCard.className = "p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3";
-                if (networkBadge) {
-                    networkBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30";
-                    networkBadge.innerText = "ليبيانا";
-                }
-                if (submitBtn) submitBtn.className = "w-full py-4 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-libyana-600/30 transition-all cursor-pointer flex items-center justify-center gap-2";
+                libCard.className = 'p-4 rounded-2xl border-2 border-libyana-500 bg-libyana-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-purple';
+                madCard.className = 'p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-libyana-600/20 text-libyana-400 border border-libyana-500/30';
+                badge.textContent = 'ليبيانا';
+                submitBtn.className = 'w-full py-4 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-libyana-600/30 transition-all cursor-pointer flex items-center justify-center gap-2';
             } else {
-                if (almadarCard) almadarCard.className = "p-4 rounded-2xl border-2 border-almadar-500 bg-almadar-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-green";
-                if (libyanaCard) libyanaCard.className = "p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3";
-                if (networkBadge) {
-                    networkBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-almadar-600/20 text-almadar-400 border border-almadar-500/30";
-                    networkBadge.innerText = "المدار الجديد";
-                }
-                if (submitBtn) submitBtn.className = "w-full py-4 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-almadar-600/30 transition-all cursor-pointer flex items-center justify-center gap-2";
+                madCard.className = 'p-4 rounded-2xl border-2 border-almadar-500 bg-almadar-600/15 text-right transition-all cursor-pointer flex items-center gap-3 neon-glow-green';
+                libCard.className = 'p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 text-right transition-all cursor-pointer flex items-center gap-3';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-almadar-600/20 text-almadar-400 border border-almadar-500/30';
+                badge.textContent = 'المدار الجديد';
+                submitBtn.className = 'w-full py-4 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 hover:opacity-95 text-white font-extrabold text-base shadow-lg shadow-almadar-600/30 transition-all cursor-pointer flex items-center justify-center gap-2';
             }
+            selectAmount(Number(document.getElementById('custom-amount').value) || 10);
         }
 
         function selectAmount(amount) {
-            currentAmount = amount;
-            const customInput = document.getElementById('custom-amount');
-            if (customInput) customInput.value = amount;
+            const input = document.getElementById('custom-amount');
+            if (input) input.value = amount;
+
+            const isLibyana = selectedNetwork === 'libyana';
+            const activeClass = isLibyana
+                ? 'amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all cursor-pointer'
+                : 'amount-btn py-2.5 rounded-xl border-2 border-almadar-500 bg-almadar-600/20 text-almadar-400 font-bold text-sm transition-all cursor-pointer';
+            const inactiveClass = 'amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all cursor-pointer';
 
             document.querySelectorAll('.amount-btn').forEach(btn => {
-                const btnAmount = parseInt(btn.getAttribute('data-amount'));
-                if (btnAmount === amount) {
-                    btn.className = "amount-btn py-2.5 rounded-xl border-2 border-libyana-500 bg-libyana-600/20 text-libyana-400 font-bold text-sm transition-all cursor-pointer";
-                } else {
-                    btn.className = "amount-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-sm hover:border-zinc-600 transition-all cursor-pointer";
-                }
+                btn.className = Number(btn.dataset.amount) === Number(amount) ? activeClass : inactiveClass;
             });
         }
 
         function handleSupportSubmit(event) {
             event.preventDefault();
-            const nickname = document.getElementById('donor-nickname')?.value.trim() || 'مشجع';
-            const message = document.getElementById('alert-message')?.value.trim() || 'دعم مباشر للبث';
-            const customInputVal = document.getElementById('custom-amount')?.value;
-            const amount = customInputVal ? parseInt(customInputVal) || 10 : currentAmount;
+            const amount = Number(document.getElementById('custom-amount').value);
+            const nickname = (document.getElementById('donor-nickname').value || '').trim();
+            const message = (document.getElementById('alert-message').value || '').trim();
 
-            const modal = document.getElementById('manual-transfer-modal');
-            const modalIcon = document.getElementById('m-modal-icon');
-            const modalTitle = document.getElementById('m-modal-title');
-            const modalNumber = document.getElementById('m-modal-number');
-            const modalCode = document.getElementById('m-modal-code');
-            const modalDialLink = document.getElementById('m-modal-dial-link');
-            const modalCopyBtn = document.getElementById('m-modal-copy-code-btn');
-            const modalConfirmBtn = document.getElementById('m-modal-confirm-btn');
-
-            let receiverNum = selectedNetwork === 'libyana' ? '0944630534' : '0917043842';
-            let transferCode = '';
-
-            if (selectedNetwork === 'libyana') {
-                transferCode = `*122*218${receiverNum.replace(/^0/, '')}*${amount}#`;
-                if (modalIcon) {
-                    modalIcon.className = "w-10 h-10 rounded-xl bg-libyana-600 text-white flex items-center justify-center font-black";
-                    modalIcon.innerText = "L";
-                }
-                if (modalTitle) modalTitle.innerText = "طريقة التحويل اليدوي - ليبيانا";
-                if (modalCode) modalCode.className = "flex-1 px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-libyana-400 font-mono font-bold text-sm select-all";
-                if (modalCopyBtn) modalCopyBtn.className = "px-4 py-3 rounded-xl bg-libyana-600 hover:bg-libyana-500 text-white font-bold text-xs shrink-0 cursor-pointer";
-                if (modalConfirmBtn) modalConfirmBtn.className = "w-full py-3.5 rounded-2xl bg-gradient-to-l from-libyana-600 to-purple-600 text-white font-extrabold text-sm shadow-lg shadow-libyana-600/30 transition-all cursor-pointer";
-            } else {
-                transferCode = `*140*4*1*${amount}*${receiverNum}#`;
-                if (modalIcon) {
-                    modalIcon.className = "w-10 h-10 rounded-xl bg-almadar-700 text-white flex items-center justify-center font-black";
-                    modalIcon.innerText = "M";
-                }
-                if (modalTitle) modalTitle.innerText = "طريقة التحويل اليدوي - المدار الجديد";
-                if (modalCode) modalCode.className = "flex-1 px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-almadar-400 font-mono font-bold text-sm select-all";
-                if (modalCopyBtn) modalCopyBtn.className = "px-4 py-3 rounded-xl bg-almadar-600 hover:bg-almadar-500 text-white font-bold text-xs shrink-0 cursor-pointer";
-                if (modalConfirmBtn) modalConfirmBtn.className = "w-full py-3.5 rounded-2xl bg-gradient-to-l from-almadar-600 to-emerald-600 text-white font-extrabold text-sm shadow-lg shadow-almadar-600/30 transition-all cursor-pointer";
+            if (!amount || amount < 1) {
+                showToast('يرجى إدخال مبلغ صحيح للدعم.', 'error');
+                return;
+            }
+            if (!nickname) {
+                showToast('يرجى إدخال اسمك الظاهر على البث.', 'error');
+                return;
             }
 
-            if (modalNumber) modalNumber.innerText = receiverNum;
-            if (modalCode) modalCode.value = transferCode;
-            if (modalDialLink) modalDialLink.href = `tel:${encodeURIComponent(transferCode)}`;
-            if (modalConfirmBtn) {
-                modalConfirmBtn.onclick = () => closeManualModal(nickname, amount, message, selectedNetwork);
-            }
+            const phone = STREAMER_PHONES[selectedNetwork];
+            const ussdCode = selectedNetwork === 'libyana'
+                ? `*122*${phone}*${amount}#`
+                : `*140*${phone}*${amount}#`;
 
-            if (modal) modal.classList.remove('hidden');
-        }
+            document.getElementById('m-modal-icon').textContent = selectedNetwork === 'libyana' ? 'L' : 'M';
+            document.getElementById('m-modal-icon').className = selectedNetwork === 'libyana'
+                ? 'w-10 h-10 rounded-xl bg-libyana-600 text-white flex items-center justify-center font-black'
+                : 'w-10 h-10 rounded-xl bg-almadar-600 text-white flex items-center justify-center font-black';
+            document.getElementById('m-modal-title').textContent = selectedNetwork === 'libyana'
+                ? 'تحويل رصيد ليبيانا'
+                : 'تحويل رصيد المدار الجديد';
+            document.getElementById('m-modal-number').textContent = phone;
+            document.getElementById('m-modal-code').value = ussdCode;
+            document.getElementById('m-modal-dial-link').href = `tel:${encodeURIComponent(ussdCode)}`;
 
-        async function closeManualModal(nickname, amount, message, network) {
-            const modal = document.getElementById('manual-transfer-modal');
             const confirmBtn = document.getElementById('m-modal-confirm-btn');
-            if (confirmBtn) {
-                confirmBtn.disabled = true;
-                confirmBtn.innerText = 'جاري إرسال الدعم للبث وعرضه فوراً...';
-            }
+            confirmBtn.onclick = () => confirmAndDispatchSupport({
+                id: 'don_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                streamer_username: currentStreamerUsername,
+                donor_name: nickname,
+                amount: amount,
+                message: message,
+                network: selectedNetwork,
+                status: 'approved',
+                is_played: false,
+                created_at: new Date().toISOString()
+            });
 
-            // قبول الدعم تلقائياً وعرضه فوراً على البث دون الحاجة لتدخل يدوي
-            await saveAndAutoApproveDonation(nickname, amount, message, network);
+            document.getElementById('manual-transfer-modal').classList.remove('hidden');
+        }
 
-            if (confirmBtn) {
-                confirmBtn.disabled = false;
-                confirmBtn.innerText = '✅ تم إرسال دعمك وعرضه على البث بنجاح!';
-            }
+        function closeManualModalWithoutAlert() {
+            const modal = document.getElementById('manual-transfer-modal');
             if (modal) modal.classList.add('hidden');
-            document.getElementById('streamer-support-form')?.reset();
+        }
+
+        function copyStreamerNumber() {
+            const num = document.getElementById('m-modal-number').textContent;
+            copyTextFallback(num);
+            showToast('تم نسخ رقم هاتف الستريمر!', 'success');
+        }
+
+        function copyTransferCode() {
+            const code = document.getElementById('m-modal-code').value;
+            copyTextFallback(code);
+            showToast('تم نسخ كود التحويل السريع!', 'success');
+        }
+
+        async function confirmAndDispatchSupport(donationObj) {
+            closeManualModalWithoutAlert();
+
+            let insertedInCloud = false;
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('donations')
+                        .insert([donationObj]);
+
+                    if (error) throw error;
+                    insertedInCloud = true;
+                } catch (err) {
+                    localDonationsCache.unshift(donationObj);
+                    enqueueAlert(donationObj);
+                }
+            } else {
+                localDonationsCache.unshift(donationObj);
+                enqueueAlert(donationObj);
+            }
+
+            if (insertedInCloud) {
+                localDonationsCache.unshift(donationObj);
+            }
+
+            document.getElementById('streamer-support-form').reset();
             selectAmount(10);
-            showToast('شكراً لدعمك! تم إرسال تنبيهك وعرضه على البث المباشر فوراً 🎉');
-        }
-
-        async function saveAndAutoApproveDonation(nickname, amount, message, network) {
-            const donationObj = {
-                id: Date.now(),
-                created_at: new Date().toISOString(),
-                streamer_username: currentStreamerUsername || 'cgtevil',
-                nickname,
-                amount: Number(amount),
-                message,
-                network,
-                status: 'approved', // اعتماد تلقائي فوراً
-                is_played: false
-            };
-
-            localDonationsStore.unshift(donationObj);
-            persistLocalStore();
-
-            if (supabaseClient) {
-                try {
-                    const { id, created_at, ...insertPayload } = donationObj;
-                    await supabaseClient.from('donations').insert([insertPayload]);
-                } catch (e) {}
-            }
-
-            // تشغيل التنبيه فوراً على البث المباشر
-            enqueueAlert(donationObj);
-
-            loadStreamerDonorsList();
+            showToast('🎉 تم إرسال دعمك بنجاح وسيظهر على البث المباشر فوراً!', 'success');
             loadTop3Supporters();
-        }
-
-        async function saveDonationRecord(nickname, amount, message, network) {
-            await saveAndAutoApproveDonation(nickname, amount, message, network);
-        }
-
-        async function approveDonation(id) {
-            const target = localDonationsStore.find(d => d.id === id);
-            if (target) {
-                target.status = 'approved';
-                target.is_played = false;
-                persistLocalStore();
-                enqueueAlert(target);
-            }
-
-            if (supabaseClient) {
-                try {
-                    await supabaseClient
-                        .from('donations')
-                        .update({ status: 'approved', is_played: false })
-                        .eq('id', id);
-                } catch (e) {}
-            }
-
-            showToast('تمت الموافقة! التنبيه يُعرض الآن على البث المباشر 🎉');
             loadStreamerDonorsList();
-            loadTop3Supporters();
         }
 
-        async function deleteDonation(id) {
-            localDonationsStore = localDonationsStore.filter(d => d.id !== id);
-            persistLocalStore();
-
-            if (supabaseClient) {
-                try {
-                    await supabaseClient
-                        .from('donations')
-                        .delete()
-                        .eq('id', id);
-                } catch (e) {}
+        function enqueueAlert(donation, forceReplay = false) {
+            if (!forceReplay && donation.id && playedAlertIds.has(donation.id)) {
+                return;
             }
-
-            showToast('تم حذف الطلب');
-            loadStreamerDonorsList();
-            loadTop3Supporters();
-        }
-
-        function sendTestAlert() {
-            const testDonation = {
-                id: 'test-' + Date.now(),
-                nickname: 'متابع رسمي (اختبار)',
-                amount: 25,
-                message: 'اختبار ظهور التنبيه على البث المباشر! ⚡',
-                network: 'libyana',
-                isTest: true
-            };
-            enqueueAlert(testDonation);
-            showToast('تم إرسال تنبيه تجريبي على الشاشة!');
-        }
-
-        function enqueueAlert(donation) {
-            if (donation.id && !String(donation.id).startsWith('test-') && playedAlertIds.has(donation.id)) return;
-            if (donation.id) playedAlertIds.add(donation.id);
-
+            if (donation.id) {
+                playedAlertIds.add(donation.id);
+            }
             alertQueue.push(donation);
             processAlertQueue();
+        }
+
+        function replayDonationById(donationId) {
+            const found = localDonationsCache.find(item => item.id === donationId);
+            if (found) {
+                enqueueAlert(found, true);
+                showToast(`🔁 إعادة عرض تنبيه: ${found.donor_name}`, 'info');
+            }
         }
 
         function processAlertQueue() {
             if (isAlertPlaying || alertQueue.length === 0) return;
             isAlertPlaying = true;
 
-            const current = alertQueue.shift();
-            displayObsAlert(current, async () => {
-                if (isWidgetMode && current.id && !current.isTest && supabaseClient) {
-                    try {
-                        await supabaseClient
-                            .from('donations')
-                            .update({ is_played: true })
-                            .eq('id', current.id);
-                    } catch (e) {}
-                }
-                isAlertPlaying = false;
-                processAlertQueue();
-            });
-        }
+            const donation = alertQueue.shift();
 
-        function displayObsAlert(donation, onComplete) {
-            const overlay = document.getElementById('obs-alert-overlay');
-            const alertBox = document.getElementById('obs-alert-box');
-            const donorNameEl = document.getElementById('obs-donor-name');
-            const donationInfoEl = document.getElementById('obs-donation-info');
-            const donorMsgEl = document.getElementById('obs-donor-message');
-            const mediaContainer = document.getElementById('obs-media-container');
-
-            const network = donation.network || 'libyana';
-            if (donorNameEl) donorNameEl.innerText = donation.nickname || 'داعم';
-            if (donationInfoEl) {
-                donationInfoEl.innerText = `دعم بمبلغ ${donation.amount} د.ل (${network === 'libyana' ? 'ليبيانا' : 'المدار الجديد'})`;
-                donationInfoEl.className = network === 'libyana' ? 'text-xl font-extrabold text-libyana-400 mb-3' : 'text-xl font-extrabold text-almadar-400 mb-3';
+            if (supabaseClient && isWidgetMode && donation.id && !String(donation.id).startsWith('test_')) {
+                supabaseClient
+                    .from('donations')
+                    .update({ is_played: true })
+                    .eq('id', donation.id)
+                    .then(() => {})
+                    .catch(() => {});
             }
-            if (alertBox) {
-                alertBox.className = network === 'libyana'
-                    ? 'neon-card border-2 border-libyana-500 px-8 py-6 rounded-3xl text-center shadow-2xl neon-glow-purple alert-pop-in max-w-lg w-full space-y-4'
-                    : 'neon-card border-2 border-almadar-500 px-8 py-6 rounded-3xl text-center shadow-2xl neon-glow-green alert-pop-in max-w-lg w-full space-y-4';
-            }
-            if (donorMsgEl) donorMsgEl.innerText = donation.message || 'شكراً على البث الممتع!';
 
-            const videoUrl = (streamerData.alertVideo || localStorage.getItem('cgtevil_alert_video') || '').trim();
-            let durationMs = 5500;
+            const overlay = document.getElementById('live-alert-overlay');
+            const mediaContainer = document.getElementById('alert-media-container');
+            const amountDisplay = document.getElementById('alert-amount-display');
+            const donorNameDisplay = document.getElementById('alert-donor-name');
+            const messageDisplay = document.getElementById('alert-donor-message');
 
-            if (mediaContainer) {
-                if (videoUrl !== '') {
-                    if (videoUrl.match(/\.(mp4|webm|ogg)$/i) || videoUrl.startsWith('data:video')) {
-                        mediaContainer.innerHTML = `<video id="active-alert-vid" src="${videoUrl}" autoplay playsinline class="w-full max-h-56 object-contain rounded-xl"></video>`;
-                        const vidEl = document.getElementById('active-alert-vid');
-                        if (vidEl) {
-                            vidEl.play().catch(() => {
-                                vidEl.muted = true;
-                                vidEl.play().catch(() => {});
-                                playDefaultChime();
-                            });
-                        }
-                    } else {
-                        mediaContainer.innerHTML = `<img src="${videoUrl}" alt="Alert Media" class="w-full max-h-56 object-contain rounded-xl">`;
-                        playDefaultChime();
-                    }
+            amountDisplay.textContent = `${donation.amount} د.ل`;
+            donorNameDisplay.textContent = donation.donor_name;
+            messageDisplay.textContent = donation.message || '';
+
+            const mediaUrl = cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
+            mediaContainer.innerHTML = '';
+
+            let durationMs = 7500;
+            if (mediaUrl) {
+                mediaContainer.classList.remove('hidden');
+                if (mediaUrl.toLowerCase().endsWith('.gif') || mediaUrl.startsWith('data:image')) {
+                    const img = document.createElement('img');
+                    img.src = mediaUrl;
+                    img.className = 'w-full h-48 object-cover';
+                    mediaContainer.appendChild(img);
                 } else {
-                    mediaContainer.innerHTML = `<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-libyana-600 to-almadar-500 flex items-center justify-center text-4xl shadow-lg animate-bounce">⚡</div>`;
-                    playDefaultChime();
+                    const video = document.createElement('video');
+                    video.src = mediaUrl;
+                    video.autoplay = true;
+                    video.playsInline = true;
+                    video.className = 'w-full h-48 object-cover';
+                    video.onloadedmetadata = () => {
+                        if (video.duration && isFinite(video.duration)) {
+                            durationMs = Math.min(Math.max(video.duration * 1000, 5000), 18000);
+                        }
+                    };
+                    video.play().catch(() => {
+                        video.muted = true;
+                        video.play().catch(() => {});
+                    });
+                    mediaContainer.appendChild(video);
                 }
+            } else {
+                mediaContainer.classList.add('hidden');
             }
 
-            if (overlay) {
-                overlay.classList.remove('hidden');
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                    if (mediaContainer) mediaContainer.innerHTML = '';
-                    if (onComplete) onComplete();
-                }, durationMs);
-            } else if (onComplete) {
-                onComplete();
+            overlay.classList.remove('hidden');
+
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                mediaContainer.innerHTML = '';
+                isAlertPlaying = false;
+                setTimeout(() => processAlertQueue(), 600);
+            }, durationMs);
+        }
+
+        function sendTestAlert() {
+            enqueueAlert({
+                id: 'test_' + Date.now(),
+                donor_name: 'متابع تجريبي',
+                amount: 25,
+                message: 'عاش يا بطل استمر في البث الأسطوري! 🔥',
+                network: 'libyana'
+            }, true);
+        }
+
+        function toggleWidgetPreview(enable) {
+            const header = document.getElementById('main-header');
+            const mainContent = document.getElementById('main-content');
+            const exitBar = document.getElementById('widget-preview-exit-bar');
+
+            if (enable) {
+                document.body.classList.add('widget-mode');
+                if (header) header.classList.add('hidden');
+                if (mainContent) mainContent.classList.add('hidden');
+                if (exitBar) exitBar.classList.remove('hidden');
+            } else {
+                document.body.classList.remove('widget-mode');
+                if (header) header.classList.remove('hidden');
+                if (mainContent) mainContent.classList.remove('hidden');
+                if (exitBar) exitBar.classList.add('hidden');
             }
         }
 
-        async function getMergedDonations() {
-            let list = [...localDonationsStore];
+        function copyTikTokStudioLink() {
+            const url = document.getElementById('widget-url-preview').value;
+            copyTextFallback(url);
+            showToast('📋 تم نسخ رابط الويدجت لـ TikTok Live Studio!', 'success');
+        }
+
+        function copyCustomSupportLink() {
+            const url = document.getElementById('custom-donation-link').value;
+            copyTextFallback(url);
+            showToast('📋 تم نسخ رابط صفحة الدعم للجمهور!', 'success');
+        }
+
+        async function fetchAllApprovedDonations() {
             if (supabaseClient) {
                 try {
                     const { data, error } = await supabaseClient
                         .from('donations')
                         .select('*')
                         .eq('streamer_username', currentStreamerUsername)
+                        .eq('status', 'approved')
                         .order('created_at', { ascending: false });
-                    if (!error && data && data.length > 0) {
-                        list = data;
+
+                    if (!error && data) {
+                        localDonationsCache = data;
+                        return data;
                     }
                 } catch (e) {}
             }
-            return list;
+            return localDonationsCache;
         }
 
         async function loadTop3Supporters() {
             const container = document.getElementById('top3-supporters-container');
             if (!container) return;
 
-            const allData = await getMergedDonations();
-            const approvedData = allData.filter(d => d.status === 'approved');
-
-            if (approvedData.length === 0) {
-                container.innerHTML = `<div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-400 text-center">لا يوجد داعمون معتمدون حتى الآن. كن الأول!</div>`;
+            const list = await fetchAllApprovedDonations();
+            if (!list || list.length === 0) {
+                container.innerHTML = `
+                    <div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-400 text-center">
+                        لا يوجد داعمون معتمدون حتى الآن. كن الأول!
+                    </div>`;
                 return;
             }
 
-            const summaryMap = {};
-            approvedData.forEach(d => {
-                const name = d.nickname || 'فاعل خير';
-                if (!summaryMap[name]) summaryMap[name] = 0;
-                summaryMap[name] += Number(d.amount || 0);
+            const totals = {};
+            list.forEach(item => {
+                const name = item.donor_name || 'داعم';
+                totals[name] = (totals[name] || 0) + Number(item.amount || 0);
             });
 
-            const sorted = Object.keys(summaryMap)
-                .map(name => ({ name, total: summaryMap[name] }))
+            const sorted = Object.entries(totals)
+                .map(([name, total]) => ({ name, total }))
                 .sort((a, b) => b.total - a.total)
                 .slice(0, 3);
 
-            let html = '';
-            sorted.forEach((item, index) => {
-                const medals = ['🥇', '🥈', '🥉'];
-                const colors = ['border-amber-500/40 bg-amber-500/10 text-amber-300', 'border-zinc-400/40 bg-zinc-400/10 text-zinc-200', 'border-amber-700/40 bg-amber-700/10 text-amber-500'];
-                html += `
-                    <div class="p-3 rounded-2xl border ${colors[index] || 'border-zinc-800 bg-zinc-900'} flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <span class="text-base">${medals[index] || '🏅'}</span>
-                            <span class="font-extrabold text-white text-xs">${item.name}</span>
-                        </div>
-                        <span class="font-mono font-black text-xs text-libyana-400">${item.total} د.ل</span>
+            const medals = ['🥇', '🥈', '🥉'];
+            container.innerHTML = sorted.map((sup, idx) => `
+                <div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-base">${medals[idx] || '🏅'}</span>
+                        <span class="font-extrabold text-white text-xs sm:text-sm">${sup.name}</span>
                     </div>
-                `;
-            });
-            container.innerHTML = html;
+                    <span class="px-2.5 py-1 rounded-xl bg-libyana-600/20 text-libyana-400 font-black text-xs">${sup.total} د.ل</span>
+                </div>
+            `).join('');
         }
 
         async function loadStreamerDonorsList() {
-            const container = document.getElementById('streamer-donors-list-container');
-            const data = await getMergedDonations();
-
-            if (!data || data.length === 0) {
-                if (container) container.innerHTML = `<div class="text-xs text-zinc-500 text-center py-6">لا توجد سجلات دعم مسجلة حتى الآن.</div>`;
-                return;
-            }
-
+            const container = document.getElementById('streamer-donors-list');
             if (!container) return;
 
-            let html = '';
-            data.forEach(d => {
-                const dateStr = d.created_at ? new Date(d.created_at).toLocaleString('ar-LY', {
-                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                }) : '';
-
-                const networkName = d.network === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
-                const networkBadgeColor = d.network === 'libyana'
-                    ? 'bg-libyana-600/20 text-libyana-400 border-libyana-500/30'
-                    : 'bg-almadar-600/20 text-almadar-400 border-almadar-500/30';
-
-                html += `
-                    <div class="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
-                        <div class="space-y-1.5">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="font-black text-white text-sm">👤 ${d.nickname || 'فاعل خير'}</span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${networkBadgeColor}">${networkName}</span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300">
-                                    ✅ معروض تلقائياً
-                                </span>
-                            </div>
-                            <div class="text-zinc-300 font-medium bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800/80 inline-block">
-                                💬 "${d.message || 'بدون رسالة'}"
-                            </div>
-                            <div class="text-[10px] text-zinc-500">📅 ${dateStr}</div>
-                        </div>
-                        <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
-                            <div class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 font-mono font-black text-emerald-400 text-sm">
-                                +${d.amount || 0} د.ل
-                            </div>
-                            <button type="button" onclick="approveDonation(${d.id})" title="إعادة العرض على البث"
-                                class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs cursor-pointer">
-                                🔁 إعادة عرض
-                            </button>
-                            <button type="button" onclick="deleteDonation(${d.id})" title="حذف"
-                                class="px-2.5 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 font-bold text-xs cursor-pointer">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        async function saveStreamerProfile() {
-            if (!currentUser) {
-                showToast('يرجى تسجيل الدخول أولاً.', 'error');
+            const list = await fetchAllApprovedDonations();
+            if (!list || list.length === 0) {
+                container.innerHTML = `
+                    <div class="p-4 rounded-2xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-400 text-center">
+                        لا توجد طلبات دعم حالياً.
+                    </div>`;
                 return;
             }
 
-            const profileData = {
-                username: currentStreamerUsername,
-                displayName: document.getElementById('streamer-display-name')?.value || 'cgt evil',
-                alertVideo: document.getElementById('streamer-alert-video')?.value || '',
-                updatedAt: Date.now()
-            };
+            container.innerHTML = list.map(d => {
+                const safeName = String(d.donor_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const safeMsg = String(d.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-white text-sm">${safeName}</span>
+                            <span class="px-2 py-0.5 rounded-lg text-[11px] font-extrabold ${d.network === 'almadar' ? 'bg-almadar-600/20 text-almadar-400' : 'bg-libyana-600/20 text-libyana-400'}">
+                                ${d.amount} د.ل (${d.network === 'almadar' ? 'المدار' : 'ليبيانا'})
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-400">مقبول تلقائياً ✓</span>
+                        </div>
+                        ${safeMsg ? `<p class="text-xs text-zinc-300">"${safeMsg}"</p>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" onclick="replayDonationById('${d.id}')"
+                            class="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 font-bold text-xs cursor-pointer">
+                            🔁 إعادة العرض
+                        </button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
 
-            streamerData.displayName = profileData.displayName;
-            streamerData.alertVideo = profileData.alertVideo;
-            localStorage.setItem('cgtevil_alert_video', streamerData.alertVideo);
-            localStorage.setItem('streamer_profile_cgtevil', JSON.stringify(profileData));
+        async function resetAllSupportersData() {
+            localDonationsCache = [];
+            if (supabaseClient) {
+                try {
+                    await supabaseClient
+                        .from('donations')
+                        .delete()
+                        .eq('streamer_username', currentStreamerUsername);
+                } catch (e) {}
+            }
+            loadTop3Supporters();
+            loadStreamerDonorsList();
+            showToast('🧹 تم تصفير قائمة الداعمين بنجاح!', 'success');
+        }
 
-            const displayNameEl = document.getElementById('display-streamer-name');
-            if (displayNameEl) displayNameEl.innerText = profileData.displayName;
+        function handleVideoFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            showToast('تم حفظ إعداداتك بنجاح!');
+            const maxBytes = 5 * 1024 * 1024;
+            if (file.size > maxBytes) {
+                showToast('حجم الملف يتجاوز الحد الأقصى المسموح به (5MB).', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            const videoInput = document.getElementById('streamer-alert-video');
+            if (videoInput) videoInput.value = objectUrl;
+            cloudStreamerSettings.alert_video_url = objectUrl;
+            localStorage.setItem('cgtevil_alert_video', objectUrl);
+            showToast('✅ تم تحميل الملف للمعاينة (للبث في TikTok Studio يفضل وضع رابط مباشر).', 'success');
+        }
+
+        async function saveStreamerSettings() {
+            const displayName = (document.getElementById('streamer-display-name').value || '').trim() || 'cgt evil';
+            const alertVideo = (document.getElementById('streamer-alert-video').value || '').trim();
+
+            cloudStreamerSettings.display_name = displayName;
+            cloudStreamerSettings.alert_video_url = alertVideo;
+            localStorage.setItem('cgtevil_display_name', displayName);
+            localStorage.setItem('cgtevil_alert_video', alertVideo);
+
+            const displayEl = document.getElementById('display-streamer-name');
+            if (displayEl) displayEl.textContent = displayName;
+
+            if (supabaseClient && !alertVideo.startsWith('blob:')) {
+                try {
+                    await supabaseClient
+                        .from('streamer_settings')
+                        .upsert({
+                            streamer_username: currentStreamerUsername,
+                            display_name: displayName,
+                            alert_video_url: alertVideo
+                        }, { onConflict: 'streamer_username' });
+                } catch (e) {}
+            }
+
+            showToast('💾 تم حفظ إعدادات الستريمر بنجاح!', 'success');
+        }
+
+        function setupSupabaseRealtimeSubscription() {
+            if (!supabaseClient) return;
+
+            try {
+                supabaseClient
+                    .channel('public:donations')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'INSERT',
+                            schema: 'public',
+                            table: 'donations',
+                            filter: `streamer_username=eq.${currentStreamerUsername}`
+                        },
+                        (payload) => {
+                            const newDonation = payload.new;
+                            if (newDonation && newDonation.status === 'approved') {
+                                if (!localDonationsCache.some(item => item.id === newDonation.id)) {
+                                    localDonationsCache.unshift(newDonation);
+                                }
+                                enqueueAlert(newDonation);
+                                loadTop3Supporters();
+                                loadStreamerDonorsList();
+                            }
+                        }
+                    )
+                    .subscribe();
+            } catch (err) {
+                console.warn('Realtime subscription skipped in restricted sandbox environment.');
+            }
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
             parseUrlAndInitMode();
+            await loadStreamerCloudSettings();
 
-            const savedSession = JSON.parse(localStorage.getItem('cgtevil_streamer_session') || 'null');
-            if (savedSession && savedSession.username === CORRECT_STREAMER_USER) {
-                currentUser = { username: CORRECT_STREAMER_USER };
-                updateAuthUI(currentUser);
-            }
+            localStorage.removeItem('cgtevil_donations_v2');
 
-            // ضمان عرض صفحة الدعم الأساسية للزوار بشكل افتراضي عند دخول الموقع
-            switchView('visitor');
+            updateAuthUIState();
+            await loadTop3Supporters();
+            setupSupabaseRealtimeSubscription();
 
             if (isWidgetMode && supabaseClient) {
                 try {
@@ -1270,14 +1211,10 @@
                         .order('created_at', { ascending: true });
 
                     if (data && data.length > 0) {
-                        data.forEach(d => enqueueAlert(d));
+                        data.forEach(item => enqueueAlert(item));
                     }
                 } catch (e) {}
-                return;
             }
-
-            loadTop3Supporters();
-            loadStreamerDonorsList();
         });
     </script>
 </body>
