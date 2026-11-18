@@ -848,6 +848,10 @@
         async function confirmAndDispatchSupport(donationObj) {
             closeManualModalWithoutAlert();
 
+            // دمج فيديو التنبيه الحالي مع بيانات الدعم لضمان ظهور الفيديو المخصص لحظياً على البث
+            const currentVideoUrl = cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
+            donationObj.alert_video_url = currentVideoUrl;
+
             let insertedInCloud = false;
             if (supabaseClient) {
                 try {
@@ -921,7 +925,8 @@
             donorNameDisplay.textContent = donation.donor_name;
             messageDisplay.textContent = donation.message || '';
 
-            const mediaUrl = cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
+            // استخدام فيديو التنبيه المدمج مع بيانات الدعم أو الاعتماد على الإعداد الافتراضي
+            const mediaUrl = donation.alert_video_url || cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
             mediaContainer.innerHTML = '';
 
             let durationMs = 7500;
@@ -969,7 +974,8 @@
                 donor_name: 'متابع تجريبي',
                 amount: 25,
                 message: 'عاش يا بطل استمر في البث الأسطوري! 🔥',
-                network: 'libyana'
+                network: 'libyana',
+                alert_video_url: cloudStreamerSettings.alert_video_url
             }, true);
         }
 
