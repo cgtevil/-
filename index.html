@@ -1170,8 +1170,9 @@
             if (!supabaseClient) return;
 
             try {
-                if (window.self !== window.top && window.location.hostname.includes('google')) {
-                    console.info('Supabase Realtime skipped inside sandbox preview iframe.');
+                // منع تشغيل WebSocket داخل بيئة المعاينة (Sandbox/Canvas) لتجنب SecurityError
+                if (window.self !== window.top || window.location.protocol === 'blob:' || window.location.hostname.includes('googleusercontent') || window.location.hostname.includes('google')) {
+                    console.info('Supabase Realtime WebSocket is skipped inside sandbox/canvas preview.');
                     return;
                 }
 
@@ -1199,7 +1200,7 @@
                     )
                     .subscribe();
             } catch (err) {
-                console.warn('Realtime subscription bypassed safely.');
+                console.warn('Realtime subscription bypassed safely in restricted environment.');
             }
         }
 
