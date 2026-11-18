@@ -140,7 +140,6 @@
                 <button type="button" onclick="handleProtectedSettingsClick()" id="nav-settings"
                     class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/60 flex items-center justify-center gap-1.5">
                     <span>⚙️ لوحة الستريمر</span>
-                    <span id="pending-badge-count" class="hidden px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-zinc-950">0</span>
                 </button>
             </nav>
 
@@ -921,60 +920,23 @@
             const confirmBtn = document.getElementById('m-modal-confirm-btn');
             if (confirmBtn) {
                 confirmBtn.disabled = true;
-                confirmBtn.innerText = 'جاري إرسال الإشعار...';
+                confirmBtn.innerText = 'جاري إرسال الدعم للبث وعرضه فوراً...';
             }
 
-            await saveDonationRecord(nickname, amount, message, network);
+            // قبول الدعم تلقائياً وعرضه فوراً على البث دون الحاجة لتدخل يدوي
+            await saveAndAutoApproveDonation(nickname, amount, message, network);
 
             if (confirmBtn) {
                 confirmBtn.disabled = false;
-                confirmBtn.innerText = '✅ تم التحويل (إرسال إشعار للستريمر)';
+                confirmBtn.innerText = '✅ تم إرسال دعمك وعرضه على البث بنجاح!';
             }
             if (modal) modal.classList.add('hidden');
             document.getElementById('streamer-support-form')?.reset();
             selectAmount(10);
-            showToast('تم إرسال إشعار الدعم للستريمر! سيظهر على البث فور تأكيد الاستلام.');
+            showToast('شكراً لدعمك! تم إرسال تنبيهك وعرضه على البث المباشر فوراً 🎉');
         }
 
-        function closeManualModalWithoutAlert() {
-            const modal = document.getElementById('manual-transfer-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function copyStreamerNumber() {
-            const num = document.getElementById('m-modal-number')?.innerText || '';
-            if (num) fallbackCopyText(num, 'تم نسخ الرقم بنجاح: ' + num);
-        }
-
-        function copyTransferCode() {
-            const codeInput = document.getElementById('m-modal-code');
-            if (codeInput) fallbackCopyText(codeInput.value, 'تم نسخ رمز التحويل بنجاح');
-        }
-
-        function copyCustomSupportLink() {
-            const input = document.getElementById('custom-donation-link');
-            if (input) fallbackCopyText(input.value, 'تم نسخ رابط الدعم للجمهور');
-        }
-
-        function copyTikTokStudioLink() {
-            const input = document.getElementById('widget-url-preview');
-            if (input) fallbackCopyText(input.value, 'تم نسخ رابط الويدجت! الصقه في TikTok Live Studio');
-        }
-
-        function handleVideoFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const videoInput = document.getElementById('streamer-alert-video');
-                    if (videoInput) videoInput.value = e.target.result;
-                    showToast('تم تحميل الملف! اضغط "حفظ الإعدادات" لتثبيته.');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function saveDonationRecord(nickname, amount, message, network) {
+        async function saveAndAutoApproveDonation(nickname, amount, message, network) {
             const donationObj = {
                 id: Date.now(),
                 created_at: new Date().toISOString(),
@@ -983,7 +945,7 @@
                 amount: Number(amount),
                 message,
                 network,
-                status: 'pending',
+                status: 'approved', // اعتماد تلقائي فوراً
                 is_played: false
             };
 
@@ -997,8 +959,15 @@
                 } catch (e) {}
             }
 
+            // تشغيل التنبيه فوراً على البث المباشر
+            enqueueAlert(donationObj);
+
             loadStreamerDonorsList();
             loadTop3Supporters();
+        }
+
+        async function saveDonationRecord(nickname, amount, message, network) {
+            await saveAndAutoApproveDonation(nickname, amount, message, network);
         }
 
         async function approveDonation(id) {
@@ -1045,9 +1014,9 @@
         function sendTestAlert() {
             const testDonation = {
                 id: 'test-' + Date.now(),
-                nickname: 'متابع وفي (تجريبي)',
+                nickname: 'متابع رسمي (اختبار)',
                 amount: 25,
-                message: 'عاش يا وحش استمر في البث الأسطوري! 🔥',
+                message: 'اختبار ظهور التنبيه على البث المباشر! ⚡',
                 network: 'libyana',
                 isTest: true
             };
@@ -1200,24 +1169,11 @@
 
         async function loadStreamerDonorsList() {
             const container = document.getElementById('streamer-donors-list-container');
-            const badgeEl = document.getElementById('pending-badge-count');
-
             const data = await getMergedDonations();
 
             if (!data || data.length === 0) {
-                if (badgeEl) badgeEl.classList.add('hidden');
                 if (container) container.innerHTML = `<div class="text-xs text-zinc-500 text-center py-6">لا توجد سجلات دعم مسجلة حتى الآن.</div>`;
                 return;
-            }
-
-            const pendingCount = data.filter(d => d.status === 'pending').length;
-            if (badgeEl) {
-                if (pendingCount > 0) {
-                    badgeEl.innerText = pendingCount;
-                    badgeEl.classList.remove('hidden');
-                } else {
-                    badgeEl.classList.add('hidden');
-                }
             }
 
             if (!container) return;
@@ -1228,22 +1184,19 @@
                     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 }) : '';
 
-                const isPending = d.status === 'pending';
                 const networkName = d.network === 'libyana' ? 'ليبيانا' : 'المدار الجديد';
                 const networkBadgeColor = d.network === 'libyana'
                     ? 'bg-libyana-600/20 text-libyana-400 border-libyana-500/30'
                     : 'bg-almadar-600/20 text-almadar-400 border-almadar-500/30';
 
-                const cardBorder = isPending ? 'border-amber-500/50 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900';
-
                 html += `
-                    <div class="p-3.5 rounded-2xl border ${cardBorder} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
+                    <div class="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
                         <div class="space-y-1.5">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="font-black text-white text-sm">👤 ${d.nickname || 'فاعل خير'}</span>
                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${networkBadgeColor}">${networkName}</span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${isPending ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}">
-                                    ${isPending ? '⏳ بانتظار التأكيد' : '✅ معروض ومعتمد'}
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300">
+                                    ✅ معروض تلقائياً
                                 </span>
                             </div>
                             <div class="text-zinc-300 font-medium bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800/80 inline-block">
@@ -1255,17 +1208,10 @@
                             <div class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 font-mono font-black text-emerald-400 text-sm">
                                 +${d.amount || 0} د.ل
                             </div>
-                            ${isPending ? `
-                                <button type="button" onclick="approveDonation(${d.id})"
-                                    class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs cursor-pointer shadow-lg">
-                                    ✅ قبول وعرض
-                                </button>
-                            ` : `
-                                <button type="button" onclick="approveDonation(${d.id})" title="إعادة العرض على البث"
-                                    class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs cursor-pointer">
-                                    🔁 إعادة عرض
-                                </button>
-                            `}
+                            <button type="button" onclick="approveDonation(${d.id})" title="إعادة العرض على البث"
+                                class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs cursor-pointer">
+                                🔁 إعادة عرض
+                            </button>
                             <button type="button" onclick="deleteDonation(${d.id})" title="حذف"
                                 class="px-2.5 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 font-bold text-xs cursor-pointer">
                                 🗑️
