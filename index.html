@@ -462,7 +462,6 @@
 
     <!-- ========================================================= -->
     <!-- نافذة تسجيل دخول الستريمر (Auth Modal) -->
-    <!-- ========================================================= -->
     <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
         <div class="neon-card w-full max-w-md p-6 sm:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative alert-pop-in space-y-5">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -496,7 +495,7 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- حاوية عرض التنبيهات المباشرة (Overlay Alert Box) -->
+    <!-- حاوية عرض التنبيهات المباشرة (تظهر حصرياً في رابط البث المباشر Widget) -->
     <!-- ========================================================= -->
     <div id="live-alert-overlay" class="fixed inset-0 z-[80] flex items-center justify-center pointer-events-none p-6 hidden">
         <div id="live-alert-card" class="max-w-md w-full rounded-3xl bg-zinc-950/95 border-2 border-libyana-500 p-5 text-center shadow-2xl neon-glow-purple alert-pop-in space-y-3">
@@ -902,11 +901,18 @@
 
         function processAlertQueue() {
             if (isAlertPlaying || alertQueue.length === 0) return;
+            // إذا لم يكن المتصفح في وضع الويدجت الشفاف، لا تقم بعرض صندوق الفيديو المنبثق على صفحة الزائر العادية
+            if (!isWidgetMode) {
+                alertQueue.shift();
+                processAlertQueue();
+                return;
+            }
+
             isAlertPlaying = true;
 
             const donation = alertQueue.shift();
 
-            if (supabaseClient && isWidgetMode && donation.id && !String(donation.id).startsWith('test_')) {
+            if (supabaseClient && donation.id && !String(donation.id).startsWith('test_')) {
                 supabaseClient
                     .from('donations')
                     .update({ is_played: true })
@@ -925,7 +931,6 @@
             donorNameDisplay.textContent = donation.donor_name;
             messageDisplay.textContent = donation.message || '';
 
-            // استخدام فيديو التنبيه المدمج مع بيانات الدعم أو الاعتماد على الإعداد الافتراضي
             const mediaUrl = donation.alert_video_url || cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
             mediaContainer.innerHTML = '';
 
