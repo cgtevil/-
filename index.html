@@ -847,7 +847,6 @@
         async function confirmAndDispatchSupport(donationObj) {
             closeManualModalWithoutAlert();
 
-            // دمج فيديو التنبيه الحالي مع بيانات الدعم لضمان ظهور الفيديو المخصص لحظياً على البث
             const currentVideoUrl = cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
             donationObj.alert_video_url = currentVideoUrl;
 
@@ -901,7 +900,6 @@
 
         function processAlertQueue() {
             if (isAlertPlaying || alertQueue.length === 0) return;
-            // إذا لم يكن المتصفح في وضع الويدجت الشفاف، لا تقم بعرض صندوق الفيديو المنبثق على صفحة الزائر العادية
             if (!isWidgetMode) {
                 alertQueue.shift();
                 processAlertQueue();
@@ -909,7 +907,6 @@
             }
 
             isAlertPlaying = true;
-
             const donation = alertQueue.shift();
 
             if (supabaseClient && donation.id && !String(donation.id).startsWith('test_')) {
@@ -1173,7 +1170,6 @@
             if (!supabaseClient) return;
 
             try {
-                // التحقق من أن بيئة التشغيل ليست داخل iframe أو منع اتصال الـ WebSocket المباشر
                 if (window.self !== window.top && window.location.hostname.includes('google')) {
                     console.info('Supabase Realtime skipped inside sandbox preview iframe.');
                     return;
