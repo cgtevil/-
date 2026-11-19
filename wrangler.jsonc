@@ -1,0 +1,12 @@
+{
+  "name": "cgtevil-donations-api",
+  "main": "worker.js",
+  "compatibility_date": "2026-04-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cgtevil-donations-db",
+      "database_id": "664a2f75-4752-4ba5-8631-ca57bf5b2320"
+    }
+  ]
+}
