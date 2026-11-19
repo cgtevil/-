@@ -62,10 +62,9 @@
     <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار وتفاصيل الدعم وسط الشاشة بخط متوسط -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
-            <!-- مرحلة عرض فيديو الدعم أو مقطع يوتيوب المدمج مع التنبيه -->
+            <!-- مرحلة عرض فيديو الدعم المدمج مع التنبيه -->
             <div class="full-video-stage relative flex items-center justify-center">
                 <video id="alert-support-video" class="hidden w-full h-full object-contain" autoplay playsinline></video>
-                <iframe id="alert-youtube-frame" class="hidden absolute inset-0 w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
             <!-- تدرج وسطي خفيف عند وجود فيديو لإبراز النص بوضوح -->
@@ -309,23 +308,6 @@
                 <div id="support-video-status" class="text-xs text-slate-300"></div>
             </div>
 
-            <!-- خانة استجلاب مقطع يوتيوب مع رابط التنبيهات للبث المباشر -->
-            <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-rose-500/30">
-                <label for="setting-youtube-url" class="block text-xs font-black text-rose-300">
-                    🎬 استجلاب مقطع يوتيوب لرابط التنبيهات المباشر (عرض كامل)
-                </label>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input id="setting-youtube-url" type="url" dir="ltr" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                    <button type="button" onclick="applyYouTubeAlertVideo()" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-black text-xs transition cursor-pointer">
-                        استجلاب ودمج
-                    </button>
-                    <button type="button" onclick="clearYouTubeAlertVideo()" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 font-bold text-xs transition cursor-pointer">
-                        إزالة
-                    </button>
-                </div>
-                <div id="youtube-video-status" class="text-xs text-slate-300"></div>
-            </div>
-
             <!-- رابط الويدجت -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio)</label>
@@ -408,8 +390,6 @@
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
         const SUPPORT_VIDEO_STORAGE_KEY = "cgtevil_alert_support_video_url";
-        const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
-        const YOUTUBE_URL_STORAGE_KEY = "cgtevil_alert_youtube_url";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
@@ -419,8 +399,6 @@
 
         let selectedNetwork = "libyana";
         let activeSupportVideoUrl = "";
-        let activeYouTubeVideoId = "";
-        let activeYouTubeUrl = "";
         let lastSeenAlertId = "";
         let isShowingAlert = false;
         let wasCooldownActive = false;
@@ -514,127 +492,6 @@
             syncStreamerPanelInputs();
             updateSupportVideoStatusUI();
             showToast("تمت إزالة رابط فيديو الدعم من التنبيهات");
-        }
-
-        function extractYouTubeVideoId(input) {
-            if (!input || typeof input !== "string") return "";
-            const trimmed = input.trim();
-            if (!trimmed) return "";
-
-            if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
-                return trimmed;
-            }
-
-            try {
-                const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
-                const host = url.hostname.replace(/^www\./, "").toLowerCase();
-
-                if (host === "youtu.be") {
-                    const id = url.pathname.split("/").filter(Boolean)[0] || "";
-                    return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : "";
-                }
-
-                if (host.endsWith("youtube.com") || host.endsWith("youtube-nocookie.com")) {
-                    const vParam = url.searchParams.get("v");
-                    if (vParam && /^[a-zA-Z0-9_-]{11}$/.test(vParam)) return vParam;
-
-                    const parts = url.pathname.split("/").filter(Boolean);
-                    const specialIdx = parts.findIndex((p) => ["embed", "shorts", "live", "v"].includes(p));
-                    if (specialIdx !== -1 && parts[specialIdx + 1] && /^[a-zA-Z0-9_-]{11}$/.test(parts[specialIdx + 1])) {
-                        return parts[specialIdx + 1];
-                    }
-                }
-            } catch (e) {}
-
-            const match = trimmed.match(/(?:v=|\/|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_-]{11})/);
-            return match ? match[1] : "";
-        }
-
-        function buildYouTubeEmbedUrl(videoId) {
-            if (!videoId) return "";
-            return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&mute=0&controls=0&rel=0&modestbranding=1&playsinline=1`;
-        }
-
-        function loadSavedYouTubeSettings() {
-            const savedId = safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY) || "";
-            const savedUrl = safeStorageGet(YOUTUBE_URL_STORAGE_KEY) || "";
-            const parsedId = extractYouTubeVideoId(savedId || savedUrl);
-            if (parsedId) {
-                activeYouTubeVideoId = parsedId;
-                activeYouTubeUrl = savedUrl || `https://www.youtube.com/watch?v=${parsedId}`;
-            }
-        }
-
-        function updateYouTubeStatusUI() {
-            const urlInput = document.getElementById("setting-youtube-url");
-            const statusEl = document.getElementById("youtube-video-status");
-            if (urlInput && !urlInput.value && activeYouTubeUrl) {
-                urlInput.value = activeYouTubeUrl;
-            }
-            if (!statusEl) return;
-
-            if (activeYouTubeVideoId) {
-                statusEl.textContent = `✅ مقطع يوتيوب نشط ويُعرض كاملاً مع رابط التنبيهات (ID: ${activeYouTubeVideoId})`;
-                statusEl.className = "text-xs text-emerald-300 font-bold";
-            } else {
-                statusEl.textContent = "لم يتم استجلاب مقطع يوتيوب؛ سيُستخدم رابط فيديو الدعم إن وُجد أو يظهر النص شفافاً وسط الشاشة.";
-                statusEl.className = "text-xs text-slate-400";
-            }
-        }
-
-        function applyYouTubeAlertVideo() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
-            const input = document.getElementById("setting-youtube-url");
-            const rawVal = input ? input.value.trim() : "";
-            const videoId = extractYouTubeVideoId(rawVal);
-
-            if (!videoId) {
-                showToast("⚠️ يرجى إدخال رابط يوتيوب صحيح أو معرّف فيديو مكوّن من 11 حرفاً");
-                return;
-            }
-
-            activeYouTubeVideoId = videoId;
-            activeYouTubeUrl = rawVal || `https://www.youtube.com/watch?v=${videoId}`;
-
-            safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
-            safeStorageSet(YOUTUBE_URL_STORAGE_KEY, activeYouTubeUrl);
-
-            broadcastPayload("STREAMER_YOUTUBE_UPDATED", {
-                youtube_video_id: activeYouTubeVideoId,
-                youtube_url: activeYouTubeUrl,
-                synced_at: Date.now()
-            });
-
-            syncStreamerPanelInputs();
-            updateYouTubeStatusUI();
-            showToast("✅ تم استجلاب مقطع يوتيوب ودمجه للعرض الكامل في التنبيهات");
-        }
-
-        function clearYouTubeAlertVideo() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
-            activeYouTubeVideoId = "";
-            activeYouTubeUrl = "";
-            safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, "");
-            safeStorageSet(YOUTUBE_URL_STORAGE_KEY, "");
-
-            const input = document.getElementById("setting-youtube-url");
-            if (input) input.value = "";
-
-            broadcastPayload("STREAMER_YOUTUBE_UPDATED", {
-                youtube_video_id: "",
-                youtube_url: "",
-                synced_at: Date.now()
-            });
-
-            syncStreamerPanelInputs();
-            updateYouTubeStatusUI();
-            showToast("تمت إزالة مقطع يوتيوب من رابط التنبيهات");
         }
 
         function isApiConfigured() {
@@ -939,7 +796,6 @@
             if (show) {
                 syncStreamerPanelInputs();
                 updateSupportVideoStatusUI();
-                updateYouTubeStatusUI();
                 panel.classList.remove("hidden");
                 fetchDonationsFromDb();
             } else {
@@ -955,9 +811,6 @@
             if (activeSupportVideoUrl) {
                 query.set("video_url", activeSupportVideoUrl);
             }
-            if (activeYouTubeVideoId) {
-                query.set("yt_id", activeYouTubeVideoId);
-            }
             return `${currentBase}?${query.toString()}#/d/cgtevil`;
         }
 
@@ -966,13 +819,11 @@
             const donorLinkInput = document.getElementById("donor-link-input");
             const streamerLinkInput = document.getElementById("streamer-link-input");
             const supportVideoInput = document.getElementById("setting-support-video-url");
-            const ytInput = document.getElementById("setting-youtube-url");
 
             if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
             if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
             if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
             if (supportVideoInput && activeSupportVideoUrl) supportVideoInput.value = activeSupportVideoUrl;
-            if (ytInput && activeYouTubeUrl) ytInput.value = activeYouTubeUrl;
         }
 
         function copyWidgetUrl() {
@@ -1182,7 +1033,6 @@
                 message: message,
                 network: selectedNetwork,
                 video_url: activeSupportVideoUrl,
-                youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString(),
                 review_status: "approved",
                 alert_notified: 1
@@ -1196,7 +1046,6 @@
                 message: record.message,
                 network: record.network,
                 video_url: activeSupportVideoUrl,
-                youtube_video_id: activeYouTubeVideoId,
                 created_at: record.created_at,
                 review_status: "approved",
                 alert_notified: 1
@@ -1277,7 +1126,6 @@
                             message: data.item.message,
                             network: data.item.network,
                             video_url: activeSupportVideoUrl,
-                            youtube_video_id: activeYouTubeVideoId,
                             created_at: data.item.created_at,
                             review_status: "approved",
                             alert_notified: 1
@@ -1311,8 +1159,7 @@
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
                 broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, {
-                    video_url: activeSupportVideoUrl,
-                    youtube_video_id: activeYouTubeVideoId
+                    video_url: activeSupportVideoUrl
                 }));
                 showPanelLivePreview(target);
             }
@@ -1377,7 +1224,6 @@
                 message: message,
                 network: network,
                 video_url: activeSupportVideoUrl,
-                youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString()
             };
 
@@ -1399,7 +1245,6 @@
             clearActiveAlertTimers();
             const card = document.getElementById("live-alert-card");
             const supportVideo = document.getElementById("alert-support-video");
-            const ytFrame = document.getElementById("alert-youtube-frame");
             const scrim = document.getElementById("alert-video-scrim");
 
             if (supportVideo) {
@@ -1407,10 +1252,6 @@
                 try { supportVideo.pause(); } catch (e) {}
                 supportVideo.removeAttribute("src");
                 supportVideo.classList.add("hidden");
-            }
-            if (ytFrame) {
-                ytFrame.removeAttribute("src");
-                ytFrame.classList.add("hidden");
             }
             if (scrim) scrim.classList.add("hidden");
             if (card) card.classList.add("hidden");
@@ -1439,7 +1280,6 @@
             const widgetView = document.getElementById("widget-view");
             const card = document.getElementById("live-alert-card");
             const supportVideo = document.getElementById("alert-support-video");
-            const ytFrame = document.getElementById("alert-youtube-frame");
             const scrim = document.getElementById("alert-video-scrim");
             const nameEl = document.getElementById("alert-donor-name");
             const amountEl = document.getElementById("alert-amount");
@@ -1450,26 +1290,9 @@
             if (amountEl) amountEl.textContent = current.amount || "10";
             if (msgEl) msgEl.textContent = current.message || "شكراً لدعمك!";
 
-            const ytId = extractYouTubeVideoId(current.youtube_video_id || activeYouTubeVideoId || "");
             const videoSrc = sanitizeSupportVideoUrl(current.video_url || activeSupportVideoUrl || "");
 
-            if (ytId) {
-                if (supportVideo) {
-                    supportVideo.onended = null;
-                    try { supportVideo.pause(); } catch (e) {}
-                    supportVideo.removeAttribute("src");
-                    supportVideo.classList.add("hidden");
-                }
-                if (ytFrame) {
-                    ytFrame.src = buildYouTubeEmbedUrl(ytId);
-                    ytFrame.classList.remove("hidden");
-                }
-                if (scrim) scrim.classList.remove("hidden");
-            } else if (videoSrc && supportVideo) {
-                if (ytFrame) {
-                    ytFrame.removeAttribute("src");
-                    ytFrame.classList.add("hidden");
-                }
+            if (videoSrc && supportVideo) {
                 supportVideo.src = videoSrc;
                 supportVideo.loop = false;
                 supportVideo.onended = () => {
@@ -1490,10 +1313,6 @@
                     try { supportVideo.pause(); } catch (e) {}
                     supportVideo.removeAttribute("src");
                     supportVideo.classList.add("hidden");
-                }
-                if (ytFrame) {
-                    ytFrame.removeAttribute("src");
-                    ytFrame.classList.add("hidden");
                 }
                 if (scrim) scrim.classList.add("hidden");
             }
@@ -1519,8 +1338,7 @@
                             amount: data.alert.amount,
                             message: data.alert.message,
                             network: data.alert.network,
-                            video_url: activeSupportVideoUrl,
-                            youtube_video_id: activeYouTubeVideoId
+                            video_url: activeSupportVideoUrl
                         });
                     }
                 }
@@ -1537,9 +1355,6 @@
                         if (!incoming.video_url && activeSupportVideoUrl) {
                             incoming.video_url = activeSupportVideoUrl;
                         }
-                        if (!incoming.youtube_video_id && activeYouTubeVideoId) {
-                            incoming.youtube_video_id = activeYouTubeVideoId;
-                        }
                         enqueueAlert(incoming);
                     }
                 } catch (e) {}
@@ -1553,9 +1368,6 @@
                         if (!incomingName.video_url && activeSupportVideoUrl) {
                             incomingName.video_url = activeSupportVideoUrl;
                         }
-                        if (!incomingName.youtube_video_id && activeYouTubeVideoId) {
-                            incomingName.youtube_video_id = activeYouTubeVideoId;
-                        }
                         enqueueAlert(incomingName);
                     }
                 }
@@ -1564,11 +1376,6 @@
             const storedVideo = sanitizeSupportVideoUrl(safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY) || "");
             if (storedVideo) {
                 activeSupportVideoUrl = storedVideo;
-            }
-
-            const storedYtId = extractYouTubeVideoId(safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY) || "");
-            if (storedYtId) {
-                activeYouTubeVideoId = storedYtId;
             }
         }
 
@@ -1582,21 +1389,11 @@
                         safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
                         syncStreamerPanelInputs();
                         updateSupportVideoStatusUI();
-                    } else if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
-                        activeYouTubeVideoId = extractYouTubeVideoId(event.data.payload.youtube_video_id || "");
-                        activeYouTubeUrl = event.data.payload.youtube_url || "";
-                        safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
-                        safeStorageSet(YOUTUBE_URL_STORAGE_KEY, activeYouTubeUrl);
-                        syncStreamerPanelInputs();
-                        updateYouTubeStatusUI();
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
                         if (!incoming.video_url && activeSupportVideoUrl) {
                             incoming.video_url = activeSupportVideoUrl;
-                        }
-                        if (!incoming.youtube_video_id && activeYouTubeVideoId) {
-                            incoming.youtube_video_id = activeYouTubeVideoId;
                         }
                         enqueueAlert(incoming);
                     }
@@ -1610,19 +1407,11 @@
                     safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
                     syncStreamerPanelInputs();
                     updateSupportVideoStatusUI();
-                } else if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
-                    activeYouTubeVideoId = extractYouTubeVideoId(event.data.payload.youtube_video_id || "");
-                    activeYouTubeUrl = event.data.payload.youtube_url || "";
-                    syncStreamerPanelInputs();
-                    updateYouTubeStatusUI();
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
                     if (!incoming.video_url && activeSupportVideoUrl) {
                         incoming.video_url = activeSupportVideoUrl;
-                    }
-                    if (!incoming.youtube_video_id && activeYouTubeVideoId) {
-                        incoming.youtube_video_id = activeYouTubeVideoId;
                     }
                     enqueueAlert(incoming);
                 }
@@ -1633,10 +1422,6 @@
                     activeSupportVideoUrl = sanitizeSupportVideoUrl(event.newValue || "");
                     syncStreamerPanelInputs();
                     updateSupportVideoStatusUI();
-                } else if (event.key === YOUTUBE_VIDEO_STORAGE_KEY) {
-                    activeYouTubeVideoId = extractYouTubeVideoId(event.newValue || "");
-                    syncStreamerPanelInputs();
-                    updateYouTubeStatusUI();
                 } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
                     try {
                         const parsed = JSON.parse(event.newValue);
@@ -1644,9 +1429,6 @@
                             const incoming = Object.assign({}, parsed);
                             if (!incoming.video_url && activeSupportVideoUrl) {
                                 incoming.video_url = activeSupportVideoUrl;
-                            }
-                            if (!incoming.youtube_video_id && activeYouTubeVideoId) {
-                                incoming.youtube_video_id = activeYouTubeVideoId;
                             }
                             enqueueAlert(incoming);
                         }
@@ -1669,21 +1451,12 @@
 
         function initApp() {
             loadSavedSupportVideoSettings();
-            loadSavedYouTubeSettings();
 
             const params = getCombinedUrlParams();
             const urlVideo = sanitizeSupportVideoUrl(params.get("video_url") || params.get("support_video") || "");
             if (urlVideo) {
                 activeSupportVideoUrl = urlVideo;
                 safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
-            }
-
-            const urlYtId = extractYouTubeVideoId(params.get("yt_id") || params.get("youtube_url") || "");
-            if (urlYtId) {
-                activeYouTubeVideoId = urlYtId;
-                activeYouTubeUrl = `https://www.youtube.com/watch?v=${urlYtId}`;
-                safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
-                safeStorageSet(YOUTUBE_URL_STORAGE_KEY, activeYouTubeUrl);
             }
 
             initRealtimeSync();
@@ -1703,14 +1476,12 @@
                         amount: Number(urlAmount),
                         message: params.get("message") || "شكراً لدعمك المباشر!",
                         network: params.get("network") || "libyana",
-                        video_url: activeSupportVideoUrl,
-                        youtube_video_id: activeYouTubeVideoId
+                        video_url: activeSupportVideoUrl
                     });
                 }
             } else {
                 updateAuthUI();
                 updateSupportVideoStatusUI();
-                updateYouTubeStatusUI();
                 wasCooldownActive = getRemainingCooldownMs() > 0;
                 updateTransferCooldownUI();
                 clearInterval(window.__cooldownInterval);
