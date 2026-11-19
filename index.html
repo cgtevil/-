@@ -799,15 +799,13 @@
 
             const confirmBtn = document.getElementById('m-modal-confirm-btn');
             confirmBtn.onclick = () => confirmAndDispatchSupport({
-                id: 'don_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
                 streamer_username: currentStreamerUsername,
                 donor_name: nickname,
                 amount: amount,
                 message: message,
                 network: selectedNetwork,
                 status: 'approved',
-                is_played: false,
-                created_at: new Date().toISOString()
+                is_played: false
             });
 
             document.getElementById('manual-transfer-modal').classList.remove('hidden');
@@ -834,32 +832,47 @@
             closeManualModalWithoutAlert();
 
             const currentVideoUrl = cloudStreamerSettings.alert_video_url || localStorage.getItem('cgtevil_alert_video') || DEFAULT_SUKUNA_VIDEO_URL;
-            donationObj.alert_video_url = currentVideoUrl;
+            
+            // تجهيز البيانات النظيفة المطابقة لأعمدة جدول donations في Supabase
+            const dbPayload = {
+                id: donationObj.id,
+                streamer_username: donationObj.streamer_username,
+                donor_name: donationObj.donor_name,
+                amount: donationObj.amount,
+                message: donationObj.message,
+                network: donationObj.network,
+                status: 'approved',
+                is_played: false,
+                created_at: donationObj.created_at
+            };
 
-            let insertedInCloud = false;
+            const fullAlertObj = { ...dbPayload, alert_video_url: currentVideoUrl };
+
             if (supabaseClient) {
                 try {
                     const { error } = await supabaseClient
                         .from('donations')
-                        .insert([donationObj]);
+                        .insert([dbPayload]);
 
-                    if (error) throw error;
-                    insertedInCloud = true;
+                    if (error) {
+                        console.warn('Supabase insert fallback:', error.message);
+                    }
                 } catch (err) {
-                    localDonationsCache.unshift(donationObj);
-                    enqueueAlert(donationObj);
+                    console.warn('Network error during insert:', err);
                 }
-            } else {
-                localDonationsCache.unshift(donationObj);
-                enqueueAlert(donationObj);
             }
 
-            if (insertedInCloud) {
-                localDonationsCache.unshift(donationObj);
-            }
+            localDonationsCache.unshift(fullAlertObj);
 
-            // إرسال التنبيه فوراً إلى رابط البث المباشر عند ضغط تم التحويل
-            enqueueAlert(donationObj, true);
+            // بث التنبيه فوراً عبر BroadcastChannel لأي نافذة بث مباشر مفتوحة على نفس المتصفح
+            try {
+                const bc = new BroadcastChannel('cgtevil_live_alerts');
+                bc.postMessage({ type: 'NEW_DONATION', donation: fullAlertObj });
+                bc.close();
+            } catch (e) {}
+
+            // تشغيل التنبيه في حال كانت الصفحة الحالية في وضع الويدجت
+            enqueueAlert(fullAlertObj, true);
 
             document.getElementById('streamer-support-form').reset();
             selectAmount(10);
@@ -1133,13 +1146,25 @@
         }
 
         function setupSupabaseRealtimeSubscription() {
+            // 1. الاستماع الفوري عبر BroadcastChannel بين النوافذ
+            try {
+                const bc = new BroadcastChannel('cgtevil_live_alerts');
+                bc.onmessage = (event) => {
+                    if (event.data && event.data.type === 'NEW_DONATION' && event.data.donation) {
+                        const d = event.data.donation;
+                        if (!localDonationsCache.some(item => item.id === d.id)) {
+                            localDonationsCache.unshift(d);
+                        }
+                        enqueueAlert(d);
+                        loadTop3Supporters();
+                    }
+                };
+            } catch (e) {}
+
             if (!supabaseClient) return;
 
+            // 2. الاشتراك اللحظي في Supabase Realtime دون حظر المعاينات
             try {
-                if (window.self !== window.top || window.location.protocol === 'blob:' || window.location.hostname.includes('googleusercontent') || window.location.hostname.includes('google')) {
-                    return;
-                }
-
                 supabaseClient
                     .channel('public:donations')
                     .on(
@@ -1163,6 +1188,25 @@
                     )
                     .subscribe();
             } catch (err) {}
+
+            // 3. نظام فحص احتياطي كل 3 ثوانٍ في وضع البث المباشر لضمان عدم فوات أي تنبيه
+            if (isWidgetMode) {
+                setInterval(async () => {
+                    try {
+                        const { data } = await supabaseClient
+                            .from('donations')
+                            .select('*')
+                            .eq('streamer_username', currentStreamerUsername)
+                            .eq('status', 'approved')
+                            .eq('is_played', false)
+                            .order('created_at', { ascending: true });
+
+                        if (data && data.length > 0) {
+                            data.forEach(item => enqueueAlert(item));
+                        }
+                    } catch (e) {}
+                }, 3000);
+            }
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
