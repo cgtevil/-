@@ -31,7 +31,7 @@
         @keyframes alertPop {
             0% {
                 opacity: 0;
-                transform: translateY(24px) scale(0.94);
+                transform: translateY(-16px) scale(0.97);
             }
             100% {
                 opacity: 1;
@@ -39,7 +39,10 @@
             }
         }
         .alert-anim {
-            animation: alertPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: alertPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .frameless-text-shadow {
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.92), 0 0 2px rgba(0, 0, 0, 0.95);
         }
     </style>
 </head>
@@ -50,36 +53,29 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) مع تراكب البيانات فوق الفيديو -->
-    <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center p-4 pointer-events-none">
-        <div id="live-alert-card" class="hidden alert-anim relative w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-400/80 bg-slate-950">
-            <div class="relative w-full aspect-video bg-black overflow-hidden">
-                <video id="alert-video" class="w-full h-full object-cover" autoplay playsinline></video>
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار مع تفاصيل الدعم أعلى الشاشة بخط متوسط -->
+    <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
+        <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
+            <!-- مشغّل يوتيوب المدمج عند تفعيل مقطع يوتيوب -->
+            <iframe id="alert-youtube-frame" class="hidden w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
-                <!-- طبقة تدرج داكنة لإبراز النصوص بوضوح فوق الفيديو -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/45"></div>
+            <!-- تدرج علوي خفيف لإبراز تفاصيل الدعم أعلى الشاشة بدون إطار -->
+            <div class="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/80 via-black/40 to-transparent z-10"></div>
 
-                <!-- شارة التنبيه العلوية -->
-                <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
-                    ⚡ تنبيه دعم مباشر
+            <!-- تفاصيل الدعم أعلى الشاشة بخط متوسط -->
+            <div class="absolute inset-x-0 top-5 px-5 flex flex-col items-center text-center space-y-1.5 z-20">
+                <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
+                    <span id="alert-donor-name" class="text-white">داعم كريم</span>
+                    <span class="text-amber-300">•</span>
+                    <span class="inline-flex items-center gap-1 text-emerald-300">
+                        <span id="alert-amount">10</span>
+                        <span class="text-sm font-bold">د.ل</span>
+                    </span>
                 </div>
 
-                <!-- بيانات الداعم مباشرة فوق الفيديو -->
-                <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5 flex flex-col items-center text-center space-y-2">
-                    <div class="flex flex-wrap items-center justify-center gap-2">
-                        <span id="alert-donor-name" class="px-3.5 py-1 rounded-xl bg-black/75 border border-white/15 text-lg sm:text-xl font-black text-white drop-shadow">
-                            داعم كريم
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-3.5 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-base sm:text-lg shadow-lg">
-                            <span id="alert-amount">10</span>
-                            <span class="text-xs font-extrabold">د.ل</span>
-                        </span>
-                    </div>
-
-                    <p id="alert-message" class="max-w-full px-3.5 py-2 rounded-2xl bg-black/75 border border-white/15 text-xs sm:text-sm font-bold text-amber-200 drop-shadow line-clamp-2">
-                        بث موفق يا أسطورة!
-                    </p>
-                </div>
+                <p id="alert-message" class="max-w-2xl text-sm sm:text-base font-semibold text-amber-100 frameless-text-shadow line-clamp-2">
+                    بث موفق يا أسطورة!
+                </p>
             </div>
         </div>
     </div>
@@ -165,9 +161,12 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="openTransferModal()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-base shadow-xl shadow-emerald-500/20 transition cursor-pointer">
-                    ⚡ إظهار كود التحويل السريع
-                </button>
+                <div class="space-y-2">
+                    <button id="btn-show-transfer" type="button" onclick="openTransferModal()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-base shadow-xl shadow-emerald-500/20 transition cursor-pointer">
+                        ⚡ إظهار كود التحويل السريع
+                    </button>
+                    <p id="transfer-cooldown-hint" class="hidden text-center text-xs font-bold text-amber-300"></p>
+                </div>
             </section>
 
             <!-- العمود الأيسر: قائمة أفضل 3 داعمين ومعلومات سريعة -->
@@ -192,7 +191,7 @@
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• اختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• نفّذ التحويل من هاتفك ثم اضغط <strong>"تم التحويل"</strong> ليُسجّل طلبك في قاعدة البيانات.</li>
-                        <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُطلق إشعار البث وقائمة أفضل الداعمين.</li>
+                        <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُفعّل مؤقت 5 دقائق قبل إجراء تحويل آخر.</li>
                     </ul>
                 </div>
             </aside>
@@ -209,7 +208,7 @@
 
             <div class="p-4 rounded-2xl bg-slate-950/90 border border-white/10 space-y-2 text-center">
                 <div class="text-xs text-slate-400">كود التحويل الفوري (USSD)</div>
-                <div id="ussd-code-display" dir="ltr" class="text-xl font-black text-emerald-400 select-all">*122*0920000000*10#</div>
+                <div id="ussd-code-display" dir="ltr" class="text-xl font-black text-emerald-400 select-all">*122*0944630534*10#</div>
                 <div id="transfer-summary" class="text-xs text-slate-300 pt-1"></div>
             </div>
 
@@ -217,12 +216,12 @@
                 <button type="button" onclick="copyUssdCode()" class="py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer">
                     📋 نسخ الكود
                 </button>
-                <a id="ussd-call-link" href="tel:*122*0920000000*10%23" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
+                <a id="ussd-call-link" href="tel:*122*0944630534*10%23" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
                     📞 اتصال مباشر
                 </a>
             </div>
 
-            <button type="button" onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition cursor-pointer">
+            <button id="btn-confirm-transfer" type="button" onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition cursor-pointer">
                 ✅ تم التحويل (اعتماد تلقائي وإرسال للبث)
             </button>
         </div>
@@ -280,6 +279,23 @@
                 </div>
             </div>
 
+            <!-- خانة استجلاب مقطع يوتيوب مع رابط التنبيهات للبث المباشر -->
+            <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-rose-500/30">
+                <label for="setting-youtube-url" class="block text-xs font-black text-rose-300">
+                    🎬 استجلاب مقطع يوتيوب لرابط التنبيهات المباشر
+                </label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input id="setting-youtube-url" type="url" dir="ltr" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
+                    <button type="button" onclick="applyYouTubeAlertVideo()" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-black text-xs transition cursor-pointer">
+                        استجلاب ودمج
+                    </button>
+                    <button type="button" onclick="clearYouTubeAlertVideo()" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 font-bold text-xs transition cursor-pointer">
+                        إزالة
+                    </button>
+                </div>
+                <div id="youtube-video-status" class="text-xs text-slate-300"></div>
+            </div>
+
             <!-- رابط الويدجت -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio)</label>
@@ -314,19 +330,6 @@
                 </div>
             </div>
 
-            <!-- رابط أو رفع فيديو التنبيه -->
-            <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
-                <div class="space-y-1.5">
-                    <label for="setting-video-url" class="block text-xs font-bold text-slate-200">رابط مباشر لفيديو التنبيه (MP4 / WebM)</label>
-                    <input id="setting-video-url" type="url" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                </div>
-                <div class="space-y-1.5">
-                    <label for="setting-video-file" class="block text-xs font-bold text-slate-200">أو ارفع مقطع فيديو من جهازك (الحد الأقصى 5MB)</label>
-                    <input id="setting-video-file" type="file" accept="video/mp4,video/webm,video/ogg" onchange="handleVideoFileUpload(event)" class="block w-full text-xs text-slate-300 file:mr-0 file:ml-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-400 file:text-slate-950 hover:file:bg-amber-300 cursor-pointer">
-                    <div id="uploaded-video-status" class="text-xs text-emerald-300"></div>
-                </div>
-            </div>
-
             <!-- اختبار دونيشن كامل -->
             <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-amber-400/20">
                 <div class="flex items-center justify-between">
@@ -346,9 +349,8 @@
                 <input id="test-donor-message" type="text" placeholder="رسالة الاختبار للبث المباشر..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
                 <div id="tiktok-test-status" class="text-xs text-emerald-300"></div>
 
-                <div id="panel-live-preview" class="hidden p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
+                <div id="panel-live-preview" class="hidden p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
                     <div class="text-[11px] font-bold text-amber-300">معاينة التنبيه الفورية:</div>
-                    <video id="panel-preview-video" class="w-full aspect-video rounded-xl bg-black object-cover" playsinline loop></video>
                     <div class="flex items-center justify-between text-xs">
                         <span id="panel-preview-donor" class="font-black text-white"></span>
                         <span id="panel-preview-amount" class="font-black text-emerald-300"></span>
@@ -357,13 +359,10 @@
                 </div>
             </div>
 
-            <!-- أزرار الحفظ -->
+            <!-- أزرار الإغلاق -->
             <div class="flex items-center justify-end gap-3 pt-2">
                 <button type="button" onclick="toggleStreamerPanel(false)" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold cursor-pointer">
                     إغلاق
-                </button>
-                <button type="button" onclick="saveStreamerSettings()" class="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-black cursor-pointer">
-                    💾 حفظ ودمج الفيديو
                 </button>
             </div>
         </div>
@@ -375,30 +374,151 @@
         const CORRECT_STREAMER_USER = "cgtevil";
         const CORRECT_STREAMER_PASS = "0918064401Ee";
         const AUTH_STORAGE_KEY = "cgtevil_streamer_auth_session";
-        const DEFAULT_LIBYANA_PHONE = "0920000000";
-        const DEFAULT_ALMADAR_PHONE = "0910000000";
-        const DEFAULT_SUKUNA_VIDEO_URL = "https://assets.mixkit.co/videos/preview/mixkit-abstract-red-and-black-ink-swirls-41484-large.mp4";
-        const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil&video_url=https%3A%2F%2Fassets.mixkit.co%2Fvideos%2Fpreview%2Fmixkit-abstract-red-and-black-ink-swirls-41484-large.mp4";
-        const ALERT_VIDEO_SYNC_KEY = "cgtevil_synced_alert_video_url";
+        const DEFAULT_LIBYANA_PHONE = "0944630534";
+        const DEFAULT_ALMADAR_PHONE = "0917043842";
+        const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
+        const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
+        const YOUTUBE_URL_STORAGE_KEY = "cgtevil_alert_youtube_url";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
+        const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
+        const TRANSFER_COOLDOWN_MS = 5 * 60 * 1000;
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
-        const MAX_VIDEO_BYTES = 5 * 1024 * 1024;
 
         let selectedNetwork = "libyana";
-        let pendingUploadedVideoDataUrl = null;
-        let uploadedFileName = "";
+        let activeYouTubeVideoId = "";
+        let activeYouTubeUrl = "";
         let lastSeenAlertId = "";
-        let lastSeenVideoSignature = "";
         let isShowingAlert = false;
+        let wasCooldownActive = false;
         const alertQueue = [];
         let broadcastChannel = null;
 
         const streamerSettings = {
             libyana_phone: DEFAULT_LIBYANA_PHONE,
-            almadar_phone: DEFAULT_ALMADAR_PHONE,
-            alert_video_url: DEFAULT_SUKUNA_VIDEO_URL
+            almadar_phone: DEFAULT_ALMADAR_PHONE
         };
+
+        function extractYouTubeVideoId(input) {
+            if (!input || typeof input !== "string") return "";
+            const trimmed = input.trim();
+            if (!trimmed) return "";
+
+            if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+                return trimmed;
+            }
+
+            try {
+                const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+                const host = url.hostname.replace(/^www\./, "").toLowerCase();
+
+                if (host === "youtu.be") {
+                    const id = url.pathname.split("/").filter(Boolean)[0] || "";
+                    return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : "";
+                }
+
+                if (host.endsWith("youtube.com") || host.endsWith("youtube-nocookie.com")) {
+                    const vParam = url.searchParams.get("v");
+                    if (vParam && /^[a-zA-Z0-9_-]{11}$/.test(vParam)) return vParam;
+
+                    const parts = url.pathname.split("/").filter(Boolean);
+                    const specialIdx = parts.findIndex((p) => ["embed", "shorts", "live", "v"].includes(p));
+                    if (specialIdx !== -1 && parts[specialIdx + 1] && /^[a-zA-Z0-9_-]{11}$/.test(parts[specialIdx + 1])) {
+                        return parts[specialIdx + 1];
+                    }
+                }
+            } catch (e) {}
+
+            const match = trimmed.match(/(?:v=|\/|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_-]{11})/);
+            return match ? match[1] : "";
+        }
+
+        function buildYouTubeEmbedUrl(videoId) {
+            if (!videoId) return "";
+            return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&mute=0&controls=0&rel=0&modestbranding=1&playsinline=1`;
+        }
+
+        function loadSavedYouTubeSettings() {
+            const savedId = safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY) || "";
+            const savedUrl = safeStorageGet(YOUTUBE_URL_STORAGE_KEY) || "";
+            const parsedId = extractYouTubeVideoId(savedId || savedUrl);
+            if (parsedId) {
+                activeYouTubeVideoId = parsedId;
+                activeYouTubeUrl = savedUrl || `https://www.youtube.com/watch?v=${parsedId}`;
+            }
+        }
+
+        function updateYouTubeStatusUI() {
+            const urlInput = document.getElementById("setting-youtube-url");
+            const statusEl = document.getElementById("youtube-video-status");
+            if (urlInput && !urlInput.value && activeYouTubeUrl) {
+                urlInput.value = activeYouTubeUrl;
+            }
+            if (!statusEl) return;
+
+            if (activeYouTubeVideoId) {
+                statusEl.textContent = `✅ مقطع يوتيوب نشط ومندمج مع رابط التنبيهات (ID: ${activeYouTubeVideoId})`;
+                statusEl.className = "text-xs text-emerald-300 font-bold";
+            } else {
+                statusEl.textContent = "لم يتم استجلاب مقطع يوتيوب بعد؛ التنبيه سيظهر كنص شفاف أعلى الشاشة.";
+                statusEl.className = "text-xs text-slate-400";
+            }
+        }
+
+        function applyYouTubeAlertVideo() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            const input = document.getElementById("setting-youtube-url");
+            const rawVal = input ? input.value.trim() : "";
+            const videoId = extractYouTubeVideoId(rawVal);
+
+            if (!videoId) {
+                showToast("⚠️ يرجى إدخال رابط يوتيوب صحيح أو معرّف فيديو مكوّن من 11 حرفاً");
+                return;
+            }
+
+            activeYouTubeVideoId = videoId;
+            activeYouTubeUrl = rawVal || `https://www.youtube.com/watch?v=${videoId}`;
+
+            safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
+            safeStorageSet(YOUTUBE_URL_STORAGE_KEY, activeYouTubeUrl);
+
+            broadcastPayload("STREAMER_YOUTUBE_UPDATED", {
+                youtube_video_id: activeYouTubeVideoId,
+                youtube_url: activeYouTubeUrl,
+                synced_at: Date.now()
+            });
+
+            syncStreamerPanelInputs();
+            updateYouTubeStatusUI();
+            showToast("✅ تم استجلاب مقطع يوتيوب ودمجه في رابط التنبيهات");
+        }
+
+        function clearYouTubeAlertVideo() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            activeYouTubeVideoId = "";
+            activeYouTubeUrl = "";
+            safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, "");
+            safeStorageSet(YOUTUBE_URL_STORAGE_KEY, "");
+
+            const input = document.getElementById("setting-youtube-url");
+            if (input) input.value = "";
+
+            broadcastPayload("STREAMER_YOUTUBE_UPDATED", {
+                youtube_video_id: "",
+                youtube_url: "",
+                synced_at: Date.now()
+            });
+
+            syncStreamerPanelInputs();
+            updateYouTubeStatusUI();
+            showToast("تمت إزالة مقطع يوتيوب من رابط التنبيهات");
+        }
 
         function isApiConfigured() {
             return Boolean(API_BASE_URL && !API_BASE_URL.includes("YOUR-SUBDOMAIN"));
@@ -412,8 +532,73 @@
             try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
         }
 
-        function safeStorageRemove(key) {
-            try { localStorage.removeItem(key); } catch (e) {}
+        function getRemainingCooldownMs() {
+            const rawTs = Number(safeStorageGet(TRANSFER_COOLDOWN_KEY) || 0);
+            if (!Number.isFinite(rawTs) || rawTs <= 0) return 0;
+            const elapsed = Date.now() - rawTs;
+            return elapsed < TRANSFER_COOLDOWN_MS ? (TRANSFER_COOLDOWN_MS - elapsed) : 0;
+        }
+
+        function formatCountdown(ms) {
+            const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+            const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+            const secs = String(totalSeconds % 60).padStart(2, "0");
+            return `${mins}:${secs}`;
+        }
+
+        function startTransferCooldown() {
+            safeStorageSet(TRANSFER_COOLDOWN_KEY, String(Date.now()));
+            wasCooldownActive = true;
+            updateTransferCooldownUI();
+        }
+
+        function updateTransferCooldownUI() {
+            const remainingMs = getRemainingCooldownMs();
+            const showBtn = document.getElementById("btn-show-transfer");
+            const confirmBtn = document.getElementById("btn-confirm-transfer");
+            const hintEl = document.getElementById("transfer-cooldown-hint");
+
+            if (remainingMs > 0) {
+                wasCooldownActive = true;
+                const formatted = formatCountdown(remainingMs);
+                if (showBtn) {
+                    showBtn.disabled = true;
+                    showBtn.textContent = `⏳ متاح بعد ${formatted} لإجراء تحويل آخر`;
+                    showBtn.classList.add("opacity-60", "cursor-not-allowed");
+                    showBtn.classList.remove("cursor-pointer");
+                }
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = `⏳ مؤقت 5 دقائق نشط (${formatted})`;
+                    confirmBtn.classList.add("opacity-60", "cursor-not-allowed");
+                    confirmBtn.classList.remove("cursor-pointer");
+                }
+                if (hintEl) {
+                    hintEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل؛ يمكنك إجراء تحويل آخر بعد ${formatted}`;
+                    hintEl.classList.remove("hidden");
+                }
+            } else {
+                if (wasCooldownActive) {
+                    wasCooldownActive = false;
+                    showToast("✅ انتهى مؤقت الـ 5 دقائق، يمكنك إجراء تحويل جديد الآن");
+                }
+                if (showBtn) {
+                    showBtn.disabled = false;
+                    showBtn.textContent = "⚡ إظهار كود التحويل السريع";
+                    showBtn.classList.remove("opacity-60", "cursor-not-allowed");
+                    showBtn.classList.add("cursor-pointer");
+                }
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = "✅ تم التحويل (اعتماد تلقائي وإرسال للبث)";
+                    confirmBtn.classList.remove("opacity-60", "cursor-not-allowed");
+                    confirmBtn.classList.add("cursor-pointer");
+                }
+                if (hintEl) {
+                    hintEl.textContent = "";
+                    hintEl.classList.add("hidden");
+                }
+            }
         }
 
         function showToast(message) {
@@ -529,15 +714,6 @@
             if (panelBtn) panelBtn.classList.toggle("hidden", !authed);
         }
 
-        function loadSavedSettings() {
-            const savedVideo = safeStorageGet(ALERT_VIDEO_SYNC_KEY) || safeStorageGet("alert_video_url");
-            if (savedVideo && savedVideo.trim() !== "") {
-                streamerSettings.alert_video_url = savedVideo.trim();
-            }
-            const savedFileName = safeStorageGet("uploaded_video_name");
-            if (savedFileName) uploadedFileName = savedFileName;
-        }
-
         function clearLoginError() {
             const errEl = document.getElementById("login-error-msg");
             const userInput = document.getElementById("login-username");
@@ -624,6 +800,7 @@
             if (!panel) return;
             if (show) {
                 syncStreamerPanelInputs();
+                updateYouTubeStatusUI();
                 panel.classList.remove("hidden");
                 fetchDonationsFromDb();
             } else {
@@ -631,93 +808,26 @@
             }
         }
 
-        function getActiveAlertVideo(customVideo) {
-            if (customVideo && String(customVideo).trim() !== "") return String(customVideo).trim();
-            const synced = safeStorageGet(ALERT_VIDEO_SYNC_KEY) || safeStorageGet("alert_video_url");
-            if (synced && synced.trim() !== "") return synced.trim();
-            if (streamerSettings.alert_video_url && streamerSettings.alert_video_url.trim() !== "") {
-                return streamerSettings.alert_video_url.trim();
-            }
-            return DEFAULT_SUKUNA_VIDEO_URL;
-        }
-
         function buildShareableWidgetUrl() {
-            const activeVid = getActiveAlertVideo(streamerSettings.alert_video_url);
             const currentBase = window.location.origin && window.location.origin.startsWith("http")
                 ? `${window.location.origin}${window.location.pathname}`
                 : TARGET_WIDGET_URL.split("?")[0];
-            const base = `${currentBase}?widget=true`;
-            if (activeVid && !activeVid.startsWith("data:video/")) {
-                return `${base}&video_url=${encodeURIComponent(activeVid)}#/d/cgtevil`;
+            if (activeYouTubeVideoId) {
+                return `${currentBase}?widget=true&yt_id=${encodeURIComponent(activeYouTubeVideoId)}#/d/cgtevil`;
             }
-            return `${base}#/d/cgtevil`;
+            return `${currentBase}?widget=true#/d/cgtevil`;
         }
 
         function syncStreamerPanelInputs() {
-            const vidInput = document.getElementById("setting-video-url");
             const widgetInput = document.getElementById("widget-url-input");
             const donorLinkInput = document.getElementById("donor-link-input");
             const streamerLinkInput = document.getElementById("streamer-link-input");
-            const statusEl = document.getElementById("uploaded-video-status");
+            const ytInput = document.getElementById("setting-youtube-url");
 
-            if (vidInput) {
-                vidInput.value = streamerSettings.alert_video_url.startsWith("data:video/")
-                    ? ""
-                    : streamerSettings.alert_video_url;
-            }
             if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
             if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
             if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
-            if (statusEl) {
-                statusEl.textContent = streamerSettings.alert_video_url.startsWith("data:video/")
-                    ? `🎬 ملف مرفوع نشط: ${uploadedFileName || "فيديو مخصص"}`
-                    : "🌐 يتم استخدام رابط الفيديو المباشر الحالي للتنبيهات";
-            }
-        }
-
-        function handleVideoFileUpload(event) {
-            if (!isStreamerAuthenticated()) { event.target.value = ""; return; }
-            const file = event.target.files && event.target.files[0];
-            if (!file) return;
-            if (file.size > MAX_VIDEO_BYTES) {
-                event.target.value = "";
-                pendingUploadedVideoDataUrl = null;
-                showToast("⚠️ حجم الفيديو يتجاوز الحد الأقصى المسموح (5MB)");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                pendingUploadedVideoDataUrl = e.target.result;
-                uploadedFileName = file.name;
-                const statusEl = document.getElementById("uploaded-video-status");
-                if (statusEl) {
-                    statusEl.textContent = `✅ جاهز للحفظ: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function saveStreamerSettings() {
-            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
-            const typedUrl = document.getElementById("setting-video-url").value.trim();
-            const finalVideo = pendingUploadedVideoDataUrl || typedUrl || DEFAULT_SUKUNA_VIDEO_URL;
-            const fileNameToSave = pendingUploadedVideoDataUrl ? uploadedFileName : "";
-
-            streamerSettings.alert_video_url = finalVideo;
-            pendingUploadedVideoDataUrl = null;
-
-            safeStorageSet("alert_video_url", finalVideo);
-            safeStorageSet(ALERT_VIDEO_SYNC_KEY, finalVideo);
-            if (fileNameToSave) safeStorageSet("uploaded_video_name", fileNameToSave);
-            else safeStorageRemove("uploaded_video_name");
-
-            broadcastPayload("STREAMER_VIDEO_UPDATED", {
-                alert_video_url: finalVideo,
-                uploaded_video_name: fileNameToSave,
-                synced_at: Date.now()
-            });
-            syncStreamerPanelInputs();
-            showToast("✅ تم حفظ ودمج فيديو التنبيه");
+            if (ytInput && activeYouTubeUrl) ytInput.value = activeYouTubeUrl;
         }
 
         function copyWidgetUrl() {
@@ -751,6 +861,12 @@
         }
 
         function openTransferModal() {
+            const remainingMs = getRemainingCooldownMs();
+            if (remainingMs > 0) {
+                updateTransferCooldownUI();
+                showToast(`⏳ يرجى الانتظار ${formatCountdown(remainingMs)} قبل إجراء تحويل آخر`);
+                return;
+            }
             const amount = Number(document.getElementById("input-amount").value);
             if (!amount || amount <= 0) {
                 showToast("⚠️ يرجى إدخال مبلغ صحيح أكبر من صفر");
@@ -758,12 +874,13 @@
             }
             const donorName = document.getElementById("input-donor-name").value.trim() || "داعم مجهول";
             const phone = selectedNetwork === "libyana" ? streamerSettings.libyana_phone : streamerSettings.almadar_phone;
-            const prefix = selectedNetwork === "libyana" ? "*122*" : "*140*";
-            const ussd = `${prefix}${phone}*${amount}#`;
+            const ussd = selectedNetwork === "libyana"
+                ? `*122*${phone}*${amount}#`
+                : `*140*4*1*${amount}*${phone}#`;
 
             document.getElementById("ussd-code-display").textContent = ussd;
             document.getElementById("ussd-call-link").href = `tel:${encodeURIComponent(ussd)}`;
-            document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amount} د.ل • الشبكة: ${getNetworkLabel(selectedNetwork)}`;
+            document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amount} د.ل • الشبكة: ${getNetworkLabel(selectedNetwork)} (${phone})`;
             document.getElementById("transfer-modal").classList.remove("hidden");
         }
 
@@ -887,10 +1004,16 @@
         }
 
         async function confirmAndDispatchSupport() {
+            const remainingMs = getRemainingCooldownMs();
+            if (remainingMs > 0) {
+                updateTransferCooldownUI();
+                showToast(`⏳ يرجى الانتظار ${formatCountdown(remainingMs)} قبل إجراء تحويل آخر`);
+                return;
+            }
+
             const amount = Number(document.getElementById("input-amount").value) || 10;
             const donorName = document.getElementById("input-donor-name").value.trim() || "داعم مجهول";
             const message = document.getElementById("input-donor-message").value.trim() || "دعم مباشر للبث!";
-            const activeVideo = getActiveAlertVideo(streamerSettings.alert_video_url);
             const alertUid = "alert_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
 
             const record = {
@@ -901,7 +1024,7 @@
                 amount: amount,
                 message: message,
                 network: selectedNetwork,
-                alert_video_url: activeVideo,
+                youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString(),
                 review_status: "approved",
                 alert_notified: 1
@@ -914,7 +1037,7 @@
                 amount: record.amount,
                 message: record.message,
                 network: record.network,
-                alert_video_url: record.alert_video_url,
+                youtube_video_id: activeYouTubeVideoId,
                 created_at: record.created_at,
                 review_status: "approved",
                 alert_notified: 1
@@ -947,7 +1070,8 @@
                     showPanelLivePreview(approvedAlertPayload);
                     await fetchDonationsFromDb();
                     closeTransferModal();
-                    showToast("✅ تم اعتماد طلبك تلقائياً وإطلاق إشعار البث المباشر");
+                    startTransferCooldown();
+                    showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
                     return;
                 } catch (e) {
                     showToast("⚠️ تعذر الاتصال بالخادم، تم الاعتماد محلياً في المتصفح");
@@ -962,7 +1086,8 @@
             broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
             showPanelLivePreview(approvedAlertPayload);
             closeTransferModal();
-            showToast("✅ تم اعتماد طلبك تلقائياً وإطلاق إشعار البث");
+            startTransferCooldown();
+            showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
         }
 
         async function reviewDonation(alertUid, action) {
@@ -990,7 +1115,7 @@
                             amount: data.item.amount,
                             message: data.item.message,
                             network: data.item.network,
-                            alert_video_url: getActiveAlertVideo(data.item.alert_video_url),
+                            youtube_video_id: activeYouTubeVideoId,
                             created_at: data.item.created_at,
                             review_status: "approved",
                             alert_notified: 1
@@ -1023,7 +1148,7 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
-                broadcastPayload("NEW_DONATION_ALERT", target);
+                broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, { youtube_video_id: activeYouTubeVideoId }));
                 showPanelLivePreview(target);
             }
             renderTopSupporters(list);
@@ -1061,7 +1186,6 @@
 
         function showPanelLivePreview(payload) {
             const box = document.getElementById("panel-live-preview");
-            const vid = document.getElementById("panel-preview-video");
             const donor = document.getElementById("panel-preview-donor");
             const amt = document.getElementById("panel-preview-amount");
             const msg = document.getElementById("panel-preview-message");
@@ -1070,11 +1194,6 @@
             if (donor) donor.textContent = payload.donor_name || "داعم";
             if (amt) amt.textContent = `${payload.amount || 10} د.ل`;
             if (msg) msg.textContent = payload.message || "";
-            if (vid) {
-                vid.src = getActiveAlertVideo(payload.alert_video_url);
-                vid.muted = true;
-                vid.play().catch(() => {});
-            }
             box.classList.remove("hidden");
         }
 
@@ -1084,7 +1203,6 @@
             const amount = Number(document.getElementById("test-donor-amount").value) || 25;
             const network = document.getElementById("test-donor-network").value || "libyana";
             const message = (document.getElementById("test-donor-message").value || "").trim() || "تنبيه تجريبي مباشر 🔥";
-            const activeVideo = getActiveAlertVideo(streamerSettings.alert_video_url);
 
             const testPayload = {
                 id: "tiktok_test_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
@@ -1093,7 +1211,7 @@
                 amount: amount,
                 message: message,
                 network: network,
-                alert_video_url: activeVideo,
+                youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString()
             };
 
@@ -1121,7 +1239,7 @@
 
             const widgetView = document.getElementById("widget-view");
             const card = document.getElementById("live-alert-card");
-            const videoEl = document.getElementById("alert-video");
+            const ytFrame = document.getElementById("alert-youtube-frame");
             const nameEl = document.getElementById("alert-donor-name");
             const amountEl = document.getElementById("alert-amount");
             const msgEl = document.getElementById("alert-message");
@@ -1131,16 +1249,14 @@
             if (amountEl) amountEl.textContent = current.amount || "10";
             if (msgEl) msgEl.textContent = current.message || "شكراً لدعمك!";
 
-            if (videoEl) {
-                videoEl.src = getActiveAlertVideo(current.alert_video_url);
-                videoEl.muted = false;
-                videoEl.volume = 1.0;
-                const playPromise = videoEl.play();
-                if (playPromise && typeof playPromise.catch === "function") {
-                    playPromise.catch(() => {
-                        videoEl.muted = true;
-                        videoEl.play().catch(() => {});
-                    });
+            const ytId = extractYouTubeVideoId(current.youtube_video_id || activeYouTubeVideoId || "");
+            if (ytFrame) {
+                if (ytId) {
+                    ytFrame.src = buildYouTubeEmbedUrl(ytId);
+                    ytFrame.classList.remove("hidden");
+                } else {
+                    ytFrame.removeAttribute("src");
+                    ytFrame.classList.add("hidden");
                 }
             }
 
@@ -1149,13 +1265,12 @@
             clearTimeout(window.__alertHideTimer);
             window.__alertHideTimer = setTimeout(() => {
                 if (card) card.classList.add("hidden");
-                if (videoEl) {
-                    videoEl.pause();
-                    videoEl.removeAttribute("src");
-                    videoEl.load();
+                if (ytFrame) {
+                    ytFrame.removeAttribute("src");
+                    ytFrame.classList.add("hidden");
                 }
                 setTimeout(processNextAlert, 450);
-            }, 7500);
+            }, 8500);
         }
 
         async function checkLatestApprovedAlertFromDb() {
@@ -1172,7 +1287,7 @@
                             amount: data.alert.amount,
                             message: data.alert.message,
                             network: data.alert.network,
-                            alert_video_url: getActiveAlertVideo(data.alert.alert_video_url)
+                            youtube_video_id: activeYouTubeVideoId
                         });
                     }
                 }
@@ -1186,7 +1301,9 @@
                     const parsed = JSON.parse(rawLatest);
                     if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                         const incoming = Object.assign({}, parsed);
-                        incoming.alert_video_url = getActiveAlertVideo(incoming.alert_video_url);
+                        if (!incoming.youtube_video_id && activeYouTubeVideoId) {
+                            incoming.youtube_video_id = activeYouTubeVideoId;
+                        }
                         enqueueAlert(incoming);
                     }
                 } catch (e) {}
@@ -1197,36 +1314,38 @@
                     const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
                     if (parsedName && parsedName.id && parsedName.id !== lastSeenAlertId) {
                         const incomingName = Object.assign({}, parsedName);
-                        incomingName.alert_video_url = getActiveAlertVideo(incomingName.alert_video_url);
+                        if (!incomingName.youtube_video_id && activeYouTubeVideoId) {
+                            incomingName.youtube_video_id = activeYouTubeVideoId;
+                        }
                         enqueueAlert(incomingName);
                     }
                 }
             } catch (e) {}
 
-            const syncedVid = safeStorageGet(ALERT_VIDEO_SYNC_KEY) || safeStorageGet("alert_video_url");
-            if (syncedVid && syncedVid !== lastSeenVideoSignature) {
-                lastSeenVideoSignature = syncedVid;
-                streamerSettings.alert_video_url = syncedVid;
+            const storedYtId = extractYouTubeVideoId(safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY) || "");
+            if (storedYtId) {
+                activeYouTubeVideoId = storedYtId;
             }
         }
 
         function initRealtimeSync() {
-            lastSeenVideoSignature = getActiveAlertVideo(streamerSettings.alert_video_url);
-
             try {
                 broadcastChannel = new BroadcastChannel("cgtevil_live_alerts_channel");
                 broadcastChannel.onmessage = (event) => {
                     if (!event || !event.data) return;
-                    if (event.data.type === "STREAMER_VIDEO_UPDATED" && event.data.payload) {
-                        streamerSettings.alert_video_url = event.data.payload.alert_video_url || DEFAULT_SUKUNA_VIDEO_URL;
-                        uploadedFileName = event.data.payload.uploaded_video_name || "";
-                        lastSeenVideoSignature = streamerSettings.alert_video_url;
-                        safeStorageSet(ALERT_VIDEO_SYNC_KEY, streamerSettings.alert_video_url);
-                        safeStorageSet("alert_video_url", streamerSettings.alert_video_url);
+                    if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
+                        activeYouTubeVideoId = extractYouTubeVideoId(event.data.payload.youtube_video_id || "");
+                        activeYouTubeUrl = event.data.payload.youtube_url || "";
+                        safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
+                        safeStorageSet(YOUTUBE_URL_STORAGE_KEY, activeYouTubeUrl);
+                        syncStreamerPanelInputs();
+                        updateYouTubeStatusUI();
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
-                        incoming.alert_video_url = getActiveAlertVideo(incoming.alert_video_url);
+                        if (!incoming.youtube_video_id && activeYouTubeVideoId) {
+                            incoming.youtube_video_id = activeYouTubeVideoId;
+                        }
                         enqueueAlert(incoming);
                     }
                 };
@@ -1234,31 +1353,39 @@
 
             window.addEventListener("message", (event) => {
                 if (!event || !event.data) return;
-                if (event.data.type === "STREAMER_VIDEO_UPDATED" && event.data.payload) {
-                    streamerSettings.alert_video_url = event.data.payload.alert_video_url || DEFAULT_SUKUNA_VIDEO_URL;
-                    uploadedFileName = event.data.payload.uploaded_video_name || "";
-                    lastSeenVideoSignature = streamerSettings.alert_video_url;
+                if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
+                    activeYouTubeVideoId = extractYouTubeVideoId(event.data.payload.youtube_video_id || "");
+                    activeYouTubeUrl = event.data.payload.youtube_url || "";
+                    syncStreamerPanelInputs();
+                    updateYouTubeStatusUI();
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
-                    incoming.alert_video_url = getActiveAlertVideo(incoming.alert_video_url);
+                    if (!incoming.youtube_video_id && activeYouTubeVideoId) {
+                        incoming.youtube_video_id = activeYouTubeVideoId;
+                    }
                     enqueueAlert(incoming);
                 }
             });
 
             window.addEventListener("storage", (event) => {
-                if (event.key === ALERT_VIDEO_SYNC_KEY || event.key === "alert_video_url") {
-                    streamerSettings.alert_video_url = event.newValue || DEFAULT_SUKUNA_VIDEO_URL;
-                    lastSeenVideoSignature = streamerSettings.alert_video_url;
+                if (event.key === YOUTUBE_VIDEO_STORAGE_KEY) {
+                    activeYouTubeVideoId = extractYouTubeVideoId(event.newValue || "");
+                    syncStreamerPanelInputs();
+                    updateYouTubeStatusUI();
                 } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
                     try {
                         const parsed = JSON.parse(event.newValue);
                         if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                             const incoming = Object.assign({}, parsed);
-                            incoming.alert_video_url = getActiveAlertVideo(incoming.alert_video_url);
+                            if (!incoming.youtube_video_id && activeYouTubeVideoId) {
+                                incoming.youtube_video_id = activeYouTubeVideoId;
+                            }
                             enqueueAlert(incoming);
                         }
                     } catch (e) {}
+                } else if (event.key === TRANSFER_COOLDOWN_KEY) {
+                    updateTransferCooldownUI();
                 }
             });
 
@@ -1274,22 +1401,23 @@
         }
 
         function initApp() {
-            loadSavedSettings();
+            loadSavedYouTubeSettings();
+
+            const params = getCombinedUrlParams();
+            const urlYtId = extractYouTubeVideoId(params.get("yt_id") || params.get("youtube_url") || "");
+            if (urlYtId) {
+                activeYouTubeVideoId = urlYtId;
+                activeYouTubeUrl = `https://www.youtube.com/watch?v=${urlYtId}`;
+                safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
+                safeStorageSet(YOUTUBE_URL_STORAGE_KEY, activeYouTubeUrl);
+            }
+
             initRealtimeSync();
 
             if (isWidgetMode()) {
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
-
-                const params = getCombinedUrlParams();
-                const urlVideo = params.get("video_url");
-                if (urlVideo) {
-                    streamerSettings.alert_video_url = urlVideo;
-                    lastSeenVideoSignature = urlVideo;
-                    safeStorageSet(ALERT_VIDEO_SYNC_KEY, urlVideo);
-                    safeStorageSet("alert_video_url", urlVideo);
-                }
 
                 const urlDonor = params.get("donor_name");
                 const urlAmount = params.get("amount");
@@ -1301,18 +1429,18 @@
                         amount: Number(urlAmount),
                         message: params.get("message") || "شكراً لدعمك المباشر!",
                         network: params.get("network") || "libyana",
-                        alert_video_url: getActiveAlertVideo(urlVideo)
+                        youtube_video_id: activeYouTubeVideoId
                     });
                 }
             } else {
                 updateAuthUI();
+                updateYouTubeStatusUI();
+                wasCooldownActive = getRemainingCooldownMs() > 0;
+                updateTransferCooldownUI();
+                clearInterval(window.__cooldownInterval);
+                window.__cooldownInterval = setInterval(updateTransferCooldownUI, 1000);
                 fetchDonationsFromDb();
-                const widgetInput = document.getElementById("widget-url-input");
-                if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
-                const donorLinkInput = document.getElementById("donor-link-input");
-                if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
-                const streamerLinkInput = document.getElementById("streamer-link-input");
-                if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
+                syncStreamerPanelInputs();
                 if (getAccessRole() === "streamer" && !isStreamerAuthenticated()) {
                     openLoginModal();
                 }
