@@ -24,9 +24,9 @@
             overflow: hidden !important;
         }
         .glass-card {
-            background: rgba(17, 24, 39, 0.86);
+            background: rgba(17, 24, 39, 0.88);
             backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.09);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         @keyframes alertPop {
             0% {
@@ -77,8 +77,8 @@
     <!-- واجهة الموقع الرئيسية (صفحة الدعم للزوار) -->
     <div id="main-app-view" class="min-h-screen flex flex-col">
         <!-- الشريط العلوي -->
-        <header class="w-full border-b border-white/10 bg-slate-950/70 backdrop-blur-md sticky top-0 z-30">
-            <div class="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+        <header class="w-full border-b border-white/10 bg-slate-950/75 backdrop-blur-md sticky top-0 z-30">
+            <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
                         C
@@ -104,7 +104,7 @@
         </header>
 
         <!-- المحتوى الرئيسي -->
-        <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
             <!-- العمود الأيمن: نموذج إرسال الدعم -->
             <section class="lg:col-span-7 glass-card rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
@@ -147,11 +147,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
                         <label for="input-donor-name" class="block text-sm font-bold text-slate-200">3. اسمك على البث</label>
-                        <input id="input-donor-name" type="text" maxlength="40" placeholder="مثال: أبو ليبيا" class="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-semibold">
+                        <input id="input-donor-name" type="text" maxlength="40" placeholder="" class="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-semibold">
                     </div>
                     <div class="space-y-1.5">
                         <label for="input-donor-message" class="block text-sm font-bold text-slate-200">4. رسالتك للستريمر</label>
-                        <input id="input-donor-message" type="text" maxlength="100" placeholder="مثال: استمر يا وحش 🔥" class="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-semibold">
+                        <input id="input-donor-message" type="text" maxlength="100" placeholder="" class="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-semibold">
                     </div>
                 </div>
 
@@ -160,7 +160,7 @@
                 </button>
             </section>
 
-            <!-- العمود الأيسر: قائمة أفضل 3 داعمين ومعلومات سريعة -->
+            <!-- العمود الأيسر: قائمة أفضل 3 داعمين وآخر التبرعات ومعلومات سريعة -->
             <aside class="lg:col-span-5 space-y-6">
                 <div class="glass-card rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
                     <div class="flex items-center justify-between">
@@ -265,6 +265,31 @@
                 </div>
             </div>
 
+            <!-- روابط منفصلة للداعم والستريمر -->
+            <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
+                <div class="text-xs font-black text-emerald-300">روابط الوصول المنفصلة</div>
+
+                <div class="space-y-1">
+                    <label for="donor-link-input" class="block text-[11px] font-bold text-slate-300">رابط الداعم فقط (بدون لوحة الستريمر)</label>
+                    <div class="flex gap-2">
+                        <input id="donor-link-input" type="text" readonly class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-slate-200">
+                        <button type="button" onclick="copyRoleLink('donor-link-input', 'تم نسخ رابط الداعم المنفصل')" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 font-bold text-xs cursor-pointer">
+                            نسخ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label for="streamer-link-input" class="block text-[11px] font-bold text-amber-300">رابط الستريمر الكامل (بكل صلاحيات الإدارة)</label>
+                    <div class="flex gap-2">
+                        <input id="streamer-link-input" type="text" readonly class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-slate-200">
+                        <button type="button" onclick="copyRoleLink('streamer-link-input', 'تم نسخ رابط الستريمر الكامل')" class="px-3.5 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-bold text-xs cursor-pointer">
+                            نسخ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- رابط أو رفع فيديو التنبيه -->
             <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
                 <div class="space-y-1.5">
@@ -276,6 +301,39 @@
                     <label for="setting-video-file" class="block text-xs font-bold text-slate-200">أو ارفع مقطع فيديو من جهازك (الحد الأقصى 5MB)</label>
                     <input id="setting-video-file" type="file" accept="video/mp4,video/webm,video/ogg" onchange="handleVideoFileUpload(event)" class="block w-full text-xs text-slate-300 file:mr-0 file:ml-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-400 file:text-slate-950 hover:file:bg-amber-300 cursor-pointer">
                     <div id="uploaded-video-status" class="text-xs text-emerald-300"></div>
+                </div>
+            </div>
+
+            <!-- اختبار دونيشن كامل لبرنامج TikTok Live Studio -->
+            <div class="space-y-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-400/30">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-amber-300">🧪 اختبار دونيشن كامل (TikTok Live Studio)</span>
+                    <span class="text-[11px] text-slate-300">يختبر التنبيه + الفيديو + القائمة</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input id="test-donor-name" type="text" maxlength="40" value="داعم تجريبي" placeholder="اسم الداعم" class="px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-xs text-white">
+                    <input id="test-donor-amount" type="number" min="1" value="25" placeholder="المبلغ (د.ل)" class="px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-xs text-white font-bold">
+                    <select id="test-donor-network" class="px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-xs text-white">
+                        <option value="libyana">ليبيانا</option>
+                        <option value="almadar">المدار</option>
+                    </select>
+                </div>
+                <input id="test-donor-message" type="text" maxlength="100" value="اختبار ظهور الدونيشن على TikTok Live Studio 🔥" placeholder="رسالة الدونيشن الاختباري" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-xs text-white">
+                <div id="tiktok-test-status" class="text-[11px] text-emerald-300">
+                    جاهز للإرسال: تأكد من إضافة رابط الويدجت كمصدر رابط (Link Source) داخل TikTok Live Studio.
+                </div>
+            </div>
+
+            <!-- أحدث رسائل الدعم (تظهر في لوحة الستريمر فقط) -->
+            <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-emerald-300">📨 أحدث رسائل الدعم (خاصة بالستريمر)</span>
+                    <span class="text-[11px] text-slate-400">مباشر</span>
+                </div>
+                <div id="recent-donations-list" class="space-y-2 max-h-48 overflow-y-auto">
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
+                        ستظهر أحدث رسائل الداعمين هنا فور إرسالها.
+                    </div>
                 </div>
             </div>
 
@@ -310,14 +368,47 @@
         let alertQueue = [];
         let isShowingAlert = false;
         let pendingUploadedVideoDataUrl = null;
-        let uploadedFileName = localStorage.getItem("uploaded_video_name") || "";
+        let uploadedFileName = "";
         let broadcastChannel = null;
 
         let streamerSettings = {
-            libyana_phone: localStorage.getItem("libyana_phone") || DEFAULT_LIBYANA_PHONE,
-            almadar_phone: localStorage.getItem("almadar_phone") || DEFAULT_ALMADAR_PHONE,
-            alert_video_url: localStorage.getItem(ALERT_VIDEO_SYNC_KEY) || localStorage.getItem("alert_video_url") || DEFAULT_SUKUNA_VIDEO_URL
+            libyana_phone: DEFAULT_LIBYANA_PHONE,
+            almadar_phone: DEFAULT_ALMADAR_PHONE,
+            alert_video_url: DEFAULT_SUKUNA_VIDEO_URL
         };
+
+        function safeStorageGet(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function safeStorageSet(key, val) {
+            try {
+                localStorage.setItem(key, val);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function safeStorageRemove(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        function loadSavedSettings() {
+            uploadedFileName = safeStorageGet("uploaded_video_name") || "";
+            streamerSettings.libyana_phone = safeStorageGet("libyana_phone") || DEFAULT_LIBYANA_PHONE;
+            streamerSettings.almadar_phone = safeStorageGet("almadar_phone") || DEFAULT_ALMADAR_PHONE;
+            streamerSettings.alert_video_url =
+                safeStorageGet(ALERT_VIDEO_SYNC_KEY) ||
+                safeStorageGet("alert_video_url") ||
+                DEFAULT_SUKUNA_VIDEO_URL;
+        }
 
         function showToast(msg) {
             const box = document.getElementById("toast-box");
@@ -336,6 +427,29 @@
             return params.get("widget") === "true" || window.location.hash.includes("widget=true");
         }
 
+        function getAccessRole() {
+            const params = new URLSearchParams(window.location.search);
+            const role = (params.get("role") || "").toLowerCase();
+            return role === "donor" || role === "streamer" ? role : "default";
+        }
+
+        function buildRoleUrl(role) {
+            const baseUrl = `${window.location.origin}${window.location.pathname}`;
+            return `${baseUrl}?role=${role}`;
+        }
+
+        function copyRoleLink(inputId, successMessage) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.select();
+            try {
+                document.execCommand("copy");
+                showToast(`✅ ${successMessage}`);
+            } catch (e) {
+                showToast("انسخ الرابط الظاهر في الخانة يدوياً");
+            }
+        }
+
         function isStreamerAuthenticated() {
             try {
                 const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
@@ -348,14 +462,26 @@
         }
 
         function updateAuthUI() {
+            const role = getAccessRole();
             const authed = isStreamerAuthenticated();
             const loginBtn = document.getElementById("btn-open-login");
             const panelBtn = document.getElementById("btn-open-panel");
+
+            if (role === "donor") {
+                if (loginBtn) loginBtn.classList.add("hidden");
+                if (panelBtn) panelBtn.classList.add("hidden");
+                return;
+            }
+
             if (loginBtn) loginBtn.classList.toggle("hidden", authed);
             if (panelBtn) panelBtn.classList.toggle("hidden", !authed);
         }
 
         function openLoginModal() {
+            if (getAccessRole() === "donor") {
+                showToast("هذا الرابط مخصص للداعم فقط");
+                return;
+            }
             document.getElementById("login-username").value = "";
             document.getElementById("login-password").value = "";
             document.getElementById("login-modal").classList.remove("hidden");
@@ -405,10 +531,8 @@
             if (customVideo && String(customVideo).trim() !== "") {
                 return String(customVideo).trim();
             }
-            try {
-                const synced = localStorage.getItem(ALERT_VIDEO_SYNC_KEY) || localStorage.getItem("alert_video_url");
-                if (synced && synced.trim() !== "") return synced.trim();
-            } catch (e) {}
+            const synced = safeStorageGet(ALERT_VIDEO_SYNC_KEY) || safeStorageGet("alert_video_url");
+            if (synced && synced.trim() !== "") return synced.trim();
             if (streamerSettings.alert_video_url && streamerSettings.alert_video_url.trim() !== "") {
                 return streamerSettings.alert_video_url.trim();
             }
@@ -426,6 +550,8 @@
         function syncStreamerPanelInputs() {
             const vidInput = document.getElementById("setting-video-url");
             const widgetInput = document.getElementById("widget-url-input");
+            const donorLinkInput = document.getElementById("donor-link-input");
+            const streamerLinkInput = document.getElementById("streamer-link-input");
             const statusEl = document.getElementById("uploaded-video-status");
 
             if (vidInput) {
@@ -435,6 +561,12 @@
             }
             if (widgetInput) {
                 widgetInput.value = buildShareableWidgetUrl();
+            }
+            if (donorLinkInput) {
+                donorLinkInput.value = buildRoleUrl("donor");
+            }
+            if (streamerLinkInput) {
+                streamerLinkInput.value = buildRoleUrl("streamer");
             }
             if (statusEl) {
                 if (streamerSettings.alert_video_url.startsWith("data:video/")) {
@@ -485,17 +617,17 @@
             streamerSettings.alert_video_url = finalVideo;
             pendingUploadedVideoDataUrl = null;
 
-            try {
-                localStorage.setItem("alert_video_url", finalVideo);
-                localStorage.setItem(ALERT_VIDEO_SYNC_KEY, finalVideo);
-                if (fileNameToSave) {
-                    localStorage.setItem("uploaded_video_name", fileNameToSave);
-                } else {
-                    localStorage.removeItem("uploaded_video_name");
-                }
-            } catch (e) {
+            const saved1 = safeStorageSet("alert_video_url", finalVideo);
+            const saved2 = safeStorageSet(ALERT_VIDEO_SYNC_KEY, finalVideo);
+            if (!saved1 || !saved2) {
                 showToast("⚠️ تعذر حفظ الفيديو الكبير في المتصفح؛ جرّب ملفاً أصغر أو رابطاً مباشراً");
                 return;
+            }
+
+            if (fileNameToSave) {
+                safeStorageSet("uploaded_video_name", fileNameToSave);
+            } else {
+                safeStorageRemove("uploaded_video_name");
             }
 
             broadcastPayload("STREAMER_VIDEO_UPDATED", {
@@ -572,7 +704,7 @@
 
         function getDonationsList() {
             try {
-                const raw = localStorage.getItem(DONATIONS_STORAGE_KEY);
+                const raw = safeStorageGet(DONATIONS_STORAGE_KEY);
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
                 return [];
@@ -582,42 +714,57 @@
         function saveDonationRecord(record) {
             const list = getDonationsList();
             list.unshift(record);
-            try {
-                localStorage.setItem(DONATIONS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
-            } catch (e) {}
+            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
         }
 
-        function renderTopSupporters() {
-            const container = document.getElementById("top-supporters-list");
-            if (!container) return;
-
+        function renderSupportersAndFeed() {
+            const topContainer = document.getElementById("top-supporters-list");
+            const recentContainer = document.getElementById("recent-donations-list");
             const list = getDonationsList();
-            if (!list.length) {
-                container.innerHTML = `<div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-slate-400">لا توجد تبرعات مسجلة بعد؛ كن أول الداعمين!</div>`;
-                return;
+
+            if (topContainer) {
+                if (!list.length) {
+                    topContainer.innerHTML = `<div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-slate-400">لا توجد تبرعات مسجلة بعد؛ كن أول الداعمين!</div>`;
+                } else {
+                    const totalsMap = new Map();
+                    list.forEach((item) => {
+                        const name = item.donor_name || "داعم مجهول";
+                        const amt = Number(item.amount) || 0;
+                        totalsMap.set(name, (totalsMap.get(name) || 0) + amt);
+                    });
+
+                    const sorted = Array.from(totalsMap.entries())
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3);
+
+                    const medals = ["🥇", "🥈", "🥉"];
+                    topContainer.innerHTML = sorted.map(([name, total], idx) => `
+                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">${medals[idx] || "⭐"}</span>
+                                <span class="font-extrabold text-sm text-white">${escapeHtml(name)}</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 font-black text-xs">${total} د.ل</span>
+                        </div>
+                    `).join("");
+                }
             }
 
-            const totalsMap = new Map();
-            list.forEach((item) => {
-                const name = item.donor_name || "داعم مجهول";
-                const amt = Number(item.amount) || 0;
-                totalsMap.set(name, (totalsMap.get(name) || 0) + amt);
-            });
-
-            const sorted = Array.from(totalsMap.entries())
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3);
-
-            const medals = ["🥇", "🥈", "🥉"];
-            container.innerHTML = sorted.map(([name, total], idx) => `
-                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl">${medals[idx] || "⭐"}</span>
-                        <span class="font-extrabold text-sm text-white">${escapeHtml(name)}</span>
-                    </div>
-                    <span class="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 font-black text-xs">${total} د.ل</span>
-                </div>
-            `).join("");
+            if (recentContainer) {
+                if (!list.length) {
+                    recentContainer.innerHTML = `<div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">ستظهر أحدث رسائل الداعمين هنا فور إرسالها.</div>`;
+                } else {
+                    recentContainer.innerHTML = list.slice(0, 5).map((item) => `
+                        <div class="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-extrabold text-white">${escapeHtml(item.donor_name || "داعم مجهول")}</span>
+                                <span class="font-black text-amber-300">${Number(item.amount) || 0} د.ل</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
+                        </div>
+                    `).join("");
+                }
+            }
         }
 
         function resetSupportersBoard() {
@@ -625,10 +772,8 @@
                 openLoginModal();
                 return;
             }
-            try {
-                localStorage.removeItem(DONATIONS_STORAGE_KEY);
-            } catch (e) {}
-            renderTopSupporters();
+            safeStorageRemove(DONATIONS_STORAGE_KEY);
+            renderSupportersAndFeed();
             showToast("🗑️ تم تصفير قائمة أفضل الداعمين");
         }
 
@@ -669,10 +814,9 @@
             };
 
             saveDonationRecord(payload);
-            renderTopSupporters();
+            renderSupportersAndFeed();
             broadcastPayload("NEW_DONATION_ALERT", payload);
 
-            // إرسال التفاصيل وفيديو التنبيه مباشرة إلى رابط الويدجت المستهدف
             const params = new URLSearchParams({
                 alert_id: payload.id,
                 donor_name: payload.donor_name,
@@ -699,19 +843,52 @@
                 openLoginModal();
                 return;
             }
-            toggleStreamerPanel(false);
+            const nameInput = document.getElementById("test-donor-name");
+            const amountInput = document.getElementById("test-donor-amount");
+            const networkInput = document.getElementById("test-donor-network");
+            const msgInput = document.getElementById("test-donor-message");
+            const statusEl = document.getElementById("tiktok-test-status");
+
+            const donorName = (nameInput && nameInput.value.trim()) || "أسطورة البث";
+            const amount = Number(amountInput && amountInput.value) || 25;
+            const network = (networkInput && networkInput.value) || "libyana";
+            const message = (msgInput && msgInput.value.trim()) || "تنبيه تجريبي مباشر من لوحة الستريمر 🔥";
             const activeVideo = getActiveAlertVideo(streamerSettings.alert_video_url);
+
             const testPayload = {
-                id: "test_" + Date.now(),
+                id: "tiktok_test_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
                 streamer_username: CORRECT_STREAMER_USER,
-                donor_name: "أسطورة البث",
-                amount: 25,
-                message: "تنبيه تجريبي مباشر من لوحة الستريمر 🔥",
-                network: "libyana",
-                alert_video_url: activeVideo
+                donor_name: donorName,
+                amount: amount,
+                message: message,
+                network: network,
+                alert_video_url: activeVideo,
+                created_at: new Date().toISOString()
             };
+
+            saveDonationRecord(testPayload);
+            renderSupportersAndFeed();
             broadcastPayload("NEW_DONATION_ALERT", testPayload);
+
+            const params = new URLSearchParams({
+                alert_id: testPayload.id,
+                donor_name: testPayload.donor_name,
+                amount: String(testPayload.amount),
+                message: testPayload.message,
+                network: testPayload.network,
+                video_url: activeVideo && !activeVideo.startsWith("data:video/") ? activeVideo : ""
+            });
+            const dispatchUrl = `https://cgtevil.github.io/-/?widget=true&${params.toString()}#/d/cgtevil`;
+            try {
+                fetch(dispatchUrl, { mode: "no-cors" }).catch(() => {});
+            } catch (e) {}
+
             enqueueAlert(testPayload);
+
+            if (statusEl) {
+                statusEl.textContent = `✅ تم إطلاق اختبار دونيشن (${donorName} - ${amount} د.ل) إلى البث والقائمة!`;
+            }
+            showToast("✅ تم إطلاق اختبار الدونيشن الكامل إلى TikTok Live Studio");
         }
 
         function enqueueAlert(item) {
@@ -779,10 +956,8 @@
                     if (event.data.type === "STREAMER_VIDEO_UPDATED" && event.data.payload) {
                         streamerSettings.alert_video_url = event.data.payload.alert_video_url || DEFAULT_SUKUNA_VIDEO_URL;
                         uploadedFileName = event.data.payload.uploaded_video_name || "";
-                        try {
-                            localStorage.setItem(ALERT_VIDEO_SYNC_KEY, streamerSettings.alert_video_url);
-                            localStorage.setItem("alert_video_url", streamerSettings.alert_video_url);
-                        } catch (e) {}
+                        safeStorageSet(ALERT_VIDEO_SYNC_KEY, streamerSettings.alert_video_url);
+                        safeStorageSet("alert_video_url", streamerSettings.alert_video_url);
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         incoming.alert_video_url = getActiveAlertVideo(incoming.alert_video_url);
@@ -807,12 +982,13 @@
                 if (event.key === ALERT_VIDEO_SYNC_KEY || event.key === "alert_video_url") {
                     streamerSettings.alert_video_url = event.newValue || DEFAULT_SUKUNA_VIDEO_URL;
                 } else if (event.key === DONATIONS_STORAGE_KEY && !isWidgetMode()) {
-                    renderTopSupporters();
+                    renderSupportersAndFeed();
                 }
             });
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
+        function initApp() {
+            loadSavedSettings();
             initRealtimeSync();
 
             if (isWidgetMode()) {
@@ -824,10 +1000,8 @@
                 const urlVideo = params.get("video_url");
                 if (urlVideo) {
                     streamerSettings.alert_video_url = urlVideo;
-                    try {
-                        localStorage.setItem(ALERT_VIDEO_SYNC_KEY, urlVideo);
-                        localStorage.setItem("alert_video_url", urlVideo);
-                    } catch (e) {}
+                    safeStorageSet(ALERT_VIDEO_SYNC_KEY, urlVideo);
+                    safeStorageSet("alert_video_url", urlVideo);
                 }
 
                 const urlDonor = params.get("donor_name");
@@ -845,13 +1019,26 @@
                 }
             } else {
                 updateAuthUI();
-                renderTopSupporters();
+                renderSupportersAndFeed();
                 const widgetInput = document.getElementById("widget-url-input");
                 if (widgetInput) {
                     widgetInput.value = buildShareableWidgetUrl();
                 }
+                const donorLinkInput = document.getElementById("donor-link-input");
+                if (donorLinkInput) {
+                    donorLinkInput.value = buildRoleUrl("donor");
+                }
+                const streamerLinkInput = document.getElementById("streamer-link-input");
+                if (streamerLinkInput) {
+                    streamerLinkInput.value = buildRoleUrl("streamer");
+                }
+                if (getAccessRole() === "streamer" && !isStreamerAuthenticated()) {
+                    openLoginModal();
+                }
             }
-        });
+        }
+
+        window.addEventListener("DOMContentLoaded", initApp);
     </script>
 </body>
 </html>
