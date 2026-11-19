@@ -297,7 +297,7 @@
                     🎥 رابط فيديو دعم مدمج مع رابط التنبيهات المباشر (MP4 / WebM)
                 </label>
                 <div class="flex flex-col sm:flex-row gap-2">
-                    <input id="setting-support-video-url" type="url" dir="ltr" placeholder="https://example.com/support-alert.mp4" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
+                    <input id="setting-support-video-url" type="url" dir="ltr" placeholder="https://raw.githubusercontent.com/cgtevil/-/main/video.mp4" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
                     <button type="button" onclick="applySupportAlertVideo()" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs transition cursor-pointer">
                         دمج الرابط
                     </button>
@@ -389,6 +389,7 @@
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
+        const DEFAULT_SUPPORT_VIDEO_URL = "https://raw.githubusercontent.com/cgtevil/-/main/video.mp4";
         const SUPPORT_VIDEO_STORAGE_KEY = "cgtevil_alert_support_video_url";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
@@ -398,7 +399,7 @@
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
         let selectedNetwork = "libyana";
-        let activeSupportVideoUrl = "";
+        let activeSupportVideoUrl = DEFAULT_SUPPORT_VIDEO_URL;
         let lastSeenAlertId = "";
         let isShowingAlert = false;
         let wasCooldownActive = false;
@@ -425,9 +426,11 @@
         }
 
         function loadSavedSupportVideoSettings() {
-            const savedVideo = sanitizeSupportVideoUrl(safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY) || "");
-            if (savedVideo) {
-                activeSupportVideoUrl = savedVideo;
+            const rawSaved = safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY);
+            if (rawSaved !== null) {
+                activeSupportVideoUrl = sanitizeSupportVideoUrl(rawSaved);
+            } else {
+                activeSupportVideoUrl = DEFAULT_SUPPORT_VIDEO_URL;
             }
         }
 
@@ -823,7 +826,7 @@
             if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
             if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
             if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
-            if (supportVideoInput && activeSupportVideoUrl) supportVideoInput.value = activeSupportVideoUrl;
+            if (supportVideoInput) supportVideoInput.value = activeSupportVideoUrl;
         }
 
         function copyWidgetUrl() {
@@ -1373,9 +1376,9 @@
                 }
             } catch (e) {}
 
-            const storedVideo = sanitizeSupportVideoUrl(safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY) || "");
-            if (storedVideo) {
-                activeSupportVideoUrl = storedVideo;
+            const rawStoredVideo = safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY);
+            if (rawStoredVideo !== null) {
+                activeSupportVideoUrl = sanitizeSupportVideoUrl(rawStoredVideo);
             }
         }
 
