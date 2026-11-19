@@ -44,6 +44,12 @@
         .frameless-text-shadow {
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.92), 0 0 2px rgba(0, 0, 0, 0.95);
         }
+        .full-video-stage {
+            width: 100vw;
+            max-width: 100%;
+            aspect-ratio: 16 / 9;
+            max-height: 100vh;
+        }
     </style>
 </head>
 <body class="selection:bg-emerald-500 selection:text-slate-950">
@@ -53,17 +59,19 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار مع تفاصيل الدعم أعلى الشاشة بخط متوسط -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار مع عرض الفيديو كاملاً وتفاصيل الدعم أسفل الجزء العلوي من المقطع بقليل بخط متوسط -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
-            <!-- مشغّل يوتيوب المدمج عند تفعيل مقطع يوتيوب -->
-            <iframe id="alert-youtube-frame" class="hidden w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <!-- مشغّل يوتيوب المدمج لعرض الفيديو كاملاً بدون قص -->
+            <div class="full-video-stage flex items-center justify-center">
+                <iframe id="alert-youtube-frame" class="hidden w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
 
-            <!-- تدرج علوي خفيف لإبراز تفاصيل الدعم أعلى الشاشة بدون إطار -->
-            <div class="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/80 via-black/40 to-transparent z-10"></div>
+            <!-- تدرج علوي خفيف لإبراز تفاصيل الدعم أسفل الجزء العلوي من المقطع بقليل بدون إطار -->
+            <div class="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/80 via-black/35 to-transparent z-10"></div>
 
-            <!-- تفاصيل الدعم أعلى الشاشة بخط متوسط -->
-            <div class="absolute inset-x-0 top-5 px-5 flex flex-col items-center text-center space-y-1.5 z-20">
+            <!-- تفاصيل الدعم أسفل الجزء العلوي من المقطع بقليل بخط متوسط -->
+            <div class="absolute inset-x-0 top-14 sm:top-16 px-5 flex flex-col items-center text-center space-y-1.5 z-20">
                 <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
                     <span id="alert-donor-name" class="text-white">داعم كريم</span>
                     <span class="text-amber-300">•</span>
@@ -282,7 +290,7 @@
             <!-- خانة استجلاب مقطع يوتيوب مع رابط التنبيهات للبث المباشر -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-rose-500/30">
                 <label for="setting-youtube-url" class="block text-xs font-black text-rose-300">
-                    🎬 استجلاب مقطع يوتيوب لرابط التنبيهات المباشر
+                    🎬 استجلاب مقطع يوتيوب لرابط التنبيهات المباشر (عرض كامل)
                 </label>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input id="setting-youtube-url" type="url" dir="ltr" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
@@ -457,7 +465,7 @@
             if (!statusEl) return;
 
             if (activeYouTubeVideoId) {
-                statusEl.textContent = `✅ مقطع يوتيوب نشط ومندمج مع رابط التنبيهات (ID: ${activeYouTubeVideoId})`;
+                statusEl.textContent = `✅ مقطع يوتيوب نشط ويُعرض كاملاً مع رابط التنبيهات (ID: ${activeYouTubeVideoId})`;
                 statusEl.className = "text-xs text-emerald-300 font-bold";
             } else {
                 statusEl.textContent = "لم يتم استجلاب مقطع يوتيوب بعد؛ التنبيه سيظهر كنص شفاف أعلى الشاشة.";
@@ -493,7 +501,7 @@
 
             syncStreamerPanelInputs();
             updateYouTubeStatusUI();
-            showToast("✅ تم استجلاب مقطع يوتيوب ودمجه في رابط التنبيهات");
+            showToast("✅ تم استجلاب مقطع يوتيوب ودمجه للعرض الكامل في التنبيهات");
         }
 
         function clearYouTubeAlertVideo() {
