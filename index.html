@@ -42,7 +42,7 @@
             animation: alertPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .frameless-text-shadow {
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.92), 0 0 2px rgba(0, 0, 0, 0.95);
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.98);
         }
         .full-video-stage {
             width: 100vw;
@@ -59,19 +59,22 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار مع عرض الفيديو كاملاً وتفاصيل الدعم أسفل الجزء العلوي من المقطع بقليل بخط متوسط -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار مع عرض الفيديو كاملاً وتفاصيل الدعم وسط الفيديو بخط متوسط -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
-            <!-- مشغّل يوتيوب المدمج لعرض الفيديو كاملاً بدون قص -->
-            <div class="full-video-stage flex items-center justify-center">
-                <iframe id="alert-youtube-frame" class="hidden w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <!-- مرحلة عرض الفيديو المدمج مع كل دعم -->
+            <div class="full-video-stage relative flex items-center justify-center">
+                <video id="alert-mp4-video" class="w-full h-full object-contain" autoplay playsinline>
+                    <source src="https://raw.githubusercontent.com/cgtevil/-/main/video.mp4" type="video/mp4">
+                </video>
+                <iframe id="alert-youtube-frame" class="hidden absolute inset-0 w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
-            <!-- تدرج علوي خفيف لإبراز تفاصيل الدعم أسفل الجزء العلوي من المقطع بقليل بدون إطار -->
-            <div class="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/80 via-black/35 to-transparent z-10"></div>
+            <!-- تدرج وسطي خفيف لإبراز تفاصيل الدعم وسط المقطع بدون إطار -->
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/45 to-transparent z-10"></div>
 
-            <!-- تفاصيل الدعم أسفل الجزء العلوي من المقطع بقليل بخط متوسط -->
-            <div class="absolute inset-x-0 top-14 sm:top-16 px-5 flex flex-col items-center text-center space-y-1.5 z-20">
+            <!-- تفاصيل الدعم وسط الفيديو بخط متوسط وبدون إطار -->
+            <div class="absolute inset-0 px-5 flex flex-col items-center justify-center text-center space-y-1.5 z-20">
                 <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
                     <span id="alert-donor-name" class="text-white">داعم كريم</span>
                     <span class="text-amber-300">•</span>
@@ -389,12 +392,14 @@
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
+        const DEFAULT_ALERT_VIDEO_URL = "https://raw.githubusercontent.com/cgtevil/-/main/video.mp4";
         const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
         const YOUTUBE_URL_STORAGE_KEY = "cgtevil_alert_youtube_url";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
         const TRANSFER_COOLDOWN_MS = 5 * 60 * 1000;
+        const ALERT_MAX_DURATION_MS = 8500;
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
         let selectedNetwork = "libyana";
@@ -473,8 +478,8 @@
                 statusEl.textContent = `✅ مقطع يوتيوب نشط ويُعرض كاملاً مع رابط التنبيهات (ID: ${activeYouTubeVideoId})`;
                 statusEl.className = "text-xs text-emerald-300 font-bold";
             } else {
-                statusEl.textContent = "لم يتم استجلاب مقطع يوتيوب بعد؛ التنبيه سيظهر كنص شفاف أعلى الشاشة.";
-                statusEl.className = "text-xs text-slate-400";
+                statusEl.textContent = "✅ فيديو التنبيه الافتراضي (video.mp4) مدمج ويظهر مع كل دعم؛ ويمكنك استبداله بمقطع يوتيوب.";
+                statusEl.className = "text-xs text-slate-300";
             }
         }
 
@@ -530,7 +535,7 @@
 
             syncStreamerPanelInputs();
             updateYouTubeStatusUI();
-            showToast("تمت إزالة مقطع يوتيوب من رابط التنبيهات");
+            showToast("تمت إزالة مقطع يوتيوب والعودة لفيديو التنبيه الافتراضي");
         }
 
         function isApiConfigured() {
@@ -1070,6 +1075,7 @@
                 amount: amount,
                 message: message,
                 network: selectedNetwork,
+                video_url: DEFAULT_ALERT_VIDEO_URL,
                 youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString(),
                 review_status: "approved",
@@ -1083,6 +1089,7 @@
                 amount: record.amount,
                 message: record.message,
                 network: record.network,
+                video_url: DEFAULT_ALERT_VIDEO_URL,
                 youtube_video_id: activeYouTubeVideoId,
                 created_at: record.created_at,
                 review_status: "approved",
@@ -1163,6 +1170,7 @@
                             amount: data.item.amount,
                             message: data.item.message,
                             network: data.item.network,
+                            video_url: DEFAULT_ALERT_VIDEO_URL,
                             youtube_video_id: activeYouTubeVideoId,
                             created_at: data.item.created_at,
                             review_status: "approved",
@@ -1196,7 +1204,10 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
-                broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, { youtube_video_id: activeYouTubeVideoId }));
+                broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, {
+                    video_url: DEFAULT_ALERT_VIDEO_URL,
+                    youtube_video_id: activeYouTubeVideoId
+                }));
                 showPanelLivePreview(target);
             }
             renderTopSupporters(list);
@@ -1259,6 +1270,7 @@
                 amount: amount,
                 message: message,
                 network: network,
+                video_url: DEFAULT_ALERT_VIDEO_URL,
                 youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString()
             };
@@ -1270,6 +1282,34 @@
             showToast("✅ تم إطلاق اختبار الدونيشن");
         }
 
+        function clearActiveAlertTimers() {
+            clearTimeout(window.__alertHideTimer);
+            window.__alertHideTimer = null;
+            clearTimeout(window.__alertNextTimer);
+            window.__alertNextTimer = null;
+        }
+
+        function finishCurrentAlert() {
+            clearActiveAlertTimers();
+            const card = document.getElementById("live-alert-card");
+            const mp4Video = document.getElementById("alert-mp4-video");
+            const ytFrame = document.getElementById("alert-youtube-frame");
+
+            if (mp4Video) {
+                mp4Video.onended = null;
+                try { mp4Video.pause(); } catch (e) {}
+            }
+            if (ytFrame) {
+                ytFrame.removeAttribute("src");
+                ytFrame.classList.add("hidden");
+            }
+            if (card) card.classList.add("hidden");
+
+            window.__alertNextTimer = setTimeout(() => {
+                processNextAlert();
+            }, 450);
+        }
+
         function enqueueAlert(item) {
             if (!item) return;
             if (item.id) lastSeenAlertId = item.id;
@@ -1278,6 +1318,7 @@
         }
 
         function processNextAlert() {
+            clearActiveAlertTimers();
             if (!alertQueue.length) {
                 isShowingAlert = false;
                 return;
@@ -1287,6 +1328,7 @@
 
             const widgetView = document.getElementById("widget-view");
             const card = document.getElementById("live-alert-card");
+            const mp4Video = document.getElementById("alert-mp4-video");
             const ytFrame = document.getElementById("alert-youtube-frame");
             const nameEl = document.getElementById("alert-donor-name");
             const amountEl = document.getElementById("alert-amount");
@@ -1298,27 +1340,48 @@
             if (msgEl) msgEl.textContent = current.message || "شكراً لدعمك!";
 
             const ytId = extractYouTubeVideoId(current.youtube_video_id || activeYouTubeVideoId || "");
-            if (ytFrame) {
-                if (ytId) {
+            if (ytId) {
+                if (mp4Video) {
+                    mp4Video.onended = null;
+                    try { mp4Video.pause(); } catch (e) {}
+                    mp4Video.classList.add("hidden");
+                }
+                if (ytFrame) {
                     ytFrame.src = buildYouTubeEmbedUrl(ytId);
                     ytFrame.classList.remove("hidden");
-                } else {
+                }
+            } else {
+                if (ytFrame) {
                     ytFrame.removeAttribute("src");
                     ytFrame.classList.add("hidden");
+                }
+                if (mp4Video) {
+                    const nextSrc = current.video_url || DEFAULT_ALERT_VIDEO_URL;
+                    const sourceEl = mp4Video.querySelector("source");
+                    if (sourceEl && sourceEl.getAttribute("src") !== nextSrc) {
+                        sourceEl.setAttribute("src", nextSrc);
+                        mp4Video.load();
+                    }
+                    mp4Video.loop = false;
+                    mp4Video.onended = () => {
+                        finishCurrentAlert();
+                    };
+                    mp4Video.classList.remove("hidden");
+                    try {
+                        mp4Video.currentTime = 0;
+                        const playPromise = mp4Video.play();
+                        if (playPromise && typeof playPromise.catch === "function") {
+                            playPromise.catch(() => {});
+                        }
+                    } catch (e) {}
                 }
             }
 
             if (card) card.classList.remove("hidden");
 
-            clearTimeout(window.__alertHideTimer);
             window.__alertHideTimer = setTimeout(() => {
-                if (card) card.classList.add("hidden");
-                if (ytFrame) {
-                    ytFrame.removeAttribute("src");
-                    ytFrame.classList.add("hidden");
-                }
-                setTimeout(processNextAlert, 450);
-            }, 8500);
+                finishCurrentAlert();
+            }, ALERT_MAX_DURATION_MS);
         }
 
         async function checkLatestApprovedAlertFromDb() {
@@ -1335,6 +1398,7 @@
                             amount: data.alert.amount,
                             message: data.alert.message,
                             network: data.alert.network,
+                            video_url: DEFAULT_ALERT_VIDEO_URL,
                             youtube_video_id: activeYouTubeVideoId
                         });
                     }
@@ -1349,6 +1413,7 @@
                     const parsed = JSON.parse(rawLatest);
                     if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                         const incoming = Object.assign({}, parsed);
+                        if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
                         if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                             incoming.youtube_video_id = activeYouTubeVideoId;
                         }
@@ -1362,6 +1427,7 @@
                     const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
                     if (parsedName && parsedName.id && parsedName.id !== lastSeenAlertId) {
                         const incomingName = Object.assign({}, parsedName);
+                        if (!incomingName.video_url) incomingName.video_url = DEFAULT_ALERT_VIDEO_URL;
                         if (!incomingName.youtube_video_id && activeYouTubeVideoId) {
                             incomingName.youtube_video_id = activeYouTubeVideoId;
                         }
@@ -1391,6 +1457,7 @@
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
+                        if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
                         if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                             incoming.youtube_video_id = activeYouTubeVideoId;
                         }
@@ -1409,6 +1476,7 @@
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
+                    if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
                     if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                         incoming.youtube_video_id = activeYouTubeVideoId;
                     }
@@ -1426,6 +1494,7 @@
                         const parsed = JSON.parse(event.newValue);
                         if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                             const incoming = Object.assign({}, parsed);
+                            if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
                             if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                                 incoming.youtube_video_id = activeYouTubeVideoId;
                             }
@@ -1477,6 +1546,7 @@
                         amount: Number(urlAmount),
                         message: params.get("message") || "شكراً لدعمك المباشر!",
                         network: params.get("network") || "libyana",
+                        video_url: DEFAULT_ALERT_VIDEO_URL,
                         youtube_video_id: activeYouTubeVideoId
                     });
                 }
