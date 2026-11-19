@@ -59,21 +59,19 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار مع عرض الفيديو كاملاً وتفاصيل الدعم وسط الفيديو بخط متوسط -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار وتفاصيل الدعم وسط الشاشة بخط متوسط -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
-            <!-- مرحلة عرض الفيديو المدمج مع كل دعم -->
+            <!-- مرحلة عرض فيديو الدعم أو مقطع يوتيوب المدمج مع التنبيه -->
             <div class="full-video-stage relative flex items-center justify-center">
-                <video id="alert-mp4-video" class="w-full h-full object-contain" autoplay playsinline>
-                    <source src="https://raw.githubusercontent.com/cgtevil/-/main/video.mp4" type="video/mp4">
-                </video>
+                <video id="alert-support-video" class="hidden w-full h-full object-contain" autoplay playsinline></video>
                 <iframe id="alert-youtube-frame" class="hidden absolute inset-0 w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
-            <!-- تدرج وسطي خفيف لإبراز تفاصيل الدعم وسط المقطع بدون إطار -->
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/45 to-transparent z-10"></div>
+            <!-- تدرج وسطي خفيف عند وجود فيديو لإبراز النص بوضوح -->
+            <div id="alert-video-scrim" class="hidden absolute inset-0 bg-gradient-to-b from-transparent via-black/45 to-transparent z-10"></div>
 
-            <!-- تفاصيل الدعم وسط الفيديو بخط متوسط وبدون إطار -->
+            <!-- تفاصيل الدعم وسط الشاشة بخط متوسط وبدون إطار -->
             <div class="absolute inset-0 px-5 flex flex-col items-center justify-center text-center space-y-1.5 z-20">
                 <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
                     <span id="alert-donor-name" class="text-white">داعم كريم</span>
@@ -294,6 +292,23 @@
                 </div>
             </div>
 
+            <!-- خانة رابط فيديو دعم مدمج مع رابط التنبيهات للبث المباشر -->
+            <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-cyan-500/30">
+                <label for="setting-support-video-url" class="block text-xs font-black text-cyan-300">
+                    🎥 رابط فيديو دعم مدمج مع رابط التنبيهات المباشر (MP4 / WebM)
+                </label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input id="setting-support-video-url" type="url" dir="ltr" placeholder="https://example.com/support-alert.mp4" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
+                    <button type="button" onclick="applySupportAlertVideo()" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs transition cursor-pointer">
+                        دمج الرابط
+                    </button>
+                    <button type="button" onclick="clearSupportAlertVideo()" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 font-bold text-xs transition cursor-pointer">
+                        إزالة
+                    </button>
+                </div>
+                <div id="support-video-status" class="text-xs text-slate-300"></div>
+            </div>
+
             <!-- خانة استجلاب مقطع يوتيوب مع رابط التنبيهات للبث المباشر -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-rose-500/30">
                 <label for="setting-youtube-url" class="block text-xs font-black text-rose-300">
@@ -392,7 +407,7 @@
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
-        const DEFAULT_ALERT_VIDEO_URL = "https://raw.githubusercontent.com/cgtevil/-/main/video.mp4";
+        const SUPPORT_VIDEO_STORAGE_KEY = "cgtevil_alert_support_video_url";
         const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
         const YOUTUBE_URL_STORAGE_KEY = "cgtevil_alert_youtube_url";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
@@ -403,6 +418,7 @@
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
         let selectedNetwork = "libyana";
+        let activeSupportVideoUrl = "";
         let activeYouTubeVideoId = "";
         let activeYouTubeUrl = "";
         let lastSeenAlertId = "";
@@ -416,6 +432,89 @@
             libyana_phone: DEFAULT_LIBYANA_PHONE,
             almadar_phone: DEFAULT_ALMADAR_PHONE
         };
+
+        function sanitizeSupportVideoUrl(rawUrl) {
+            if (!rawUrl || typeof rawUrl !== "string") return "";
+            const trimmed = rawUrl.trim();
+            if (!trimmed) return "";
+            try {
+                const parsed = new URL(trimmed);
+                if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+                    return parsed.toString();
+                }
+            } catch (e) {}
+            return "";
+        }
+
+        function loadSavedSupportVideoSettings() {
+            const savedVideo = sanitizeSupportVideoUrl(safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY) || "");
+            if (savedVideo) {
+                activeSupportVideoUrl = savedVideo;
+            }
+        }
+
+        function updateSupportVideoStatusUI() {
+            const videoInput = document.getElementById("setting-support-video-url");
+            const statusEl = document.getElementById("support-video-status");
+            if (videoInput && !videoInput.value && activeSupportVideoUrl) {
+                videoInput.value = activeSupportVideoUrl;
+            }
+            if (!statusEl) return;
+
+            if (activeSupportVideoUrl) {
+                statusEl.textContent = "✅ رابط فيديو الدعم مدمج مع رابط التنبيهات ويُشغَّل مع كل تنبيه دعم.";
+                statusEl.className = "text-xs text-cyan-300 font-bold";
+            } else {
+                statusEl.textContent = "لم يتم وضع رابط فيديو دعم بعد؛ أضف رابط فيديو لدمجه مع رابط التنبيهات.";
+                statusEl.className = "text-xs text-slate-400";
+            }
+        }
+
+        function applySupportAlertVideo() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            const input = document.getElementById("setting-support-video-url");
+            const cleanUrl = sanitizeSupportVideoUrl(input ? input.value : "");
+            if (!cleanUrl) {
+                showToast("⚠️ يرجى إدخال رابط فيديو صحيح يبدأ بـ https:// أو http://");
+                return;
+            }
+
+            activeSupportVideoUrl = cleanUrl;
+            safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
+
+            broadcastPayload("STREAMER_SUPPORT_VIDEO_UPDATED", {
+                support_video_url: activeSupportVideoUrl,
+                synced_at: Date.now()
+            });
+
+            syncStreamerPanelInputs();
+            updateSupportVideoStatusUI();
+            showToast("✅ تم دمج رابط فيديو الدعم مع رابط التنبيهات");
+        }
+
+        function clearSupportAlertVideo() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            activeSupportVideoUrl = "";
+            safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, "");
+
+            const input = document.getElementById("setting-support-video-url");
+            if (input) input.value = "";
+
+            broadcastPayload("STREAMER_SUPPORT_VIDEO_UPDATED", {
+                support_video_url: "",
+                synced_at: Date.now()
+            });
+
+            syncStreamerPanelInputs();
+            updateSupportVideoStatusUI();
+            showToast("تمت إزالة رابط فيديو الدعم من التنبيهات");
+        }
 
         function extractYouTubeVideoId(input) {
             if (!input || typeof input !== "string") return "";
@@ -478,8 +577,8 @@
                 statusEl.textContent = `✅ مقطع يوتيوب نشط ويُعرض كاملاً مع رابط التنبيهات (ID: ${activeYouTubeVideoId})`;
                 statusEl.className = "text-xs text-emerald-300 font-bold";
             } else {
-                statusEl.textContent = "✅ فيديو التنبيه الافتراضي (video.mp4) مدمج ويظهر مع كل دعم؛ ويمكنك استبداله بمقطع يوتيوب.";
-                statusEl.className = "text-xs text-slate-300";
+                statusEl.textContent = "لم يتم استجلاب مقطع يوتيوب؛ سيُستخدم رابط فيديو الدعم إن وُجد أو يظهر النص شفافاً وسط الشاشة.";
+                statusEl.className = "text-xs text-slate-400";
             }
         }
 
@@ -535,7 +634,7 @@
 
             syncStreamerPanelInputs();
             updateYouTubeStatusUI();
-            showToast("تمت إزالة مقطع يوتيوب والعودة لفيديو التنبيه الافتراضي");
+            showToast("تمت إزالة مقطع يوتيوب من رابط التنبيهات");
         }
 
         function isApiConfigured() {
@@ -839,6 +938,7 @@
             if (!panel) return;
             if (show) {
                 syncStreamerPanelInputs();
+                updateSupportVideoStatusUI();
                 updateYouTubeStatusUI();
                 panel.classList.remove("hidden");
                 fetchDonationsFromDb();
@@ -851,21 +951,27 @@
             const currentBase = window.location.origin && window.location.origin.startsWith("http")
                 ? `${window.location.origin}${window.location.pathname}`
                 : TARGET_WIDGET_URL.split("?")[0];
-            if (activeYouTubeVideoId) {
-                return `${currentBase}?widget=true&yt_id=${encodeURIComponent(activeYouTubeVideoId)}#/d/cgtevil`;
+            const query = new URLSearchParams({ widget: "true" });
+            if (activeSupportVideoUrl) {
+                query.set("video_url", activeSupportVideoUrl);
             }
-            return `${currentBase}?widget=true#/d/cgtevil`;
+            if (activeYouTubeVideoId) {
+                query.set("yt_id", activeYouTubeVideoId);
+            }
+            return `${currentBase}?${query.toString()}#/d/cgtevil`;
         }
 
         function syncStreamerPanelInputs() {
             const widgetInput = document.getElementById("widget-url-input");
             const donorLinkInput = document.getElementById("donor-link-input");
             const streamerLinkInput = document.getElementById("streamer-link-input");
+            const supportVideoInput = document.getElementById("setting-support-video-url");
             const ytInput = document.getElementById("setting-youtube-url");
 
             if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
             if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
             if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
+            if (supportVideoInput && activeSupportVideoUrl) supportVideoInput.value = activeSupportVideoUrl;
             if (ytInput && activeYouTubeUrl) ytInput.value = activeYouTubeUrl;
         }
 
@@ -876,7 +982,7 @@
             input.select();
             try {
                 document.execCommand("copy");
-                showToast("✅ تم نسخ رابط الويدجت");
+                showToast("✅ تم نسخ رابط الويدجت المدمج");
             } catch (e) {
                 showToast("انسخ الرابط يدوياً");
             }
@@ -1075,7 +1181,7 @@
                 amount: amount,
                 message: message,
                 network: selectedNetwork,
-                video_url: DEFAULT_ALERT_VIDEO_URL,
+                video_url: activeSupportVideoUrl,
                 youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString(),
                 review_status: "approved",
@@ -1089,7 +1195,7 @@
                 amount: record.amount,
                 message: record.message,
                 network: record.network,
-                video_url: DEFAULT_ALERT_VIDEO_URL,
+                video_url: activeSupportVideoUrl,
                 youtube_video_id: activeYouTubeVideoId,
                 created_at: record.created_at,
                 review_status: "approved",
@@ -1170,7 +1276,7 @@
                             amount: data.item.amount,
                             message: data.item.message,
                             network: data.item.network,
-                            video_url: DEFAULT_ALERT_VIDEO_URL,
+                            video_url: activeSupportVideoUrl,
                             youtube_video_id: activeYouTubeVideoId,
                             created_at: data.item.created_at,
                             review_status: "approved",
@@ -1205,7 +1311,7 @@
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
                 broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, {
-                    video_url: DEFAULT_ALERT_VIDEO_URL,
+                    video_url: activeSupportVideoUrl,
                     youtube_video_id: activeYouTubeVideoId
                 }));
                 showPanelLivePreview(target);
@@ -1270,7 +1376,7 @@
                 amount: amount,
                 message: message,
                 network: network,
-                video_url: DEFAULT_ALERT_VIDEO_URL,
+                video_url: activeSupportVideoUrl,
                 youtube_video_id: activeYouTubeVideoId,
                 created_at: new Date().toISOString()
             };
@@ -1292,17 +1398,21 @@
         function finishCurrentAlert() {
             clearActiveAlertTimers();
             const card = document.getElementById("live-alert-card");
-            const mp4Video = document.getElementById("alert-mp4-video");
+            const supportVideo = document.getElementById("alert-support-video");
             const ytFrame = document.getElementById("alert-youtube-frame");
+            const scrim = document.getElementById("alert-video-scrim");
 
-            if (mp4Video) {
-                mp4Video.onended = null;
-                try { mp4Video.pause(); } catch (e) {}
+            if (supportVideo) {
+                supportVideo.onended = null;
+                try { supportVideo.pause(); } catch (e) {}
+                supportVideo.removeAttribute("src");
+                supportVideo.classList.add("hidden");
             }
             if (ytFrame) {
                 ytFrame.removeAttribute("src");
                 ytFrame.classList.add("hidden");
             }
+            if (scrim) scrim.classList.add("hidden");
             if (card) card.classList.add("hidden");
 
             window.__alertNextTimer = setTimeout(() => {
@@ -1328,8 +1438,9 @@
 
             const widgetView = document.getElementById("widget-view");
             const card = document.getElementById("live-alert-card");
-            const mp4Video = document.getElementById("alert-mp4-video");
+            const supportVideo = document.getElementById("alert-support-video");
             const ytFrame = document.getElementById("alert-youtube-frame");
+            const scrim = document.getElementById("alert-video-scrim");
             const nameEl = document.getElementById("alert-donor-name");
             const amountEl = document.getElementById("alert-amount");
             const msgEl = document.getElementById("alert-message");
@@ -1340,41 +1451,51 @@
             if (msgEl) msgEl.textContent = current.message || "شكراً لدعمك!";
 
             const ytId = extractYouTubeVideoId(current.youtube_video_id || activeYouTubeVideoId || "");
+            const videoSrc = sanitizeSupportVideoUrl(current.video_url || activeSupportVideoUrl || "");
+
             if (ytId) {
-                if (mp4Video) {
-                    mp4Video.onended = null;
-                    try { mp4Video.pause(); } catch (e) {}
-                    mp4Video.classList.add("hidden");
+                if (supportVideo) {
+                    supportVideo.onended = null;
+                    try { supportVideo.pause(); } catch (e) {}
+                    supportVideo.removeAttribute("src");
+                    supportVideo.classList.add("hidden");
                 }
                 if (ytFrame) {
                     ytFrame.src = buildYouTubeEmbedUrl(ytId);
                     ytFrame.classList.remove("hidden");
                 }
-            } else {
+                if (scrim) scrim.classList.remove("hidden");
+            } else if (videoSrc && supportVideo) {
                 if (ytFrame) {
                     ytFrame.removeAttribute("src");
                     ytFrame.classList.add("hidden");
                 }
-                if (mp4Video) {
-                    const nextSrc = current.video_url || DEFAULT_ALERT_VIDEO_URL;
-                    const sourceEl = mp4Video.querySelector("source");
-                    if (sourceEl && sourceEl.getAttribute("src") !== nextSrc) {
-                        sourceEl.setAttribute("src", nextSrc);
-                        mp4Video.load();
+                supportVideo.src = videoSrc;
+                supportVideo.loop = false;
+                supportVideo.onended = () => {
+                    finishCurrentAlert();
+                };
+                supportVideo.classList.remove("hidden");
+                if (scrim) scrim.classList.remove("hidden");
+                try {
+                    supportVideo.currentTime = 0;
+                    const playPromise = supportVideo.play();
+                    if (playPromise && typeof playPromise.catch === "function") {
+                        playPromise.catch(() => {});
                     }
-                    mp4Video.loop = false;
-                    mp4Video.onended = () => {
-                        finishCurrentAlert();
-                    };
-                    mp4Video.classList.remove("hidden");
-                    try {
-                        mp4Video.currentTime = 0;
-                        const playPromise = mp4Video.play();
-                        if (playPromise && typeof playPromise.catch === "function") {
-                            playPromise.catch(() => {});
-                        }
-                    } catch (e) {}
+                } catch (e) {}
+            } else {
+                if (supportVideo) {
+                    supportVideo.onended = null;
+                    try { supportVideo.pause(); } catch (e) {}
+                    supportVideo.removeAttribute("src");
+                    supportVideo.classList.add("hidden");
                 }
+                if (ytFrame) {
+                    ytFrame.removeAttribute("src");
+                    ytFrame.classList.add("hidden");
+                }
+                if (scrim) scrim.classList.add("hidden");
             }
 
             if (card) card.classList.remove("hidden");
@@ -1398,7 +1519,7 @@
                             amount: data.alert.amount,
                             message: data.alert.message,
                             network: data.alert.network,
-                            video_url: DEFAULT_ALERT_VIDEO_URL,
+                            video_url: activeSupportVideoUrl,
                             youtube_video_id: activeYouTubeVideoId
                         });
                     }
@@ -1413,7 +1534,9 @@
                     const parsed = JSON.parse(rawLatest);
                     if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                         const incoming = Object.assign({}, parsed);
-                        if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
+                        if (!incoming.video_url && activeSupportVideoUrl) {
+                            incoming.video_url = activeSupportVideoUrl;
+                        }
                         if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                             incoming.youtube_video_id = activeYouTubeVideoId;
                         }
@@ -1427,7 +1550,9 @@
                     const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
                     if (parsedName && parsedName.id && parsedName.id !== lastSeenAlertId) {
                         const incomingName = Object.assign({}, parsedName);
-                        if (!incomingName.video_url) incomingName.video_url = DEFAULT_ALERT_VIDEO_URL;
+                        if (!incomingName.video_url && activeSupportVideoUrl) {
+                            incomingName.video_url = activeSupportVideoUrl;
+                        }
                         if (!incomingName.youtube_video_id && activeYouTubeVideoId) {
                             incomingName.youtube_video_id = activeYouTubeVideoId;
                         }
@@ -1435,6 +1560,11 @@
                     }
                 }
             } catch (e) {}
+
+            const storedVideo = sanitizeSupportVideoUrl(safeStorageGet(SUPPORT_VIDEO_STORAGE_KEY) || "");
+            if (storedVideo) {
+                activeSupportVideoUrl = storedVideo;
+            }
 
             const storedYtId = extractYouTubeVideoId(safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY) || "");
             if (storedYtId) {
@@ -1447,7 +1577,12 @@
                 broadcastChannel = new BroadcastChannel("cgtevil_live_alerts_channel");
                 broadcastChannel.onmessage = (event) => {
                     if (!event || !event.data) return;
-                    if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
+                    if (event.data.type === "STREAMER_SUPPORT_VIDEO_UPDATED" && event.data.payload) {
+                        activeSupportVideoUrl = sanitizeSupportVideoUrl(event.data.payload.support_video_url || "");
+                        safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
+                        syncStreamerPanelInputs();
+                        updateSupportVideoStatusUI();
+                    } else if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
                         activeYouTubeVideoId = extractYouTubeVideoId(event.data.payload.youtube_video_id || "");
                         activeYouTubeUrl = event.data.payload.youtube_url || "";
                         safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYouTubeVideoId);
@@ -1457,7 +1592,9 @@
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
-                        if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
+                        if (!incoming.video_url && activeSupportVideoUrl) {
+                            incoming.video_url = activeSupportVideoUrl;
+                        }
                         if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                             incoming.youtube_video_id = activeYouTubeVideoId;
                         }
@@ -1468,7 +1605,12 @@
 
             window.addEventListener("message", (event) => {
                 if (!event || !event.data) return;
-                if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
+                if (event.data.type === "STREAMER_SUPPORT_VIDEO_UPDATED" && event.data.payload) {
+                    activeSupportVideoUrl = sanitizeSupportVideoUrl(event.data.payload.support_video_url || "");
+                    safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
+                    syncStreamerPanelInputs();
+                    updateSupportVideoStatusUI();
+                } else if (event.data.type === "STREAMER_YOUTUBE_UPDATED" && event.data.payload) {
                     activeYouTubeVideoId = extractYouTubeVideoId(event.data.payload.youtube_video_id || "");
                     activeYouTubeUrl = event.data.payload.youtube_url || "";
                     syncStreamerPanelInputs();
@@ -1476,7 +1618,9 @@
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
-                    if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
+                    if (!incoming.video_url && activeSupportVideoUrl) {
+                        incoming.video_url = activeSupportVideoUrl;
+                    }
                     if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                         incoming.youtube_video_id = activeYouTubeVideoId;
                     }
@@ -1485,7 +1629,11 @@
             });
 
             window.addEventListener("storage", (event) => {
-                if (event.key === YOUTUBE_VIDEO_STORAGE_KEY) {
+                if (event.key === SUPPORT_VIDEO_STORAGE_KEY) {
+                    activeSupportVideoUrl = sanitizeSupportVideoUrl(event.newValue || "");
+                    syncStreamerPanelInputs();
+                    updateSupportVideoStatusUI();
+                } else if (event.key === YOUTUBE_VIDEO_STORAGE_KEY) {
                     activeYouTubeVideoId = extractYouTubeVideoId(event.newValue || "");
                     syncStreamerPanelInputs();
                     updateYouTubeStatusUI();
@@ -1494,7 +1642,9 @@
                         const parsed = JSON.parse(event.newValue);
                         if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                             const incoming = Object.assign({}, parsed);
-                            if (!incoming.video_url) incoming.video_url = DEFAULT_ALERT_VIDEO_URL;
+                            if (!incoming.video_url && activeSupportVideoUrl) {
+                                incoming.video_url = activeSupportVideoUrl;
+                            }
                             if (!incoming.youtube_video_id && activeYouTubeVideoId) {
                                 incoming.youtube_video_id = activeYouTubeVideoId;
                             }
@@ -1518,9 +1668,16 @@
         }
 
         function initApp() {
+            loadSavedSupportVideoSettings();
             loadSavedYouTubeSettings();
 
             const params = getCombinedUrlParams();
+            const urlVideo = sanitizeSupportVideoUrl(params.get("video_url") || params.get("support_video") || "");
+            if (urlVideo) {
+                activeSupportVideoUrl = urlVideo;
+                safeStorageSet(SUPPORT_VIDEO_STORAGE_KEY, activeSupportVideoUrl);
+            }
+
             const urlYtId = extractYouTubeVideoId(params.get("yt_id") || params.get("youtube_url") || "");
             if (urlYtId) {
                 activeYouTubeVideoId = urlYtId;
@@ -1546,12 +1703,13 @@
                         amount: Number(urlAmount),
                         message: params.get("message") || "شكراً لدعمك المباشر!",
                         network: params.get("network") || "libyana",
-                        video_url: DEFAULT_ALERT_VIDEO_URL,
+                        video_url: activeSupportVideoUrl,
                         youtube_video_id: activeYouTubeVideoId
                     });
                 }
             } else {
                 updateAuthUI();
+                updateSupportVideoStatusUI();
                 updateYouTubeStatusUI();
                 wasCooldownActive = getRemainingCooldownMs() > 0;
                 updateTransferCooldownUI();
