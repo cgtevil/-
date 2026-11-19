@@ -98,7 +98,7 @@
                             <span>دعم البث المباشر</span>
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">@cgtevil</span>
                         </h1>
-                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار مع مراجعة واعتماد قبل البث</p>
+                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار مع اعتماد تلقائي وعرض فوري على البث</p>
                     </div>
                 </div>
 
@@ -123,7 +123,7 @@
                         دعم فوري ومباشر
                     </span>
                     <h2 class="text-2xl font-black text-white">ادعم الستريمر واظهر على شاشة البث</h2>
-                    <p class="text-sm text-slate-400">اختر الشبكة والمبلغ، ثم نفّذ التحويل واضغط "تم التحويل" ليُسجّل طلبك للمراجعة والاعتماد.</p>
+                    <p class="text-sm text-slate-400">اختر الشبكة والمبلغ، ثم نفّذ التحويل واضغط "تم التحويل" ليتم اعتماد طلبك وعرضه تلقائياً على البث.</p>
                 </div>
 
                 <!-- اختيار الشبكة -->
@@ -192,7 +192,7 @@
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• اختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• نفّذ التحويل من هاتفك ثم اضغط <strong>"تم التحويل"</strong> ليُسجّل طلبك في قاعدة البيانات.</li>
-                        <li>• بعد مراجعة الطلب واعتماده من الستريمر، يُطلق إشعار البث تلقائياً.</li>
+                        <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُطلق إشعار البث وقائمة أفضل الداعمين.</li>
                     </ul>
                 </div>
             </aside>
@@ -223,7 +223,7 @@
             </div>
 
             <button type="button" onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition cursor-pointer">
-                ✅ تم التحويل (إرسال للمراجعة)
+                ✅ تم التحويل (اعتماد تلقائي وإرسال للبث)
             </button>
         </div>
     </div>
@@ -260,7 +260,7 @@
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                     <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgtevil)</h3>
-                    <p class="text-xs text-slate-400">مراجعة طلبات الدعم في قاعدة D1 واعتماد إشعارات البث</p>
+                    <p class="text-xs text-slate-400">مراجعة طلبات الدعم في قاعدة D1 وإدارة إعدادات البث</p>
                 </div>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
@@ -268,7 +268,7 @@
             <!-- سجل طلبات الدعم وحالة المراجعة -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-black text-emerald-300">طلبات الدعم وحالة المراجعة (D1)</span>
+                    <span class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
                     <button type="button" onclick="fetchDonationsFromDb()" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold cursor-pointer">
                         🔄 تحديث
                     </button>
@@ -448,7 +448,7 @@
         function getStatusBadge(status, notified) {
             if (status === "approved") {
                 const alertTag = Number(notified) === 1 ? " • أُرسل إشعار البث" : "";
-                return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">معتمد${alertTag}</span>`;
+                return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">معتمد تلقائياً${alertTag}</span>`;
             }
             if (status === "rejected") {
                 return `<span class="px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 font-black text-[11px]">مرفوض</span>`;
@@ -840,7 +840,7 @@
 
             container.innerHTML = items.map((item) => {
                 const uid = item.alert_uid || String(item.id);
-                const status = item.review_status || "pending";
+                const status = item.review_status || "approved";
                 const canApprove = status !== "approved";
                 const canReject = status !== "rejected";
 
@@ -903,8 +903,21 @@
                 network: selectedNetwork,
                 alert_video_url: activeVideo,
                 created_at: new Date().toISOString(),
-                review_status: "pending",
-                alert_notified: 0
+                review_status: "approved",
+                alert_notified: 1
+            };
+
+            const approvedAlertPayload = {
+                id: record.alert_uid,
+                streamer_username: CORRECT_STREAMER_USER,
+                donor_name: record.donor_name,
+                amount: record.amount,
+                message: record.message,
+                network: record.network,
+                alert_video_url: record.alert_video_url,
+                created_at: record.created_at,
+                review_status: "approved",
+                alert_notified: 1
             };
 
             if (isApiConfigured()) {
@@ -919,20 +932,37 @@
                         showToast(`⚠️ تعذر حفظ الطلب: ${data.error || "خطأ"}`);
                         return;
                     }
+
+                    const savedItem = data.item || record;
+                    if (savedItem.review_status !== "approved" && savedItem.alert_uid) {
+                        try {
+                            await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(savedItem.alert_uid)}/approve`, {
+                                method: "POST"
+                            });
+                        } catch (approveErr) {}
+                    }
+
+                    lastSeenAlertId = approvedAlertPayload.id;
+                    broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
+                    showPanelLivePreview(approvedAlertPayload);
                     await fetchDonationsFromDb();
                     closeTransferModal();
-                    showToast("✅ تم إرسال طلبك إلى قاعدة D1 وهو الآن قيد المراجعة قبل البث");
+                    showToast("✅ تم اعتماد طلبك تلقائياً وإطلاق إشعار البث المباشر");
                     return;
                 } catch (e) {
-                    showToast("⚠️ تعذر الاتصال بالخادم، تم الحفظ مؤقتاً في المتصفح");
+                    showToast("⚠️ تعذر الاتصال بالخادم، تم الاعتماد محلياً في المتصفح");
                 }
             }
 
             saveLocalDonation(record);
-            renderTopSupporters(getLocalDonations());
-            renderStreamerDonations(getLocalDonations());
+            const updatedLocal = getLocalDonations();
+            renderTopSupporters(updatedLocal);
+            renderStreamerDonations(updatedLocal);
+            lastSeenAlertId = approvedAlertPayload.id;
+            broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
+            showPanelLivePreview(approvedAlertPayload);
             closeTransferModal();
-            showToast("✅ تم تسجيل الطلب (قيد المراجعة)؛ اربط رابط Worker لتفعيل D1 بالكامل");
+            showToast("✅ تم اعتماد طلبك تلقائياً وإطلاق إشعار البث");
         }
 
         async function reviewDonation(alertUid, action) {
