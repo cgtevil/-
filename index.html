@@ -198,7 +198,7 @@
                     <h4 class="text-sm font-black text-emerald-300">كيف يعمل النظام؟</h4>
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• اختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
-                        <li>• نفّذ التحويل من هاتفك ثم اضغط <strong>"تم التحويل"</strong> ليُسجّل طلبك في قاعدة البيانات.</li>
+                        <li>• انسخ الكود ونفّذ التحويل من هاتفك ثم اضغط <strong>"تم التحويل"</strong> ليُسجّل طلبك في قاعدة البيانات.</li>
                         <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُفعّل مؤقت 5 دقائق قبل إجراء تحويل آخر.</li>
                     </ul>
                 </div>
@@ -221,7 +221,7 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <button type="button" onclick="copyUssdCode()" class="py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer">
+                <button id="btn-copy-ussd" type="button" onclick="copyUssdCode()" class="py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer">
                     📋 نسخ الكود
                 </button>
                 <a id="ussd-call-link" href="tel:*122*0944630534*10%23" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
@@ -229,7 +229,11 @@
                 </a>
             </div>
 
-            <button id="btn-confirm-transfer" type="button" onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition cursor-pointer">
+            <p id="transfer-copy-requirement" class="text-center text-xs font-bold text-amber-300">
+                اضغط على "نسخ الكود" أولاً لتفعيل زر "تم التحويل".
+            </p>
+
+            <button id="btn-confirm-transfer" type="button" disabled onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition opacity-50 cursor-not-allowed">
                 ✅ تم التحويل (اعتماد تلقائي وإرسال للبث)
             </button>
         </div>
@@ -399,6 +403,7 @@
         let lastSeenAlertId = "";
         let isShowingAlert = false;
         let wasCooldownActive = false;
+        let hasCopiedUssdCode = false;
         const alertQueue = [];
         let broadcastChannel = null;
 
@@ -565,6 +570,7 @@
             const showBtn = document.getElementById("btn-show-transfer");
             const confirmBtn = document.getElementById("btn-confirm-transfer");
             const hintEl = document.getElementById("transfer-cooldown-hint");
+            const copyReqEl = document.getElementById("transfer-copy-requirement");
 
             if (remainingMs > 0) {
                 wasCooldownActive = true;
@@ -578,8 +584,12 @@
                 if (confirmBtn) {
                     confirmBtn.disabled = true;
                     confirmBtn.textContent = `⏳ مؤقت 5 دقائق نشط (${formatted})`;
-                    confirmBtn.classList.add("opacity-60", "cursor-not-allowed");
+                    confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
                     confirmBtn.classList.remove("cursor-pointer");
+                }
+                if (copyReqEl) {
+                    copyReqEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل (${formatted}).`;
+                    copyReqEl.className = "text-center text-xs font-bold text-amber-300";
                 }
                 if (hintEl) {
                     hintEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل؛ يمكنك إجراء تحويل آخر بعد ${formatted}`;
@@ -597,10 +607,26 @@
                     showBtn.classList.add("cursor-pointer");
                 }
                 if (confirmBtn) {
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = "✅ تم التحويل (اعتماد تلقائي وإرسال للبث)";
-                    confirmBtn.classList.remove("opacity-60", "cursor-not-allowed");
-                    confirmBtn.classList.add("cursor-pointer");
+                    if (hasCopiedUssdCode) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = "✅ تم التحويل (اعتماد تلقائي وإرسال للبث)";
+                        confirmBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                        confirmBtn.classList.add("cursor-pointer");
+                    } else {
+                        confirmBtn.disabled = true;
+                        confirmBtn.textContent = "🔒 تم التحويل (انسخ الكود أولاً)";
+                        confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
+                        confirmBtn.classList.remove("cursor-pointer");
+                    }
+                }
+                if (copyReqEl) {
+                    if (hasCopiedUssdCode) {
+                        copyReqEl.textContent = "✅ تم نسخ الكود؛ يمكنك الآن الضغط على \"تم التحويل\".";
+                        copyReqEl.className = "text-center text-xs font-bold text-emerald-300";
+                    } else {
+                        copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً لتفعيل زر \"تم التحويل\".";
+                        copyReqEl.className = "text-center text-xs font-bold text-amber-300";
+                    }
                 }
                 if (hintEl) {
                     hintEl.textContent = "";
@@ -886,9 +912,11 @@
                 ? `*122*${phone}*${amount}#`
                 : `*140*4*1*${amount}*${phone}#`;
 
+            hasCopiedUssdCode = false;
             document.getElementById("ussd-code-display").textContent = ussd;
             document.getElementById("ussd-call-link").href = `tel:${encodeURIComponent(ussd)}`;
             document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amount} د.ل • الشبكة: ${getNetworkLabel(selectedNetwork)} (${phone})`;
+            updateTransferCooldownUI();
             document.getElementById("transfer-modal").classList.remove("hidden");
         }
 
@@ -902,8 +930,12 @@
             temp.value = code;
             document.body.appendChild(temp);
             temp.select();
-            try { document.execCommand("copy"); showToast("✅ تم نسخ كود التحويل"); } catch (e) {}
+            try { document.execCommand("copy"); } catch (e) {}
             document.body.removeChild(temp);
+
+            hasCopiedUssdCode = true;
+            updateTransferCooldownUI();
+            showToast("✅ تم نسخ الكود وتفعيل زر \"تم التحويل\"");
         }
 
         function getLocalDonations() {
@@ -1012,6 +1044,12 @@
         }
 
         async function confirmAndDispatchSupport() {
+            if (!hasCopiedUssdCode) {
+                showToast("⚠️ يرجى الضغط على \"نسخ الكود\" أولاً قبل تأكيد التحويل");
+                updateTransferCooldownUI();
+                return;
+            }
+
             const remainingMs = getRemainingCooldownMs();
             if (remainingMs > 0) {
                 updateTransferCooldownUI();
@@ -1077,6 +1115,7 @@
                     broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
                     showPanelLivePreview(approvedAlertPayload);
                     await fetchDonationsFromDb();
+                    hasCopiedUssdCode = false;
                     closeTransferModal();
                     startTransferCooldown();
                     showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
@@ -1093,6 +1132,7 @@
             lastSeenAlertId = approvedAlertPayload.id;
             broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
             showPanelLivePreview(approvedAlertPayload);
+            hasCopiedUssdCode = false;
             closeTransferModal();
             startTransferCooldown();
             showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
