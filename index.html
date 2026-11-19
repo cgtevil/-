@@ -50,26 +50,36 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) مع تراكب البيانات فوق الفيديو -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center p-4 pointer-events-none">
-        <div id="live-alert-card" class="hidden alert-anim relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-400/70 bg-slate-950/90">
+        <div id="live-alert-card" class="hidden alert-anim relative w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-400/80 bg-slate-950">
             <div class="relative w-full aspect-video bg-black overflow-hidden">
                 <video id="alert-video" class="w-full h-full object-cover" autoplay playsinline></video>
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent"></div>
-                <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow">
+
+                <!-- طبقة تدرج داكنة لإبراز النصوص بوضوح فوق الفيديو -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/45"></div>
+
+                <!-- شارة التنبيه العلوية -->
+                <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
                     ⚡ تنبيه دعم مباشر
                 </div>
-            </div>
-            <div class="p-5 text-center space-y-2">
-                <div class="text-xs font-bold text-amber-300 tracking-wide">شكراً لدعمك الأسطوري</div>
-                <div id="alert-donor-name" class="text-2xl font-black text-white">داعم كريم</div>
-                <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-xl">
-                    <span id="alert-amount">10</span>
-                    <span class="text-sm">د.ل</span>
+
+                <!-- بيانات الداعم مباشرة فوق الفيديو -->
+                <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5 flex flex-col items-center text-center space-y-2">
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <span id="alert-donor-name" class="px-3.5 py-1 rounded-xl bg-black/75 border border-white/15 text-lg sm:text-xl font-black text-white drop-shadow">
+                            داعم كريم
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-3.5 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-base sm:text-lg shadow-lg">
+                            <span id="alert-amount">10</span>
+                            <span class="text-xs font-extrabold">د.ل</span>
+                        </span>
+                    </div>
+
+                    <p id="alert-message" class="max-w-full px-3.5 py-2 rounded-2xl bg-black/75 border border-white/15 text-xs sm:text-sm font-bold text-amber-200 drop-shadow line-clamp-2">
+                        بث موفق يا أسطورة!
+                    </p>
                 </div>
-                <p id="alert-message" class="text-sm text-slate-200 bg-white/5 rounded-2xl px-4 py-2.5 border border-white/10 min-h-[42px] flex items-center justify-center">
-                    بث موفق يا أسطورة!
-                </p>
             </div>
         </div>
     </div>
@@ -360,7 +370,6 @@
     </div>
 
     <script>
-        // رابط Cloudflare Worker الخاص بك مرتبط بقاعدة D1 (664a2f75-4752-4ba5-8631-ca57bf5b2320)
         const API_BASE_URL = "https://cgtevil-donations-api.dis517226.workers.dev";
 
         const CORRECT_STREAMER_USER = "cgtevil";
