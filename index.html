@@ -1252,6 +1252,7 @@
 
             if (supportVideo) {
                 supportVideo.onended = null;
+                supportVideo.onerror = null;
                 try { supportVideo.pause(); } catch (e) {}
                 supportVideo.removeAttribute("src");
                 supportVideo.classList.add("hidden");
@@ -1296,35 +1297,48 @@
             const videoSrc = sanitizeSupportVideoUrl(current.video_url || activeSupportVideoUrl || "");
 
             if (videoSrc && supportVideo) {
+                supportVideo.preload = "auto";
                 supportVideo.src = videoSrc;
                 supportVideo.loop = false;
                 supportVideo.onended = () => {
                     finishCurrentAlert();
                 };
+                supportVideo.onerror = () => {
+                    finishCurrentAlert();
+                };
                 supportVideo.classList.remove("hidden");
                 if (scrim) scrim.classList.remove("hidden");
+
+                window.__alertHideTimer = setTimeout(() => {
+                    finishCurrentAlert();
+                }, 15000);
+
                 try {
                     supportVideo.currentTime = 0;
                     const playPromise = supportVideo.play();
-                    if (playPromise && typeof playPromise.catch === "function") {
-                        playPromise.catch(() => {});
+                    if (playPromise && typeof playPromise.then === "function") {
+                        playPromise.then(() => {
+                            clearTimeout(window.__alertHideTimer);
+                            window.__alertHideTimer = null;
+                        }).catch(() => {});
                     }
                 } catch (e) {}
             } else {
                 if (supportVideo) {
                     supportVideo.onended = null;
+                    supportVideo.onerror = null;
                     try { supportVideo.pause(); } catch (e) {}
                     supportVideo.removeAttribute("src");
                     supportVideo.classList.add("hidden");
                 }
                 if (scrim) scrim.classList.add("hidden");
+
+                window.__alertHideTimer = setTimeout(() => {
+                    finishCurrentAlert();
+                }, ALERT_MAX_DURATION_MS);
             }
 
             if (card) card.classList.remove("hidden");
-
-            window.__alertHideTimer = setTimeout(() => {
-                finishCurrentAlert();
-            }, ALERT_MAX_DURATION_MS);
         }
 
         async function checkLatestApprovedAlertFromDb() {
