@@ -166,7 +166,7 @@
         </div>
     </div>
 
-    <!-- واجهة الموقع الرئيسية (صفحة الدعم واللوحة - لا تعرض فيديو إشعارات البث) -->
+    <!-- واجهة الموقع الرئيسية -->
     <div id="main-app-view" class="min-h-screen flex flex-col">
         <header class="w-full border-b border-white/10 bg-slate-950/75 backdrop-blur-md sticky top-0 z-30">
             <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
@@ -378,7 +378,7 @@
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                     <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgtevil)</h3>
-                    <p class="text-xs text-slate-400">مراجعة وقبول طلبات الدعم من خانة D1 وإرسالها مباشرة لرابط البث (?widget=true)</p>
+                    <p class="text-xs text-slate-400">مراجعة الطلبات الواردة من خانة D1 واستعراض الداعمين المقبولين</p>
                 </div>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
@@ -398,9 +398,10 @@
                 </div>
             </div>
 
+            <!-- خانة طلبات الدعم وحالة الاعتماد (D1) - تعرض الطلبات الواردة فقط -->
             <div id="d1-approval-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/75 border border-emerald-400/30">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
+                    <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم الواردة (D1)</span>
                     <div class="flex items-center gap-2">
                         <button id="btn-clear-old-donors" type="button" onclick="clearOldSupporters()" class="text-[11px] px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold cursor-pointer transition">
                             🧹 مسح الداعمين القدامى
@@ -411,11 +412,24 @@
                     </div>
                 </div>
                 <p class="text-[11px] text-amber-200/90 font-semibold">
-                    القبول يرسل الطلب إلى رابط البث المباشر (?widget=true)، والضغط على «🔄 تحديث» يحذف الطلبات القديمة ويعرض الجديد.
+                    تعرض هذه الخانة الطلبات الواردة بانتظار المراجعة فقط؛ عند القبول ينتقل الداعم إلى خانة «الداعمين المقبولين».
                 </p>
                 <div id="recent-donations-list" class="space-y-2 max-h-60 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
-                        جاري تحميل الطلبات من قاعدة البيانات...
+                        جاري تحميل الطلبات الواردة من قاعدة البيانات...
+                    </div>
+                </div>
+            </div>
+
+            <!-- خانة الداعمين المقبولين (بديلة عن خانة اختبار إرسال إشعار رابط البث المباشر) -->
+            <div id="approved-supporters-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-emerald-400/25">
+                <div class="flex items-center justify-between">
+                    <span id="approved-supporters-title" class="text-xs font-black text-emerald-300">✅ الداعمون المقبولون</span>
+                    <span id="approved-supporters-count" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-200 font-black">0</span>
+                </div>
+                <div id="approved-supporters-list" class="space-y-2 max-h-52 overflow-y-auto">
+                    <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
+                        لا يوجد داعم مقبول حالياً.
                     </div>
                 </div>
             </div>
@@ -482,25 +496,6 @@
                         </button>
                     </div>
                 </div>
-            </div>
-
-            <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-amber-400/20">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-black text-amber-300">اختبار إرسال إشعار إلى رابط البث المباشر</span>
-                    <button type="button" onclick="triggerTestAlert()" class="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition cursor-pointer">
-                        🚀 إرسال لرابط البث
-                    </button>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input id="test-donor-name" type="text" placeholder="اسم الداعم التجريبي" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                    <input id="test-donor-amount" type="number" min="3" max="50" value="25" placeholder="المبلغ" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                    <select id="test-donor-network" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                        <option value="libyana">ليبيانا</option>
-                        <option value="almadar">المدار</option>
-                    </select>
-                </div>
-                <input id="test-donor-message" type="text" placeholder="رسالة الاختبار للبث المباشر..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                <div id="tiktok-test-status" class="text-xs text-emerald-300"></div>
             </div>
 
             <div class="flex items-center justify-between gap-3 pt-2">
@@ -732,12 +727,23 @@
             } catch (e) {}
         }
 
+        function getIncomingPendingDonations(items) {
+            return sortDonationsPendingFirst(items).filter((x) => !x.review_status || x.review_status === "pending");
+        }
+
+        function getApprovedSupporters(items) {
+            return (Array.isArray(items) ? items : [])
+                .filter((x) => x && x.review_status === "approved")
+                .slice()
+                .sort((a, b) => (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0));
+        }
+
         function handleStreamerPendingAlertsAndQuickBar(items) {
             const authed = isStreamerAuthenticated();
             const bar = document.getElementById("streamer-quick-approve-bar");
             const countEl = document.getElementById("quick-pending-count");
             const detailsEl = document.getElementById("quick-pending-details");
-            const pendingList = sortDonationsPendingFirst(items).filter((x) => !x.review_status || x.review_status === "pending");
+            const pendingList = getIncomingPendingDonations(items);
 
             if (!authed) {
                 if (bar) bar.classList.add("hidden");
@@ -1499,6 +1505,7 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             renderTopSupporters(list);
             renderStreamerDonations(list);
+            renderApprovedSupporters(list);
             handleStreamerPendingAlertsAndQuickBar(list);
         }
 
@@ -1519,6 +1526,7 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify([]));
             renderTopSupporters([]);
             renderStreamerDonations([]);
+            renderApprovedSupporters([]);
             handleStreamerPendingAlertsAndQuickBar([]);
 
             if (isApiConfigured() && oldUids.length > 0) {
@@ -1643,27 +1651,27 @@
             }
         }
 
+        // تعرض خانة D1 الطلبات الواردة (قيد المراجعة) فقط
         function renderStreamerDonations(items) {
             const container = document.getElementById("recent-donations-list");
             const titleEl = document.getElementById("donations-panel-title");
             if (!container) return;
-            const ordered = sortDonationsPendingFirst(items);
-            const pendingCount = ordered.filter((x) => !x.review_status || x.review_status === "pending").length;
+            const incomingPending = getIncomingPendingDonations(items);
+            const pendingCount = incomingPending.length;
+
             if (titleEl) {
                 titleEl.textContent = pendingCount > 0
-                    ? `طلبات الدعم وحالة الاعتماد (D1) • بانتظار القبول/الرفض: ${pendingCount}`
-                    : "طلبات الدعم وحالة الاعتماد (D1)";
+                    ? `طلبات الدعم الواردة (D1) • بانتظار المراجعة: ${pendingCount}`
+                    : "طلبات الدعم الواردة (D1)";
             }
-            if (!ordered.length) {
-                container.innerHTML = `<div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">لا توجد طلبات دعم في قاعدة البيانات حتى الآن.</div>`;
+
+            if (!incomingPending.length) {
+                container.innerHTML = `<div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">لا توجد طلبات دعم واردة قيد المراجعة حالياً.</div>`;
                 return;
             }
-            container.innerHTML = ordered.map((item) => {
+
+            container.innerHTML = incomingPending.map((item) => {
                 const uid = item.alert_uid || String(item.id);
-                const status = item.review_status || "pending";
-                const isPending = status === "pending";
-                const isApproved = status === "approved";
-                const isRejected = status === "rejected";
                 const refCode = item.tracking_code || (item.message && (item.message.match(/(?:LBY|MDR)-\d{4}/) || [])[0]) || "";
                 const senderDigits = item.sender_last_digits || (item.message && (item.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
                 const elapsedSec = Number(item.elapsed_seconds);
@@ -1672,10 +1680,10 @@
                 const durationLabel = Number.isFinite(elapsedSec) && elapsedSec > 0 ? ` • مدة التفاعل: ${elapsedSec}ث` : "";
 
                 return `
-                    <div class="p-3.5 rounded-2xl ${isPending ? "bg-amber-500/10 border border-amber-400/35" : "bg-white/5 border border-white/10"} space-y-2">
+                    <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-400/35 space-y-2">
                         <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
                             <div class="font-black text-white">${escapeHtml(item.donor_name || "داعم")} • <span class="text-emerald-300">${Number(item.amount) || 0} د.ل</span>${refCode ? ` • <span class="text-amber-300">${escapeHtml(refCode)}</span>` : ""}${senderDigits ? ` • <span class="text-sky-300">آخر 4 أرقام: ${escapeHtml(senderDigits)}</span>` : ""}</div>
-                            ${getStatusBadge(status, item.alert_notified)}
+                            ${getStatusBadge("pending", item.alert_notified)}
                         </div>
                         <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
                             <span>الشبكة: <strong class="text-slate-200">${getNetworkLabel(item.network)}</strong> • <span class="text-slate-300">${escapeHtml(copyLabel)}${escapeHtml(durationLabel)}</span></span>
@@ -1683,9 +1691,44 @@
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3.5 py-1.5 rounded-xl ${isApproved ? "bg-emerald-500/20 border border-emerald-400/50 text-emerald-200" : "bg-emerald-400 hover:bg-emerald-300 text-slate-950"} font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl ${isRejected ? "bg-rose-500/35 border border-rose-400/60 text-rose-100" : "bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200"} font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
                             <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // خانة الداعمين المقبولين
+        function renderApprovedSupporters(items) {
+            const container = document.getElementById("approved-supporters-list");
+            const countEl = document.getElementById("approved-supporters-count");
+            if (!container) return;
+
+            const approvedList = getApprovedSupporters(items);
+            if (countEl) countEl.textContent = String(approvedList.length);
+
+            if (!approvedList.length) {
+                container.innerHTML = `<div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">لا يوجد داعم مقبول حالياً.</div>`;
+                return;
+            }
+
+            container.innerHTML = approvedList.map((item) => {
+                const uid = item.alert_uid || String(item.id);
+                const cleanMsg = sanitizeAlertMessageForBroadcast(item.message || "دعم مباشر للبث!");
+                return `
+                    <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div class="space-y-0.5 min-w-0">
+                            <div class="font-black text-white">
+                                ${escapeHtml(item.donor_name || "داعم")} • <span class="text-emerald-300">${Number(item.amount) || 0} د.ل</span>
+                                <span class="text-[11px] text-slate-300 font-semibold">(${getNetworkLabel(item.network)})</span>
+                            </div>
+                            <div class="text-[11px] text-emerald-100/90 truncate">${escapeHtml(cleanMsg)}</div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px]">مقبول</span>
+                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-950/70 border border-white/15 text-slate-200 hover:text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
                 `;
@@ -1702,18 +1745,11 @@
                 const res = await fetch(`${API_BASE_URL}/api/donations`, { cache: "no-store" });
                 const data = await res.json();
                 if (data && data.ok && Array.isArray(data.items)) {
-                    cachedDonations = data.items;
-                    safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(data.items));
-                    renderTopSupporters(data.items);
-                    renderStreamerDonations(data.items);
-                    handleStreamerPendingAlertsAndQuickBar(data.items);
+                    syncDonationsState(data.items);
                 }
             } catch (e) {
                 const localItems = getLocalDonations();
-                cachedDonations = localItems;
-                renderTopSupporters(localItems);
-                renderStreamerDonations(localItems);
-                handleStreamerPendingAlertsAndQuickBar(localItems);
+                syncDonationsState(localItems);
             }
         }
 
@@ -1819,7 +1855,11 @@
             if (isApiConfigured()) {
                 try {
                     const res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(alertUid)}/${action}`, {
-                        method: "POST"
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Streamer-Pass": CORRECT_STREAMER_PASS
+                        }
                     });
                     const data = await res.json();
                     if (!data.ok || !data.item) {
@@ -1827,9 +1867,9 @@
                         return;
                     }
                     if (action === "approve") {
-                        showToast("✅ تم القبول من خانة D1 وإرساله إلى رابط البث المباشر (?widget=true)");
+                        showToast("✅ تم قبول الطلب ونقله إلى الداعمين المقبولين وإرساله للبث (?widget=true)");
                     } else {
-                        showToast("❌ تم رفض الطلب من خانة D1");
+                        showToast("❌ تم رفض الطلب وإزالته من الطلبات الواردة");
                     }
                     await fetchDonationsFromDb();
                     return;
@@ -1849,7 +1889,7 @@
                 return item;
             });
             syncDonationsState(list);
-            showToast(action === "approve" ? "✅ تم القبول من خانة D1" : "❌ تم رفض الطلب من خانة D1");
+            showToast(action === "approve" ? "✅ تم القبول وإضافته للداعمين المقبولين" : "❌ تم رفض الطلب");
         }
 
         function escapeHtml(str) {
@@ -1858,17 +1898,6 @@
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;");
-        }
-
-        function triggerTestAlert() {
-            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
-            const donorName = (document.getElementById("test-donor-name").value || "").trim() || "أسطورة البث";
-            const amount = Number(document.getElementById("test-donor-amount").value) || 25;
-            const statusEl = document.getElementById("tiktok-test-status");
-            if (statusEl) {
-                statusEl.textContent = `ℹ️ إشعارات الفيديو تعمل حصراً داخل رابط البث (?widget=true) بعد القبول من خانة D1 (الطلب التجريبي: ${donorName} - ${amount} د.ل)`;
-            }
-            showToast("ℹ️ افتح رابط البث (?widget=true) في TikTok Live Studio واقبل طلباً من D1");
         }
 
         function clearActiveAlertTimers() {
@@ -2032,11 +2061,7 @@
                 broadcastChannel.onmessage = (event) => {
                     if (!event || !event.data) return;
                     if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
-                        cachedDonations = event.data.payload.items;
-                        safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
-                        renderTopSupporters(cachedDonations);
-                        renderStreamerDonations(cachedDonations);
-                        handleStreamerPendingAlertsAndQuickBar(cachedDonations);
+                        syncDonationsState(event.data.payload.items);
                     }
                 };
             } catch (e) {}
