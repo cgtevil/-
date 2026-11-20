@@ -19,7 +19,8 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-        body.widget-mode {
+        body.widget-mode,
+        body.top-widget-mode {
             background: transparent !important;
             overflow: hidden !important;
         }
@@ -27,6 +28,12 @@
             background: rgba(17, 24, 39, 0.88);
             backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .top-overlay-card {
+            background: rgba(9, 13, 22, 0.78);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
         }
         @keyframes alertPop {
             0% {
@@ -44,6 +51,14 @@
         .frameless-text-shadow {
             text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.98);
         }
+        .alert-stack-above-center {
+            transform: translateY(-6.5vh);
+        }
+        @media (min-width: 640px) {
+            .alert-stack-above-center {
+                transform: translateY(-7.5vh);
+            }
+        }
         .full-video-stage {
             width: 100vw;
             max-width: 100%;
@@ -59,7 +74,7 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار وتفاصيل الدعم وسط الشاشة بخط متوسط -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار: اسم الداعم + المبلغ أعلى المنتصف بقليل وأسفله مباشرة رسالة الدعم -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
             <!-- مرحلة عرض الفيديو المحلي أو فيديو يوتيوب المستجلب مع التنبيه -->
@@ -71,20 +86,42 @@
             <!-- تدرج وسطي خفيف عند وجود فيديو لإبراز النص بوضوح -->
             <div id="alert-video-scrim" class="hidden absolute inset-0 bg-gradient-to-b from-transparent via-black/45 to-transparent z-10"></div>
 
-            <!-- تفاصيل الدعم وسط الشاشة بخط متوسط وبدون إطار -->
-            <div class="absolute inset-0 px-5 flex flex-col items-center justify-center text-center space-y-1.5 z-20">
-                <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
-                    <span id="alert-donor-name" class="text-white">داعم كريم</span>
-                    <span class="text-amber-300">•</span>
-                    <span class="inline-flex items-center gap-1 text-emerald-300">
-                        <span id="alert-amount">10</span>
-                        <span class="text-sm font-bold">د.ل</span>
-                    </span>
-                </div>
+            <!-- اسم الداعم والمبلغ أعلى المنتصف بقليل متبوعاً مباشرة برسالة الدعم -->
+            <div class="absolute inset-0 px-5 flex flex-col items-center justify-center text-center z-20">
+                <div class="alert-stack-above-center flex flex-col items-center justify-center space-y-1">
+                    <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
+                        <span id="alert-donor-name" class="text-white">داعم كريم</span>
+                        <span class="text-amber-300">•</span>
+                        <span class="inline-flex items-center gap-1 text-emerald-300">
+                            <span id="alert-amount">10</span>
+                            <span class="text-sm font-bold">د.ل</span>
+                        </span>
+                    </div>
 
-                <p id="alert-message" class="max-w-2xl text-sm sm:text-base font-semibold text-amber-100 frameless-text-shadow line-clamp-2">
-                    بث موفق يا أسطورة!
-                </p>
+                    <p id="alert-message" class="max-w-2xl text-sm sm:text-base font-semibold text-amber-100 frameless-text-shadow line-clamp-2">
+                        بث موفق يا أسطورة!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- واجهة ويدجت أبرز 3 داعمين للبث المباشر (?top=true) -->
+    <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-3 flex items-start justify-start pointer-events-none">
+        <div class="top-overlay-card w-full max-w-xs rounded-2xl p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <div class="flex items-center gap-1.5 text-xs font-black text-amber-300 frameless-text-shadow">
+                    <span>🏆</span>
+                    <span>أبرز 3 داعمين</span>
+                </div>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    @cgtevil
+                </span>
+            </div>
+            <div id="widget-top-supporters-list" class="space-y-2">
+                <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-slate-300 font-bold">
+                    لا يوجد داعمون معتمدون بعد
+                </div>
             </div>
         </div>
     </div>
@@ -315,6 +352,17 @@
                 <div class="flex gap-2">
                     <input id="widget-url-input" type="text" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
                     <button type="button" onclick="copyWidgetUrl()" class="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
+                        نسخ الرابط
+                    </button>
+                </div>
+            </div>
+
+            <!-- رابط أبرز 3 داعمين للبث المباشر -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-cyan-300">🏆 رابط قائمة أبرز 3 داعمين (TikTok Live Studio)</label>
+                <div class="flex gap-2">
+                    <input id="top-supporters-widget-url-input" type="text" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-cyan-400/30 text-xs text-slate-200">
+                    <button type="button" onclick="copyRoleLink('top-supporters-widget-url-input', 'تم نسخ رابط أبرز 3 داعمين للبث المباشر')" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs cursor-pointer">
                         نسخ الرابط
                     </button>
                 </div>
@@ -706,7 +754,14 @@
             return params;
         }
 
+        function isTopWidgetMode() {
+            const params = getCombinedUrlParams();
+            const hash = (window.location.hash || "").toLowerCase();
+            return params.get("top") === "true" || hash.includes("top=true") || hash.includes("/top/cgtevil");
+        }
+
         function isWidgetMode() {
+            if (isTopWidgetMode()) return false;
             const params = getCombinedUrlParams();
             const hash = (window.location.hash || "").toLowerCase();
             return params.get("widget") === "true" || hash.includes("widget=true") || hash.includes("/d/cgtevil");
@@ -868,13 +923,22 @@
             return `${currentBase}?${query.toString()}#/d/cgtevil`;
         }
 
+        function buildTopSupportersWidgetUrl() {
+            const currentBase = window.location.origin && window.location.origin.startsWith("http")
+                ? `${window.location.origin}${window.location.pathname}`
+                : TARGET_WIDGET_URL.split("?")[0];
+            return `${currentBase}?top=true#/top/cgtevil`;
+        }
+
         function syncStreamerPanelInputs() {
             const widgetInput = document.getElementById("widget-url-input");
+            const topWidgetInput = document.getElementById("top-supporters-widget-url-input");
             const donorLinkInput = document.getElementById("donor-link-input");
             const streamerLinkInput = document.getElementById("streamer-link-input");
             const ytInput = document.getElementById("setting-youtube-video-url");
 
             if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
+            if (topWidgetInput) topWidgetInput.value = buildTopSupportersWidgetUrl();
             if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
             if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
             if (ytInput) ytInput.value = buildYoutubeWatchUrl(activeYoutubeVideoId);
@@ -969,15 +1033,9 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
         }
 
-        function renderTopSupporters(items) {
-            const topContainer = document.getElementById("top-supporters-list");
-            if (!topContainer) return;
-
+        function getTopThreeSupporters(items) {
             const approvedOnly = (items || []).filter((item) => item.review_status === "approved");
-            if (!approvedOnly.length) {
-                topContainer.innerHTML = `<div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-slate-400">لا توجد تبرعات معتمدة بعد؛ كن أول الداعمين!</div>`;
-                return;
-            }
+            if (!approvedOnly.length) return [];
 
             const totalsMap = new Map();
             approvedOnly.forEach((item) => {
@@ -986,20 +1044,48 @@
                 totalsMap.set(name, (totalsMap.get(name) || 0) + amt);
             });
 
-            const sorted = Array.from(totalsMap.entries())
+            return Array.from(totalsMap.entries())
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3);
+        }
 
+        function renderTopSupporters(items) {
+            const topContainer = document.getElementById("top-supporters-list");
+            const widgetTopContainer = document.getElementById("widget-top-supporters-list");
+            const sorted = getTopThreeSupporters(items);
             const medals = ["🥇", "🥈", "🥉"];
-            topContainer.innerHTML = sorted.map(([name, total], idx) => `
-                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl">${medals[idx] || "⭐"}</span>
-                        <span class="font-extrabold text-sm text-white">${escapeHtml(name)}</span>
-                    </div>
-                    <span class="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 font-black text-xs">${total} د.ل</span>
-                </div>
-            `).join("");
+
+            if (topContainer) {
+                if (!sorted.length) {
+                    topContainer.innerHTML = `<div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-slate-400">لا توجد تبرعات معتمدة بعد؛ كن أول الداعمين!</div>`;
+                } else {
+                    topContainer.innerHTML = sorted.map(([name, total], idx) => `
+                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">${medals[idx] || "⭐"}</span>
+                                <span class="font-extrabold text-sm text-white">${escapeHtml(name)}</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 font-black text-xs">${total} د.ل</span>
+                        </div>
+                    `).join("");
+                }
+            }
+
+            if (widgetTopContainer) {
+                if (!sorted.length) {
+                    widgetTopContainer.innerHTML = `<div class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-slate-300 font-bold">لا يوجد داعمون معتمدون بعد</div>`;
+                } else {
+                    widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-base shrink-0">${medals[idx] || "⭐"}</span>
+                                <span class="font-extrabold text-xs text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+                            </div>
+                            <span class="shrink-0 px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-black text-xs">${total} د.ل</span>
+                        </div>
+                    `).join("");
+                }
+            }
         }
 
         function renderStreamerDonations(items) {
@@ -1518,6 +1604,9 @@
                             incoming.youtube_video_id = activeYoutubeVideoId;
                         }
                         enqueueAlert(incoming);
+                        if (isTopWidgetMode()) {
+                            fetchDonationsFromDb();
+                        }
                     }
                 };
             } catch (e) {}
@@ -1537,6 +1626,9 @@
                         incoming.youtube_video_id = activeYoutubeVideoId;
                     }
                     enqueueAlert(incoming);
+                    if (isTopWidgetMode()) {
+                        fetchDonationsFromDb();
+                    }
                 }
             });
 
@@ -1545,6 +1637,10 @@
                     activeYoutubeVideoId = extractYoutubeVideoId(event.newValue || "");
                     syncStreamerPanelInputs();
                     updateYoutubeVideoStatusUI();
+                } else if (event.key === DONATIONS_STORAGE_KEY && event.newValue) {
+                    try {
+                        renderTopSupporters(JSON.parse(event.newValue));
+                    } catch (e) {}
                 } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
                     try {
                         const parsed = JSON.parse(event.newValue);
@@ -1572,6 +1668,24 @@
                     checkLatestApprovedAlertFromDb();
                 }, 1500);
             }
+
+            if (isTopWidgetMode()) {
+                fetchDonationsFromDb();
+                clearInterval(window.__topWidgetSyncInterval);
+                window.__topWidgetSyncInterval = setInterval(() => {
+                    fetchDonationsFromDb();
+                }, 4000);
+            }
+        }
+
+        function activateTopWidgetView() {
+            document.body.classList.remove("widget-mode");
+            document.body.classList.add("top-widget-mode");
+            document.getElementById("main-app-view").classList.add("hidden");
+            document.getElementById("widget-view").classList.add("hidden");
+            document.getElementById("top-widget-view").classList.remove("hidden");
+            renderTopSupporters(getLocalDonations());
+            fetchDonationsFromDb();
         }
 
         function initApp() {
@@ -1586,9 +1700,12 @@
 
             initRealtimeSync();
 
-            if (isWidgetMode()) {
+            if (isTopWidgetMode()) {
+                activateTopWidgetView();
+            } else if (isWidgetMode()) {
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
+                document.getElementById("top-widget-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
                 preloadLocalVideo(activeLocalVideoUrl);
 
@@ -1623,9 +1740,13 @@
 
         window.addEventListener("DOMContentLoaded", initApp);
         window.addEventListener("hashchange", () => {
-            if (isWidgetMode()) {
+            if (isTopWidgetMode()) {
+                activateTopWidgetView();
+            } else if (isWidgetMode()) {
+                document.body.classList.remove("top-widget-mode");
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
+                document.getElementById("top-widget-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
                 preloadLocalVideo(activeLocalVideoUrl);
                 checkStoredWidgetAlerts();
