@@ -522,6 +522,7 @@
         const AUTH_STORAGE_KEY = "cgtevil_streamer_auth_session";
         const SOUND_ENABLED_STORAGE_KEY = "cgtevil_streamer_sound_enabled";
         const KNOWN_PENDING_IDS_KEY = "cgtevil_known_pending_uids";
+        const DELETED_UIDS_KEY = "cgtevil_permanently_deleted_uids";
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
@@ -557,6 +558,7 @@
         let streamerAudioCtx = null;
         let hasInitializedPendingTracker = false;
         let knownPendingUidSet = new Set();
+        let permanentlyDeletedUidSet = new Set();
         const alertQueue = [];
         let broadcastChannel = null;
 
@@ -724,12 +726,52 @@
                 const arr = raw ? JSON.parse(raw) : [];
                 if (Array.isArray(arr)) knownPendingUidSet = new Set(arr);
             } catch (e) {}
+            loadDeletedUidSet();
         }
 
         function persistKnownPendingSet() {
             try {
                 safeStorageSet(KNOWN_PENDING_IDS_KEY, JSON.stringify(Array.from(knownPendingUidSet).slice(-100)));
             } catch (e) {}
+        }
+
+        function loadDeletedUidSet() {
+            try {
+                const raw = safeStorageGet(DELETED_UIDS_KEY);
+                const arr = raw ? JSON.parse(raw) : [];
+                if (Array.isArray(arr)) permanentlyDeletedUidSet = new Set(arr.map((x) => String(x || "").trim()).filter(Boolean));
+            } catch (e) {}
+        }
+
+        function persistDeletedUidSet() {
+            try {
+                safeStorageSet(DELETED_UIDS_KEY, JSON.stringify(Array.from(permanentlyDeletedUidSet).slice(-500)));
+            } catch (e) {}
+        }
+
+        function markUidsAsPermanentlyDeleted(uids) {
+            loadDeletedUidSet();
+            (Array.isArray(uids) ? uids : [uids]).forEach((u) => {
+                const clean = String(u || "").trim();
+                if (clean) {
+                    permanentlyDeletedUidSet.add(clean);
+                    knownPendingUidSet.delete(clean);
+                }
+            });
+            persistDeletedUidSet();
+            persistKnownPendingSet();
+        }
+
+        function filterOutDeletedItems(items) {
+            loadDeletedUidSet();
+            return (Array.isArray(items) ? items : []).filter((item) => {
+                if (!item) return false;
+                const uid = String(item.alert_uid || "").trim();
+                const id = String(item.id || "").trim();
+                if (uid && permanentlyDeletedUidSet.has(uid)) return false;
+                if (id && permanentlyDeletedUidSet.has(id)) return false;
+                return true;
+            });
         }
 
         function getIncomingPendingDonations(items) {
@@ -1505,7 +1547,7 @@
         }
 
         function syncDonationsState(items) {
-            const list = Array.isArray(items) ? items : [];
+            const list = filterOutDeletedItems(Array.isArray(items) ? items : []);
             cachedDonations = list;
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             renderTopSupporters(list);
@@ -1582,16 +1624,25 @@
         }
 
         async function clearOldDonationsFromWorker(uidsToDelete) {
-            if (!isApiConfigured()) return;
+            if (!isApiConfigured()) return false;
+            const list = Array.isArray(uidsToDelete) ? uidsToDelete.map((x) => String(x || "").trim()).filter(Boolean) : [];
+            if (!list.length) return true;
+            let anyOk = false;
             try {
                 const res = await fetch(`${API_BASE_URL}/api/donations/clear`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ alert_uids: uidsToDelete })
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Streamer-Pass": CORRECT_STREAMER_PASS
+                    },
+                    body: JSON.stringify({ alert_uids: list, ids: list })
                 });
-                if (res.ok) return true;
+                if (res.ok) anyOk = true;
             } catch (e) {}
-            return false;
+
+            // حذف كل عنصر بشكل مباشر أيضاً لضمان الحذف الفعلي في قاعدة D1
+            const results = await Promise.all(list.map((uid) => deleteDonationFromWorker(uid)));
+            return anyOk || results.some(Boolean);
         }
 
         async function deleteSingleDonation(alertUid) {
@@ -1599,21 +1650,26 @@
             const cleanUid = String(alertUid || "").trim();
             if (!cleanUid) return;
 
-            const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
             const target = sourceList.find((item) => String(item.alert_uid || item.id || "") === cleanUid);
             const label = target ? `${target.donor_name || "داعم"} (${Number(target.amount) || 0} د.ل)` : "الداعم";
+            const idsToPurge = [cleanUid];
+            if (target && target.id) idsToPurge.push(String(target.id).trim());
+            if (target && target.alert_uid) idsToPurge.push(String(target.alert_uid).trim());
+
+            markUidsAsPermanentlyDeleted(idsToPurge);
 
             // إزالة فورية من الذاكرة والتخزين المحلي
-            const remaining = sourceList.filter((item) => String(item.alert_uid || item.id || "") !== cleanUid);
+            const remaining = sourceList.filter((item) => {
+                const u = String(item.alert_uid || "").trim();
+                const i = String(item.id || "").trim();
+                return !permanentlyDeletedUidSet.has(u) && !permanentlyDeletedUidSet.has(i);
+            });
             syncDonationsState(remaining);
-            knownPendingUidSet.delete(cleanUid);
-            persistKnownPendingSet();
 
             // حذف نهائي من قاعدة البيانات D1 عبر الـ Worker
             if (isApiConfigured()) {
-                await deleteDonationFromWorker(cleanUid);
-                await clearOldDonationsFromWorker([cleanUid]);
-                await fetchDonationsFromDb();
+                await clearOldDonationsFromWorker(idsToPurge);
             }
 
             showToast(`🗑️ تم حذف ${label} نهائياً`);
@@ -1621,7 +1677,7 @@
 
         async function clearAllApprovedSupporters() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
-            const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
             const approvedList = getApprovedSupporters(sourceList);
             if (!approvedList.length) {
                 showToast("لا يوجد داعمون مقبولون لمسحهم");
@@ -1629,21 +1685,25 @@
             }
             if (!window.confirm(`هل أنت متأكد من مسح جميع الداعمين المقبولين (${approvedList.length}) نهائياً؟`)) return;
 
-            const approvedUids = approvedList
-                .map((item) => String(item.alert_uid || item.id || "").trim())
-                .filter(Boolean);
-            const approvedUidSet = new Set(approvedUids);
+            const approvedUids = [];
+            approvedList.forEach((item) => {
+                const u = String(item.alert_uid || "").trim();
+                const i = String(item.id || "").trim();
+                if (u) approvedUids.push(u);
+                if (i) approvedUids.push(i);
+            });
 
-            const remaining = sourceList.filter(
-                (item) => !approvedUidSet.has(String(item.alert_uid || item.id || "").trim())
-            );
+            markUidsAsPermanentlyDeleted(approvedUids);
+
+            const remaining = sourceList.filter((item) => {
+                const u = String(item.alert_uid || "").trim();
+                const i = String(item.id || "").trim();
+                return !permanentlyDeletedUidSet.has(u) && !permanentlyDeletedUidSet.has(i);
+            });
             syncDonationsState(remaining);
-            approvedUids.forEach((uid) => knownPendingUidSet.delete(uid));
-            persistKnownPendingSet();
 
             if (isApiConfigured() && approvedUids.length > 0) {
                 await clearOldDonationsFromWorker(approvedUids);
-                await fetchDonationsFromDb();
             }
 
             showToast(`🗑️ تم مسح جميع الداعمين المقبولين (${approvedList.length}) نهائياً`);
@@ -1651,10 +1711,17 @@
 
         async function clearOldSupporters() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
-            const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
             if (!sourceList.length) { showToast("لا توجد طلبات قديمة لمسحها"); return; }
             if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم القديمة؟")) return;
-            const uidsToDelete = sourceList.map((item) => item.alert_uid || String(item.id || "")).filter(Boolean);
+            const uidsToDelete = [];
+            sourceList.forEach((item) => {
+                const u = String(item.alert_uid || "").trim();
+                const i = String(item.id || "").trim();
+                if (u) uidsToDelete.push(u);
+                if (i) uidsToDelete.push(i);
+            });
+            markUidsAsPermanentlyDeleted(uidsToDelete);
             syncDonationsState([]);
             await clearOldDonationsFromWorker(uidsToDelete);
             showToast("🧹 تم مسح الداعمين القدامى");
@@ -1799,7 +1866,16 @@
                 const res = await fetch(`${API_BASE_URL}/api/donations`, { cache: "no-store" });
                 const data = await res.json();
                 if (data && data.ok && Array.isArray(data.items)) {
-                    syncDonationsState(data.items);
+                    const remoteIds = new Set(
+                        data.items.map((x) => String(x.alert_uid || x.id || "").trim()).filter(Boolean)
+                    );
+                    const recentLocalPending = getLocalDonations().filter((localItem) => {
+                        const lid = String(localItem.alert_uid || localItem.id || "").trim();
+                        if (!lid || remoteIds.has(lid)) return false;
+                        const ageMs = Date.now() - (new Date(localItem.created_at || 0).getTime() || 0);
+                        return (!localItem.review_status || localItem.review_status === "pending") && ageMs < 2 * 60 * 1000;
+                    });
+                    syncDonationsState([...recentLocalPending, ...data.items]);
                 }
             } catch (e) {
                 const localItems = getLocalDonations();
@@ -1867,6 +1943,11 @@
                 alert_notified: 0
             };
 
+            // إزالة أي أثر سابق لهذا المعرّف من قائمة المحذوفات الدائمة عند إرسال طلب دعم جديد
+            loadDeletedUidSet();
+            permanentlyDeletedUidSet.delete(alertUid);
+            persistDeletedUidSet();
+
             if (isApiConfigured()) {
                 try {
                     const res = await fetch(`${API_BASE_URL}/api/donations`, {
@@ -1876,7 +1957,19 @@
                     });
                     const data = await res.json();
                     if (!data.ok) { showToast(`⚠️ تعذر حفظ الطلب: ${data.error || "خطأ"}`); return; }
+                    const serverItem = Object.assign({}, record, data.item || {}, {
+                        alert_uid: (data.item && data.item.alert_uid) || alertUid,
+                        review_status: (data.item && data.item.review_status) || "pending"
+                    });
+                    saveLocalDonation(serverItem);
                     await fetchDonationsFromDb();
+                    const currentMerged = cachedDonations.length ? cachedDonations : getLocalDonations();
+                    const existsInMerged = currentMerged.some(
+                        (x) => (x.alert_uid || String(x.id)) === (serverItem.alert_uid || String(serverItem.id))
+                    );
+                    if (!existsInMerged) {
+                        syncDonationsState([serverItem, ...currentMerged]);
+                    }
                     pendingTrackingCode = "";
                     transferModalOpenedAtMs = 0;
                     hasCopiedUssdCode = false;
