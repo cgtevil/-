@@ -30,10 +30,10 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .top-overlay-card {
-            background: rgba(9, 13, 22, 0.78);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+            background: transparent !important;
+            backdrop-filter: none !important;
+            border: none !important;
+            box-shadow: none !important;
         }
         @keyframes alertPop {
             0% {
@@ -106,20 +106,20 @@
         </div>
     </div>
 
-    <!-- واجهة ويدجت أبرز 3 داعمين للبث المباشر (?top=true) -->
+    <!-- واجهة ويدجت أبرز 3 داعمين الشفافة للبث المباشر (?top=true) -->
     <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-3 flex items-start justify-start pointer-events-none">
-        <div class="top-overlay-card w-full max-w-xs rounded-2xl p-3.5 space-y-2.5">
-            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+        <div class="top-overlay-card w-full max-w-xs p-2 space-y-2">
+            <div class="flex items-center justify-between pb-1.5">
                 <div class="flex items-center gap-1.5 text-xs font-black text-amber-300 frameless-text-shadow">
                     <span>🏆</span>
                     <span>أبرز 3 داعمين</span>
                 </div>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                <span class="text-[10px] font-extrabold text-emerald-300 frameless-text-shadow">
                     @cgtevil
                 </span>
             </div>
-            <div id="widget-top-supporters-list" class="space-y-2">
-                <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-slate-300 font-bold">
+            <div id="widget-top-supporters-list" class="space-y-1.5">
+                <div class="py-1.5 text-center text-xs text-slate-200 font-bold frameless-text-shadow">
                     لا يوجد داعمون معتمدون بعد
                 </div>
             </div>
@@ -1073,15 +1073,15 @@
 
             if (widgetTopContainer) {
                 if (!sorted.length) {
-                    widgetTopContainer.innerHTML = `<div class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-slate-300 font-bold">لا يوجد داعمون معتمدون بعد</div>`;
+                    widgetTopContainer.innerHTML = `<div class="py-1.5 text-center text-xs text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
                 } else {
                     widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => `
-                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                        <div class="flex items-center justify-between px-2 py-1">
                             <div class="flex items-center gap-2 min-w-0">
-                                <span class="text-base shrink-0">${medals[idx] || "⭐"}</span>
+                                <span class="text-base shrink-0 frameless-text-shadow">${medals[idx] || "⭐"}</span>
                                 <span class="font-extrabold text-xs text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
                             </div>
-                            <span class="shrink-0 px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-black text-xs">${total} د.ل</span>
+                            <span class="shrink-0 text-emerald-300 font-black text-xs frameless-text-shadow">${total} د.ل</span>
                         </div>
                     `).join("");
                 }
