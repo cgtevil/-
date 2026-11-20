@@ -270,20 +270,8 @@
                 </div>
             </section>
 
-            <!-- العمود الأيسر: قائمة أفضل 3 داعمين ومعلومات سريعة -->
+            <!-- العمود الأيسر: معلومات سريعة -->
             <aside class="lg:col-span-5 space-y-6">
-                <div class="glass-card rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-black text-white">أبرز 3 داعمين</h3>
-                        <span class="text-xs text-amber-300 font-bold">الدعم المعتمد</span>
-                    </div>
-                    <div id="top-supporters-list" class="space-y-3">
-                        <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-slate-400">
-                            لا توجد تبرعات معتمدة بعد؛ كن أول الداعمين!
-                        </div>
-                    </div>
-                </div>
-
                 <div class="glass-card rounded-3xl p-5 sm:p-6 space-y-3">
                     <h4 class="text-sm font-black text-emerald-300">كيف يعمل النظام؟</h4>
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
@@ -1261,13 +1249,13 @@
                     const data = await res.json();
                     if (data && data.ok && Array.isArray(data.items)) {
                         syncDonationsState(data.items);
-                        showToast("🔄 تم تجديد قائمة أبرز 3 داعمين في صفحة الدعم");
+                        showToast("🔄 تم تجديد قائمة أبرز 3 داعمين");
                         return;
                     }
                 }
                 const localList = getLocalDonations();
                 syncDonationsState(localList);
-                showToast("🔄 تم تجديد قائمة أبرز 3 داعمين في صفحة الدعم");
+                showToast("🔄 تم تجديد قائمة أبرز 3 داعمين");
             } catch (e) {
                 const localList = getLocalDonations();
                 syncDonationsState(localList);
@@ -1393,25 +1381,8 @@
         }
 
         function renderTopSupporters(items) {
-            const topContainer = document.getElementById("top-supporters-list");
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
             const sorted = getTopThreeSupporters(items);
-
-            if (topContainer) {
-                if (!sorted.length) {
-                    topContainer.innerHTML = `<div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-slate-400">لا توجد تبرعات معتمدة بعد؛ كن أول الداعمين!</div>`;
-                } else {
-                    topContainer.innerHTML = sorted.map(([name, total], idx) => `
-                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-black text-amber-300">#${idx + 1}</span>
-                                <span class="font-extrabold text-sm text-white">${escapeHtml(name)}</span>
-                            </div>
-                            <span class="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 font-black text-xs">${total} د.ل</span>
-                        </div>
-                    `).join("");
-                }
-            }
 
             if (widgetTopContainer) {
                 if (!sorted.length) {
