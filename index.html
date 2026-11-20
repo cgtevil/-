@@ -207,14 +207,14 @@
             <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-0.5">
                     <div class="flex flex-wrap items-center gap-2 text-xs font-black text-amber-300">
-                        <span>🔔 طلب دعم جديد بانتظار قرارك (قبول / رفض)</span>
+                        <span>🔔 طلب دعم جديد في D1 بانتظار قرارك (قبول / رفض)</span>
                         <span id="quick-pending-count" class="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px]">1</span>
                     </div>
                     <div id="quick-pending-details" class="text-xs sm:text-sm font-extrabold text-white"></div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                     <button id="btn-quick-approve" type="button" onclick="approveLatestPendingQuickly()" class="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition cursor-pointer">
-                        ✅ قبول للبث فوراً
+                        ✅ قبول من D1 للبث
                     </button>
                     <button id="btn-quick-reject" type="button" onclick="rejectLatestPendingQuickly()" class="px-3.5 py-2 rounded-xl bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 text-rose-200 font-bold text-xs sm:text-sm transition cursor-pointer">
                         ❌ رفض
@@ -302,7 +302,7 @@
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> من رقمك المحوّل منه لتفعيل زر <strong>"تم التحويل"</strong>.</li>
-                        <li>• يُسجَّل طلبك مع <strong>رمز تتبع</strong> ولا يظهر على البث إلا بعد <strong>قبوله</strong> من «طلبات الدعم وحالة الاعتماد (D1)»، مع تفعيل مؤقت 5 دقائق.</li>
+                        <li>• يُسجَّل طلبك مع <strong>رمز تتبع</strong> ولا يظهر على البث إلا بعد <strong>قبوله</strong> من خانة D1 داخل لوحة الستريمر، مع تفعيل مؤقت 5 دقائق.</li>
                     </ul>
                 </div>
             </aside>
@@ -338,7 +338,7 @@
             </div>
 
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-400/25 text-amber-200 text-xs font-bold leading-relaxed text-center">
-                ⚠️ تنبيه: الظهور على شاشة البث مشروط بقبول الطلب من «طلبات الدعم وحالة الاعتماد (D1)»؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
+                ⚠️ تنبيه: الظهور على شاشة البث مشروط بقبول الطلب من خانة D1 داخل لوحة الستريمر؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -392,16 +392,16 @@
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                     <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgtevil)</h3>
-                    <p class="text-xs text-slate-400">مراجعة طلبات الدعم في قاعدة D1 وإدارة إعدادات البث</p>
+                    <p class="text-xs text-slate-400">مراجعة وقبول طلبات الدعم من خانة D1 وإدارة إعدادات البث</p>
                 </div>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
 
-            <!-- تنبيهات الصوت والإشعارات على الهاتف/المتصفح -->
-            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2">
+            <!-- تنبيهات الصوت والإشعارات على الهاتف/المتصفح (تظهر فقط في رابط الستريمر ?role=streamer) -->
+            <div id="streamer-phone-alert-box" class="hidden p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2">
                 <div class="space-y-0.5">
                     <div class="text-xs font-black text-emerald-300">تنبيه الهاتف الفوري عند وصول دعم (صوت + اهتزاز + إشعار)</div>
-                    <div class="text-[11px] text-slate-300">ينبّهك فوراً عند وصول أي طلب جديد لتقبله أو ترفضه بضغطة زر.</div>
+                    <div class="text-[11px] text-slate-300">ينبّهك فوراً عند وصول أي طلب جديد لتقبله من خانة D1 أو ترفضه.</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="playStreamerNotificationChime(true)" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer">
@@ -413,8 +413,8 @@
                 </div>
             </div>
 
-            <!-- سجل طلبات الدعم وحالة المراجعة -->
-            <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
+            <!-- سجل طلبات الدعم وحالة المراجعة (خانة D1) -->
+            <div id="d1-approval-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/75 border border-emerald-400/30">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
                     <div class="flex items-center gap-2">
@@ -426,6 +426,9 @@
                         </button>
                     </div>
                 </div>
+                <p class="text-[11px] text-amber-200/90 font-semibold">
+                    القبول يتم حصراً بالضغط على زر «✅ قبول وإرسال للبث» في كل بطاقة داخل خانة D1.
+                </p>
                 <div id="recent-donations-list" class="space-y-2 max-h-60 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
                         جاري تحميل الطلبات من قاعدة البيانات...
@@ -452,7 +455,7 @@
 
             <!-- رابط الويدجت -->
             <div class="space-y-2">
-                <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio) — يظهر فقط عند الاعتماد من D1</label>
+                <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio) — يظهر فقط بعد القبول من D1</label>
                 <div class="flex gap-2">
                     <input id="widget-url-input" type="text" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
                     <button type="button" onclick="copyWidgetUrl()" class="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
@@ -603,6 +606,27 @@
             return item.review_status === "approved";
         }
 
+        function purgeUnapprovedStoredWidgetAlerts() {
+            try {
+                const rawLatest = safeStorageGet(LATEST_DISPATCH_KEY);
+                if (rawLatest) {
+                    const parsed = JSON.parse(rawLatest);
+                    if (!isApprovedAlertPayload(parsed)) {
+                        localStorage.removeItem(LATEST_DISPATCH_KEY);
+                    }
+                }
+            } catch (e) {}
+
+            try {
+                if (typeof window.name === "string" && window.name.startsWith(WINDOW_NAME_PREFIX)) {
+                    const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
+                    if (!isApprovedAlertPayload(parsedName)) {
+                        window.name = "";
+                    }
+                }
+            } catch (e) {}
+        }
+
         function isStreamerSoundEnabled() {
             return safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === "1";
         }
@@ -638,7 +662,7 @@
                 const amt = Number(item?.amount) || 0;
                 const netLabel = getNetworkLabel(item?.network);
                 const digits = item?.sender_last_digits || (item?.message && (item.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
-                const bodyText = `${amt} د.ل (${netLabel})${digits ? ` • آخر 4 أرقام: ${digits}` : ""} — افتح للقبول أو الرفض`;
+                const bodyText = `${amt} د.ل (${netLabel})${digits ? ` • آخر 4 أرقام: ${digits}` : ""} — اقبل من خانة D1 في لوحة الستريمر`;
 
                 const notif = new Notification(`🔔 طلب دعم جديد من ${donor}`, {
                     body: bodyText,
@@ -687,18 +711,27 @@
             } catch (e) {}
         }
 
+        function isStreamerLinkRole() {
+            return getAccessRole() === "streamer";
+        }
+
         function updateStreamerSoundUI() {
-            const authed = isStreamerAuthenticated();
+            const canShowPhoneAlert = isStreamerLinkRole() && isStreamerAuthenticated();
             const enabled = isStreamerSoundEnabled();
             const headerBtn = document.getElementById("btn-toggle-sound");
+            const panelBox = document.getElementById("streamer-phone-alert-box");
             const panelBtn = document.getElementById("btn-panel-toggle-sound");
 
             if (headerBtn) {
-                headerBtn.classList.toggle("hidden", !authed);
+                headerBtn.classList.toggle("hidden", !canShowPhoneAlert);
                 headerBtn.textContent = enabled ? "🔊 تنبيه الهاتف: مفعّل" : "🔔 تفعيل تنبيه الهاتف";
                 headerBtn.className = enabled
-                    ? "px-3.5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs sm:text-sm font-black transition cursor-pointer"
-                    : "px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs sm:text-sm font-black text-emerald-200 transition cursor-pointer";
+                    ? `${canShowPhoneAlert ? "" : "hidden "}px-3.5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs sm:text-sm font-black transition cursor-pointer`
+                    : `${canShowPhoneAlert ? "" : "hidden "}px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs sm:text-sm font-black text-emerald-200 transition cursor-pointer`;
+            }
+
+            if (panelBox) {
+                panelBox.classList.toggle("hidden", !canShowPhoneAlert);
             }
 
             if (panelBtn) {
@@ -710,6 +743,7 @@
         }
 
         function toggleStreamerSoundAlert() {
+            if (!isStreamerLinkRole()) return;
             if (!isStreamerAuthenticated()) {
                 openLoginModal();
                 return;
@@ -779,10 +813,14 @@
                 });
                 if (hasBrandNewPending) {
                     persistKnownPendingSet();
-                    playStreamerNotificationChime(false);
+                    if (isStreamerLinkRole()) {
+                        playStreamerNotificationChime(false);
+                        if (newestItem) {
+                            triggerPhoneSystemNotification(newestItem);
+                        }
+                    }
                     if (newestItem) {
-                        triggerPhoneSystemNotification(newestItem);
-                        showToast(`🔔 دعم جديد: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل) — اقبل أو ارفض`);
+                        showToast(`🔔 دعم جديد في D1: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل) — اقبل من لوحة الستريمر`);
                     }
                 }
             }
@@ -1036,10 +1074,10 @@
             if (!statusEl) return;
 
             if (activeYoutubeVideoId) {
-                statusEl.textContent = `✅ تم استجلاب فيديو يوتيوب (${activeYoutubeVideoId}) وسيُعرض مع التنبيهات المعتمدة.`;
+                statusEl.textContent = `✅ تم استجلاب فيديو يوتيوب (${activeYoutubeVideoId}) وسيُعرض مع التنبيهات المعتمدة من D1.`;
                 statusEl.className = "text-xs text-rose-300 font-bold";
             } else {
-                statusEl.textContent = `يتم استخدام الفيديو المحلي المباشر (${DEFAULT_LOCAL_VIDEO_URL}) تلقائياً مع التنبيهات المعتمدة.`;
+                statusEl.textContent = `يتم استخدام الفيديو المحلي المباشر (${DEFAULT_LOCAL_VIDEO_URL}) تلقائياً مع التنبيهات المعتمدة من D1.`;
                 statusEl.className = "text-xs text-emerald-300 font-semibold";
             }
         }
@@ -1453,12 +1491,14 @@
                 safeStorageSet(AUTH_STORAGE_KEY, sessionData);
                 try { sessionStorage.setItem(AUTH_STORAGE_KEY, sessionData); } catch (e) {}
 
-                if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) {
-                    safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
+                if (isStreamerLinkRole()) {
+                    if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) {
+                        safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
+                    }
+                    requestPhoneNotificationPermission();
+                    ensureStreamerAudioContext();
+                    playStreamerNotificationChime(true);
                 }
-                requestPhoneNotificationPermission();
-                ensureStreamerAudioContext();
-                playStreamerNotificationChime(true);
 
                 closeLoginModal();
                 updateAuthUI();
@@ -1884,7 +1924,7 @@
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3 py-1.5 rounded-xl ${isApproved ? "bg-emerald-500/20 border border-emerald-400/50 text-emerald-200" : "bg-emerald-400 hover:bg-emerald-300 text-slate-950"} font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3.5 py-1.5 rounded-xl ${isApproved ? "bg-emerald-500/20 border border-emerald-400/50 text-emerald-200" : "bg-emerald-400 hover:bg-emerald-300 text-slate-950"} font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
                             <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl ${isRejected ? "bg-rose-500/35 border border-rose-400/60 text-rose-100" : "bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200"} font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
                             <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
@@ -2023,7 +2063,7 @@
                     wasCopyDelayRunning = false;
                     closeTransferModal();
                     startTransferCooldown();
-                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) للمراجعة؛ لن يظهر على البث إلا بعد قبوله من D1`);
+                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) إلى خانة D1؛ لن يظهر على البث إلا بعد قبوله من لوحة الستريمر`);
                     return;
                 } catch (e) {
                     showToast("⚠️ تعذر الاتصال بالخادم، تم تسجيل الطلب محلياً قيد المراجعة");
@@ -2043,7 +2083,7 @@
             wasCopyDelayRunning = false;
             closeTransferModal();
             startTransferCooldown();
-            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة؛ لن يظهر على البث إلا بعد قبوله من D1`);
+            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة؛ لن يظهر على البث إلا بعد قبوله من خانة D1`);
         }
 
         async function reviewDonation(alertUid, action) {
@@ -2080,9 +2120,9 @@
                         lastSeenAlertId = approvedPayload.id;
                         broadcastPayload("NEW_DONATION_ALERT", approvedPayload);
                         showPanelLivePreview(approvedPayload);
-                        showToast("✅ تم قبول الطلب وإطلاق إشعار البث المباشر");
+                        showToast("✅ تم القبول من خانة D1 وإرسال التنبيه إلى البث المباشر");
                     } else {
-                        showToast("❌ تم رفض الطلب");
+                        showToast("❌ تم رفض الطلب من خانة D1");
                     }
 
                     await fetchDonationsFromDb();
@@ -2108,6 +2148,7 @@
             if (action === "approve" && target) {
                 broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, {
                     review_status: "approved",
+                    alert_notified: 1,
                     video_url: activeLocalVideoUrl,
                     youtube_video_id: activeYoutubeVideoId
                 }));
@@ -2116,7 +2157,7 @@
             renderTopSupporters(list);
             renderStreamerDonations(list);
             handleStreamerPendingAlertsAndQuickBar(list);
-            showToast(action === "approve" ? "✅ تم قبول الطلب وإطلاق إشعار البث" : "❌ تم رفض الطلب");
+            showToast(action === "approve" ? "✅ تم القبول من خانة D1 وإرسال التنبيه إلى البث" : "❌ تم رفض الطلب من خانة D1");
         }
 
         function escapeHtml(str) {
@@ -2371,6 +2412,8 @@
         }
 
         function checkStoredWidgetAlerts() {
+            purgeUnapprovedStoredWidgetAlerts();
+
             const rawLatest = safeStorageGet(LATEST_DISPATCH_KEY);
             if (rawLatest) {
                 try {
@@ -2499,8 +2542,8 @@
             });
 
             if (isWidgetMode()) {
+                purgeUnapprovedStoredWidgetAlerts();
                 preloadLocalVideo(activeLocalVideoUrl);
-                checkStoredWidgetAlerts();
                 checkLatestApprovedAlertFromDb();
                 clearInterval(window.__widgetSyncInterval);
                 window.__widgetSyncInterval = setInterval(() => {
@@ -2544,6 +2587,7 @@
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
+                purgeUnapprovedStoredWidgetAlerts();
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
                 document.getElementById("top-widget-view").classList.add("hidden");
@@ -2561,7 +2605,7 @@
                 syncStreamerPanelInputs();
                 startStreamerBackgroundPolling();
                 document.addEventListener("pointerdown", () => {
-                    if (isStreamerAuthenticated() && isStreamerSoundEnabled()) {
+                    if (isStreamerLinkRole() && isStreamerAuthenticated() && isStreamerSoundEnabled()) {
                         ensureStreamerAudioContext();
                     }
                 }, { once: true });
@@ -2576,13 +2620,13 @@
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
+                purgeUnapprovedStoredWidgetAlerts();
                 document.body.classList.remove("top-widget-mode");
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
                 document.getElementById("top-widget-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
                 preloadLocalVideo(activeLocalVideoUrl);
-                checkStoredWidgetAlerts();
                 checkLatestApprovedAlertFromDb();
             }
         });
