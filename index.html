@@ -39,6 +39,10 @@
             color: #facc15;
             text-shadow: 0 3px 12px rgba(0, 0, 0, 0.96), 0 0 4px rgba(0, 0, 0, 0.98);
         }
+        .top-board-row {
+            background: transparent;
+            border: none;
+        }
         .top-rank-circle {
             width: 34px;
             height: 34px;
@@ -401,13 +405,13 @@
                         <button id="btn-clear-old-donors" type="button" onclick="clearOldSupporters()" class="text-[11px] px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold cursor-pointer transition">
                             🧹 مسح الداعمين القدامى
                         </button>
-                        <button type="button" onclick="fetchDonationsFromDb()" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold cursor-pointer transition">
+                        <button type="button" onclick="refreshAndPurgeOldDonations()" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold cursor-pointer transition">
                             🔄 تحديث
                         </button>
                     </div>
                 </div>
                 <p class="text-[11px] text-amber-200/90 font-semibold">
-                    القبول يرسل الطلب إلى رابط البث المباشر (?widget=true) ولا يعرض أي فيديو داخل صفحة الموقع العادية.
+                    القبول يرسل الطلب إلى رابط البث المباشر (?widget=true)، والضغط على «🔄 تحديث» يحذف الطلبات القديمة ويعرض الجديد.
                 </p>
                 <div id="recent-donations-list" class="space-y-2 max-h-60 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
@@ -1498,13 +1502,40 @@
             handleStreamerPendingAlertsAndQuickBar(list);
         }
 
+        async function refreshAndPurgeOldDonations() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+
+            const previousList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const oldUids = previousList
+                .map((item) => item.alert_uid || String(item.id || ""))
+                .filter(Boolean);
+
+            cachedDonations = [];
+            knownPendingUidSet = new Set();
+            persistKnownPendingSet();
+            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify([]));
+            renderTopSupporters([]);
+            renderStreamerDonations([]);
+            handleStreamerPendingAlertsAndQuickBar([]);
+
+            if (isApiConfigured() && oldUids.length > 0) {
+                await clearOldDonationsFromWorker(oldUids);
+            }
+
+            await fetchDonationsFromDb();
+            showToast("🔄 تم حذف الطلبات القديمة وجلب الجديد");
+        }
+
         async function renewTopSupportersInSupportPage() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const btn = document.getElementById("btn-renew-top-supporters");
             if (btn) { btn.disabled = true; btn.textContent = "⏳ جاري التجديد..."; }
             try {
                 if (isApiConfigured()) {
-                    const res = await fetch(`${API_BASE_URL}/api/donations`);
+                    const res = await fetch(`${API_BASE_URL}/api/donations`, { cache: "no-store" });
                     const data = await res.json();
                     if (data && data.ok && Array.isArray(data.items)) {
                         syncDonationsState(data.items);
