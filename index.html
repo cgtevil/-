@@ -423,9 +423,14 @@
 
             <!-- خانة الداعمين المقبولين (بديلة عن خانة اختبار إرسال إشعار رابط البث المباشر) -->
             <div id="approved-supporters-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-emerald-400/25">
-                <div class="flex items-center justify-between">
-                    <span id="approved-supporters-title" class="text-xs font-black text-emerald-300">✅ الداعمون المقبولون</span>
-                    <span id="approved-supporters-count" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-200 font-black">0</span>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span id="approved-supporters-title" class="text-xs font-black text-emerald-300">✅ الداعمون المقبولون</span>
+                        <span id="approved-supporters-count" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-200 font-black">0</span>
+                    </div>
+                    <button id="btn-clear-all-approved" type="button" onclick="clearAllApprovedSupporters()" class="text-[11px] px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold cursor-pointer transition">
+                        🗑️ مسح الكل
+                    </button>
                 </div>
                 <div id="approved-supporters-list" class="space-y-2 max-h-52 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
@@ -1564,7 +1569,13 @@
             if (!isApiConfigured()) return;
             const encoded = encodeURIComponent(alertUid);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/donations/${encoded}`, { method: "DELETE" });
+                const res = await fetch(`${API_BASE_URL}/api/donations/${encoded}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Streamer-Pass": CORRECT_STREAMER_PASS
+                    }
+                });
                 if (res.ok) return true;
             } catch (e) {}
             return false;
@@ -1585,14 +1596,57 @@
 
         async function deleteSingleDonation(alertUid) {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
+            const cleanUid = String(alertUid || "").trim();
+            if (!cleanUid) return;
+
             const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
-            const target = sourceList.find((item) => (item.alert_uid || String(item.id)) === alertUid);
-            const label = target ? `${target.donor_name || "داعم"} (${Number(target.amount) || 0} د.ل)` : "هذا الطلب";
-            if (!window.confirm(`هل تريد مسح طلب الدعم الخاص بـ ${label}؟`)) return;
-            const remaining = sourceList.filter((item) => (item.alert_uid || String(item.id)) !== alertUid);
+            const target = sourceList.find((item) => String(item.alert_uid || item.id || "") === cleanUid);
+            const label = target ? `${target.donor_name || "داعم"} (${Number(target.amount) || 0} د.ل)` : "الداعم";
+
+            // إزالة فورية من الذاكرة والتخزين المحلي
+            const remaining = sourceList.filter((item) => String(item.alert_uid || item.id || "") !== cleanUid);
             syncDonationsState(remaining);
-            await deleteDonationFromWorker(alertUid);
-            showToast(`🗑️ تم مسح طلب ${label}`);
+            knownPendingUidSet.delete(cleanUid);
+            persistKnownPendingSet();
+
+            // حذف نهائي من قاعدة البيانات D1 عبر الـ Worker
+            if (isApiConfigured()) {
+                await deleteDonationFromWorker(cleanUid);
+                await clearOldDonationsFromWorker([cleanUid]);
+                await fetchDonationsFromDb();
+            }
+
+            showToast(`🗑️ تم حذف ${label} نهائياً`);
+        }
+
+        async function clearAllApprovedSupporters() {
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
+            const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const approvedList = getApprovedSupporters(sourceList);
+            if (!approvedList.length) {
+                showToast("لا يوجد داعمون مقبولون لمسحهم");
+                return;
+            }
+            if (!window.confirm(`هل أنت متأكد من مسح جميع الداعمين المقبولين (${approvedList.length}) نهائياً؟`)) return;
+
+            const approvedUids = approvedList
+                .map((item) => String(item.alert_uid || item.id || "").trim())
+                .filter(Boolean);
+            const approvedUidSet = new Set(approvedUids);
+
+            const remaining = sourceList.filter(
+                (item) => !approvedUidSet.has(String(item.alert_uid || item.id || "").trim())
+            );
+            syncDonationsState(remaining);
+            approvedUids.forEach((uid) => knownPendingUidSet.delete(uid));
+            persistKnownPendingSet();
+
+            if (isApiConfigured() && approvedUids.length > 0) {
+                await clearOldDonationsFromWorker(approvedUids);
+                await fetchDonationsFromDb();
+            }
+
+            showToast(`🗑️ تم مسح جميع الداعمين المقبولين (${approvedList.length}) نهائياً`);
         }
 
         async function clearOldSupporters() {
@@ -1728,7 +1782,7 @@
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                             <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px]">مقبول</span>
-                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-950/70 border border-white/15 text-slate-200 hover:text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف</button>
+                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف نهائي</button>
                         </div>
                     </div>
                 `;
