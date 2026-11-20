@@ -62,12 +62,13 @@
     <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار وتفاصيل الدعم وسط الشاشة بخط متوسط -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
-            <!-- مرحلة عرض فيديو يوتيوب المستجلب مع التنبيه -->
+            <!-- مرحلة عرض الفيديو المحلي أو فيديو يوتيوب المستجلب مع التنبيه -->
             <div class="full-video-stage relative flex items-center justify-center">
+                <video id="alert-local-video" class="hidden w-full h-full object-contain" preload="auto" playsinline></video>
                 <iframe id="alert-youtube-frame" class="hidden w-full h-full border-0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
             </div>
 
-            <!-- تدرج وسطي خفيف عند وجود فيديو يوتيوب لإبراز النص بوضوح -->
+            <!-- تدرج وسطي خفيف عند وجود فيديو لإبراز النص بوضوح -->
             <div id="alert-video-scrim" class="hidden absolute inset-0 bg-gradient-to-b from-transparent via-black/45 to-transparent z-10"></div>
 
             <!-- تفاصيل الدعم وسط الشاشة بخط متوسط وبدون إطار -->
@@ -291,10 +292,10 @@
                 </div>
             </div>
 
-            <!-- خانة استجلاب فيديو من يوتيوب للتنبيهات -->
+            <!-- خانة استجلاب فيديو من يوتيوب للتنبيهات (اختياري) -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-rose-500/30">
                 <label for="setting-youtube-video-url" class="block text-xs font-black text-rose-300">
-                    ▶️ استجلاب فيديو من يوتيوب للتنبيهات (رابط YouTube أو معرّف الفيديو)
+                    ▶️ استجلاب فيديو من يوتيوب للتنبيهات (اختياري - البديل هو فيديو GitHub المباشر)
                 </label>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input id="setting-youtube-video-url" type="url" dir="ltr" placeholder="https://www.youtube.com/watch?v=..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
@@ -389,16 +390,18 @@
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
+        const DEFAULT_LOCAL_VIDEO_URL = "https://raw.githubusercontent.com/cgtevil/-/main/video.mp4";
         const DEFAULT_YOUTUBE_VIDEO_ID = "";
         const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
         const TRANSFER_COOLDOWN_MS = 5 * 60 * 1000;
-        const ALERT_MAX_DURATION_MS = 8500;
+        const ALERT_MAX_DURATION_MS = 120000;
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
         let selectedNetwork = "libyana";
+        let activeLocalVideoUrl = DEFAULT_LOCAL_VIDEO_URL;
         let activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
         let lastSeenAlertId = "";
         let isShowingAlert = false;
@@ -460,6 +463,18 @@
             return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?${params.toString()}`;
         }
 
+        function preloadLocalVideo(url) {
+            const videoEl = document.getElementById("alert-local-video");
+            if (!videoEl || !url) return;
+            if (videoEl.getAttribute("data-src") !== url) {
+                videoEl.setAttribute("data-src", url);
+                videoEl.src = url;
+                videoEl.load();
+            } else if (videoEl.readyState === 0) {
+                videoEl.load();
+            }
+        }
+
         function loadSavedYoutubeSettings() {
             const rawSaved = safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY);
             if (rawSaved !== null) {
@@ -481,8 +496,8 @@
                 statusEl.textContent = `✅ تم استجلاب فيديو يوتيوب (${activeYoutubeVideoId}) وسيُعرض مع التنبيهات.`;
                 statusEl.className = "text-xs text-rose-300 font-bold";
             } else {
-                statusEl.textContent = "لا يوجد فيديو يوتيوب مستجلب حالياً؛ رابط التنبيهات بدون فيديو افتراضي.";
-                statusEl.className = "text-xs text-slate-400";
+                statusEl.textContent = `يتم استخدام الفيديو المحلي المباشر (${DEFAULT_LOCAL_VIDEO_URL}) تلقائياً مع التنبيهات.`;
+                statusEl.className = "text-xs text-emerald-300 font-semibold";
             }
         }
 
@@ -527,9 +542,10 @@
                 synced_at: Date.now()
             });
 
+            preloadLocalVideo(activeLocalVideoUrl);
             syncStreamerPanelInputs();
             updateYoutubeVideoStatusUI();
-            showToast("تمت إزالة فيديو يوتيوب من التنبيهات");
+            showToast("تمت العودة إلى الفيديو المحلي المباشر");
         }
 
         function isApiConfigured() {
@@ -1070,6 +1086,7 @@
                 amount: amount,
                 message: message,
                 network: selectedNetwork,
+                video_url: activeLocalVideoUrl,
                 youtube_video_id: activeYoutubeVideoId,
                 created_at: new Date().toISOString(),
                 review_status: "approved",
@@ -1083,6 +1100,7 @@
                 amount: record.amount,
                 message: record.message,
                 network: record.network,
+                video_url: activeLocalVideoUrl,
                 youtube_video_id: activeYoutubeVideoId,
                 created_at: record.created_at,
                 review_status: "approved",
@@ -1163,6 +1181,7 @@
                             amount: data.item.amount,
                             message: data.item.message,
                             network: data.item.network,
+                            video_url: activeLocalVideoUrl,
                             youtube_video_id: activeYoutubeVideoId,
                             created_at: data.item.created_at,
                             review_status: "approved",
@@ -1197,6 +1216,7 @@
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
                 broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, {
+                    video_url: activeLocalVideoUrl,
                     youtube_video_id: activeYoutubeVideoId
                 }));
                 showPanelLivePreview(target);
@@ -1261,10 +1281,12 @@
                 amount: amount,
                 message: message,
                 network: network,
+                video_url: activeLocalVideoUrl,
                 youtube_video_id: activeYoutubeVideoId,
                 created_at: new Date().toISOString()
             };
 
+            preloadLocalVideo(activeLocalVideoUrl);
             lastSeenAlertId = testPayload.id;
             broadcastPayload("NEW_DONATION_ALERT", testPayload);
             showPanelLivePreview(testPayload);
@@ -1282,9 +1304,16 @@
         function finishCurrentAlert() {
             clearActiveAlertTimers();
             const card = document.getElementById("live-alert-card");
+            const localVideo = document.getElementById("alert-local-video");
             const ytFrame = document.getElementById("alert-youtube-frame");
             const scrim = document.getElementById("alert-video-scrim");
 
+            if (localVideo) {
+                localVideo.onended = null;
+                localVideo.onerror = null;
+                try { localVideo.pause(); } catch (e) {}
+                localVideo.classList.add("hidden");
+            }
             if (ytFrame) {
                 ytFrame.removeAttribute("src");
                 ytFrame.classList.add("hidden");
@@ -1294,7 +1323,7 @@
 
             window.__alertNextTimer = setTimeout(() => {
                 processNextAlert();
-            }, 450);
+            }, 400);
         }
 
         function enqueueAlert(item) {
@@ -1304,7 +1333,48 @@
             if (!isShowingAlert) processNextAlert();
         }
 
-        function processNextAlert() {
+        async function playLocalVideoFull(videoEl, videoUrl) {
+            if (!videoEl || !videoUrl) return false;
+            preloadLocalVideo(videoUrl);
+            videoEl.muted = false;
+            videoEl.currentTime = 0;
+            videoEl.classList.remove("hidden");
+
+            return new Promise((resolve) => {
+                let settled = false;
+                const done = (ok) => {
+                    if (settled) return;
+                    settled = true;
+                    videoEl.onended = null;
+                    videoEl.onerror = null;
+                    resolve(ok);
+                };
+
+                videoEl.onended = () => done(true);
+                videoEl.onerror = () => done(false);
+
+                const tryPlay = async () => {
+                    try {
+                        await videoEl.play();
+                    } catch (err) {
+                        videoEl.muted = true;
+                        try {
+                            await videoEl.play();
+                        } catch (mutedErr) {
+                            done(false);
+                        }
+                    }
+                };
+
+                if (videoEl.readyState >= 2) {
+                    tryPlay();
+                } else {
+                    videoEl.addEventListener("canplay", tryPlay, { once: true });
+                }
+            });
+        }
+
+        async function processNextAlert() {
             clearActiveAlertTimers();
             if (!alertQueue.length) {
                 isShowingAlert = false;
@@ -1315,6 +1385,7 @@
 
             const widgetView = document.getElementById("widget-view");
             const card = document.getElementById("live-alert-card");
+            const localVideo = document.getElementById("alert-local-video");
             const ytFrame = document.getElementById("alert-youtube-frame");
             const scrim = document.getElementById("alert-video-scrim");
             const nameEl = document.getElementById("alert-donor-name");
@@ -1326,25 +1397,49 @@
             if (amountEl) amountEl.textContent = current.amount || "10";
             if (msgEl) msgEl.textContent = current.message || "شكراً لدعمك!";
 
-            const ytId = extractYoutubeVideoId(current.youtube_video_id || activeYoutubeVideoId || "");
-
-            if (ytId && ytFrame) {
-                ytFrame.src = buildYoutubeEmbedUrl(ytId);
-                ytFrame.classList.remove("hidden");
-                if (scrim) scrim.classList.remove("hidden");
-            } else {
-                if (ytFrame) {
-                    ytFrame.removeAttribute("src");
-                    ytFrame.classList.add("hidden");
-                }
-                if (scrim) scrim.classList.add("hidden");
+            if (localVideo) {
+                localVideo.classList.add("hidden");
+                try { localVideo.pause(); } catch (e) {}
             }
-
+            if (ytFrame) {
+                ytFrame.removeAttribute("src");
+                ytFrame.classList.add("hidden");
+            }
+            if (scrim) scrim.classList.add("hidden");
             if (card) card.classList.remove("hidden");
+
+            const ytId = extractYoutubeVideoId(current.youtube_video_id || activeYoutubeVideoId || "");
+            const localUrl = (current.video_url || activeLocalVideoUrl || DEFAULT_LOCAL_VIDEO_URL).trim();
 
             window.__alertHideTimer = setTimeout(() => {
                 finishCurrentAlert();
             }, ALERT_MAX_DURATION_MS);
+
+            if (ytId && ytFrame) {
+                if (scrim) scrim.classList.remove("hidden");
+                ytFrame.src = buildYoutubeEmbedUrl(ytId);
+                ytFrame.classList.remove("hidden");
+                window.__alertHideTimer = setTimeout(() => {
+                    finishCurrentAlert();
+                }, 25000);
+                return;
+            }
+
+            if (localUrl && localVideo) {
+                if (scrim) scrim.classList.remove("hidden");
+                const playedFull = await playLocalVideoFull(localVideo, localUrl);
+                if (playedFull) {
+                    finishCurrentAlert();
+                } else {
+                    window.__alertHideTimer = setTimeout(() => {
+                        finishCurrentAlert();
+                    }, 8000);
+                }
+            } else {
+                window.__alertHideTimer = setTimeout(() => {
+                    finishCurrentAlert();
+                }, 8000);
+            }
         }
 
         async function checkLatestApprovedAlertFromDb() {
@@ -1361,6 +1456,7 @@
                             amount: data.alert.amount,
                             message: data.alert.message,
                             network: data.alert.network,
+                            video_url: activeLocalVideoUrl,
                             youtube_video_id: activeYoutubeVideoId
                         });
                     }
@@ -1375,6 +1471,7 @@
                     const parsed = JSON.parse(rawLatest);
                     if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                         const incoming = Object.assign({}, parsed);
+                        if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                         if (!incoming.youtube_video_id && activeYoutubeVideoId) {
                             incoming.youtube_video_id = activeYoutubeVideoId;
                         }
@@ -1388,6 +1485,7 @@
                     const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
                     if (parsedName && parsedName.id && parsedName.id !== lastSeenAlertId) {
                         const incomingName = Object.assign({}, parsedName);
+                        if (!incomingName.video_url) incomingName.video_url = activeLocalVideoUrl;
                         if (!incomingName.youtube_video_id && activeYoutubeVideoId) {
                             incomingName.youtube_video_id = activeYoutubeVideoId;
                         }
@@ -1415,6 +1513,7 @@
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
+                        if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                         if (!incoming.youtube_video_id && activeYoutubeVideoId) {
                             incoming.youtube_video_id = activeYoutubeVideoId;
                         }
@@ -1433,6 +1532,7 @@
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
+                    if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                     if (!incoming.youtube_video_id && activeYoutubeVideoId) {
                         incoming.youtube_video_id = activeYoutubeVideoId;
                     }
@@ -1450,6 +1550,7 @@
                         const parsed = JSON.parse(event.newValue);
                         if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
                             const incoming = Object.assign({}, parsed);
+                            if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                             if (!incoming.youtube_video_id && activeYoutubeVideoId) {
                                 incoming.youtube_video_id = activeYoutubeVideoId;
                             }
@@ -1462,6 +1563,7 @@
             });
 
             if (isWidgetMode()) {
+                preloadLocalVideo(activeLocalVideoUrl);
                 checkStoredWidgetAlerts();
                 checkLatestApprovedAlertFromDb();
                 clearInterval(window.__widgetSyncInterval);
@@ -1488,6 +1590,7 @@
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
+                preloadLocalVideo(activeLocalVideoUrl);
 
                 const urlDonor = params.get("donor_name");
                 const urlAmount = params.get("amount");
@@ -1499,6 +1602,7 @@
                         amount: Number(urlAmount),
                         message: params.get("message") || "شكراً لدعمك المباشر!",
                         network: params.get("network") || "libyana",
+                        video_url: activeLocalVideoUrl,
                         youtube_video_id: activeYoutubeVideoId
                     });
                 }
@@ -1523,6 +1627,7 @@
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
+                preloadLocalVideo(activeLocalVideoUrl);
                 checkStoredWidgetAlerts();
                 checkLatestApprovedAlertFromDb();
             }
