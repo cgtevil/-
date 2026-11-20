@@ -184,11 +184,14 @@
                             <span>دعم البث المباشر</span>
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">@cgtevil</span>
                         </h1>
-                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار مع اعتماد تلقائي وعرض فوري على البث</p>
+                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار مع مراجعة الستريمر وعرض فوري على البث</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btn-toggle-sound" type="button" onclick="toggleStreamerSoundAlert()" class="hidden px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs sm:text-sm font-black text-emerald-200 transition cursor-pointer">
+                        🔔 تفعيل صوت التنبيهات
+                    </button>
                     <button id="btn-open-login" type="button" onclick="openLoginModal()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs sm:text-sm font-bold text-slate-200 transition cursor-pointer">
                         🔐 دخول الستريمر
                     </button>
@@ -198,6 +201,27 @@
                 </div>
             </div>
         </header>
+
+        <!-- شريط القبول السريع للستريمر عند وصول طلب جديد (يظهر تلقائياً على الهاتف/المتصفح دون الحاجة لفتح اللوحة) -->
+        <div id="streamer-quick-approve-bar" class="hidden border-b border-amber-400/40 bg-amber-500/15 backdrop-blur-md">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-0.5">
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-black text-amber-300">
+                        <span>🔔 طلب دعم جديد قيد المراجعة</span>
+                        <span id="quick-pending-count" class="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px]">1</span>
+                    </div>
+                    <div id="quick-pending-details" class="text-xs sm:text-sm font-extrabold text-white"></div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <button id="btn-quick-approve" type="button" onclick="approveLatestPendingQuickly()" class="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition cursor-pointer">
+                        ✅ اعتماد للبث فوراً
+                    </button>
+                    <button id="btn-quick-reject" type="button" onclick="rejectLatestPendingQuickly()" class="px-3.5 py-2 rounded-xl bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 text-rose-200 font-bold text-xs sm:text-sm transition cursor-pointer">
+                        ✕ رفض
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- المحتوى الرئيسي -->
         <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -209,7 +233,7 @@
                         دعم فوري ومباشر
                     </span>
                     <h2 class="text-2xl font-black text-white">ادعم الستريمر واظهر على شاشة البث</h2>
-                    <p class="text-sm text-slate-400">اختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل واضغط "تم التحويل" ليتم اعتماد طلبك وعرضه تلقائياً على البث.</p>
+                    <p class="text-sm text-slate-400">اكتب اسمك واختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل وأدخل آخر 4 أرقام من رقمك واضغط "تم التحويل" ليتم إرسال طلبك للمراجعة.</p>
                 </div>
 
                 <!-- اختيار الشبكة -->
@@ -253,8 +277,8 @@
                 <!-- اسم الداعم والرسالة -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <label for="input-donor-name" class="block text-sm font-bold text-slate-200">3. اسمك على البث</label>
-                        <input id="input-donor-name" type="text" maxlength="40" placeholder="اكتب اسمك هنا..." class="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-semibold">
+                        <label for="input-donor-name" class="block text-sm font-bold text-slate-200">3. اسمك على البث <span class="text-rose-400">*</span></label>
+                        <input id="input-donor-name" type="text" maxlength="40" required placeholder="اكتب اسمك هنا (إجباري)..." class="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-semibold">
                     </div>
                     <div class="space-y-1.5">
                         <label for="input-donor-message" class="block text-sm font-bold text-slate-200">4. رسالتك للستريمر</label>
@@ -276,9 +300,9 @@
                     <h4 class="text-sm font-black text-emerald-300">كيف يعمل النظام؟</h4>
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
-                        <li>• اختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
-                        <li>• انسخ الكود وانتظر 20 ثانية لتفعيل زر <strong>"تم التحويل"</strong> بعد إتمام التحويل من هاتفك.</li>
-                        <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُفعّل مؤقت 5 دقائق قبل إجراء تحويل آخر.</li>
+                        <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
+                        <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> من رقمك المحوّل منه لتفعيل زر <strong>"تم التحويل"</strong>.</li>
+                        <li>• يُسجَّل طلبك مع <strong>رمز تتبع</strong> ويُعرض على البث فور تأكيد وصول الرصيد من لوحة الستريمر، مع تفعيل مؤقت 5 دقائق.</li>
                     </ul>
                 </div>
             </aside>
@@ -287,7 +311,7 @@
 
     <!-- نافذة كود التحويل وتأكيد الإرسال -->
     <div id="transfer-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-md rounded-3xl p-6 space-y-5 border border-emerald-400/30 shadow-2xl">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 space-y-4 border border-emerald-400/30 shadow-2xl">
             <div class="flex items-center justify-between">
                 <h3 class="text-xl font-black text-white">إتمام تحويل الرصيد</h3>
                 <button type="button" onclick="closeTransferModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
@@ -296,7 +320,25 @@
             <div class="p-4 rounded-2xl bg-slate-950/90 border border-white/10 space-y-2 text-center">
                 <div class="text-xs text-slate-400">كود التحويل الفوري (USSD)</div>
                 <div id="ussd-code-display" dir="ltr" class="text-xl font-black text-emerald-400 select-all">*122*0944630534*10#</div>
+                <div id="tracking-code-display" class="inline-block px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-300 font-black text-xs">
+                    رمز التتبع: LBY-0000
+                </div>
                 <div id="transfer-summary" class="text-xs text-slate-300 pt-1"></div>
+            </div>
+
+            <!-- آخر 4 أرقام من رقم المرسل (إجباري لتفعيل زر تم التحويل) -->
+            <div class="p-3.5 rounded-2xl bg-slate-950/75 border border-white/10 space-y-1.5">
+                <label for="input-sender-last-digits" class="block text-xs font-extrabold text-white">
+                    آخر 4 أرقام من رقمك المحوّل منه <span class="text-rose-400">* (إجباري - 4 أرقام)</span>
+                </label>
+                <input id="input-sender-last-digits" type="text" inputmode="numeric" maxlength="4" required oninput="handleSenderDigitsInput()" placeholder="مثال: 0534" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-black tracking-[0.25em] text-center">
+                <div id="sender-digits-hint" class="text-[11px] font-bold text-amber-300 text-center">
+                    أدخل 4 أرقام صحيحة من رقم هاتفك المحوّل منه (0/4).
+                </div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-400/25 text-amber-200 text-xs font-bold leading-relaxed text-center">
+                ⚠️ تنبيه: الظهور على شاشة البث مشروط بوصول الرصيد الفعلي ومراجعته من الستريمر؛ الطلبات العشوائية أو غير المؤكدة يتم رفضها أو تجاهلها.
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -309,11 +351,11 @@
             </div>
 
             <p id="transfer-copy-requirement" class="text-center text-xs font-bold text-amber-300">
-                اضغط على "نسخ الكود" أولاً، وسيُفعّل زر "تم التحويل" بعد 20 ثانية.
+                اضغط على "نسخ الكود" وانتظر 20 ثانية وأدخل آخر 4 أرقام من رقمك لتفعيل زر "تم التحويل".
             </p>
 
             <button id="btn-confirm-transfer" type="button" disabled onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition opacity-50 cursor-not-allowed">
-                ✅ تم التحويل (اعتماد تلقائي وإرسال للبث)
+                ✅ تم التحويل (إرسال للمراجعة)
             </button>
         </div>
     </div>
@@ -355,10 +397,26 @@
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
 
+            <!-- تنبيهات الصوت على الهاتف/المتصفح -->
+            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2">
+                <div class="space-y-0.5">
+                    <div class="text-xs font-black text-emerald-300">تنبيه صوتي فوري على الهاتف عند وصول دعم</div>
+                    <div class="text-[11px] text-slate-300">يصدر صوت رنين عند وصول طلب جديد حتى ولو كانت لوحة الستريمر مغلقة.</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="playStreamerNotificationChime(true)" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer">
+                        🔊 تجربة الصوت
+                    </button>
+                    <button id="btn-panel-toggle-sound" type="button" onclick="toggleStreamerSoundAlert()" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
+                        تفعيل الصوت
+                    </button>
+                </div>
+            </div>
+
             <!-- سجل طلبات الدعم وحالة المراجعة -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
+                    <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
                     <div class="flex items-center gap-2">
                         <button id="btn-clear-old-donors" type="button" onclick="clearOldSupporters()" class="text-[11px] px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold cursor-pointer transition">
                             🧹 مسح الداعمين القدامى
@@ -427,7 +485,7 @@
                     </div>
                 </div>
                 <div class="space-y-1">
-                    <label for="streamer-link-input" class="block text-[11px] font-bold text-amber-300">رابط الستريمر الكامل</label>
+                    <label for="streamer-link-input" class="block text-[11px] font-bold text-amber-300">رابط الستريمر الكامل (افتحه على هاتفك)</label>
                     <div class="flex flex-wrap gap-2">
                         <input id="streamer-link-input" type="text" readonly class="flex-1 min-w-[200px] px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-slate-200">
                         <button type="button" onclick="copyRoleLink('streamer-link-input', 'تم نسخ رابط الستريمر الكامل')" class="px-3.5 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-bold text-xs cursor-pointer">
@@ -470,7 +528,10 @@
             </div>
 
             <!-- أزرار الإغلاق -->
-            <div class="flex items-center justify-end gap-3 pt-2">
+            <div class="flex items-center justify-between gap-3 pt-2">
+                <button type="button" onclick="logoutStreamer()" class="px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-rose-200 text-xs font-bold cursor-pointer">
+                    تسجيل الخروج
+                </button>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold cursor-pointer">
                     إغلاق
                 </button>
@@ -484,6 +545,8 @@
         const CORRECT_STREAMER_USER = "cgtevil";
         const CORRECT_STREAMER_PASS = "0918064401Ee";
         const AUTH_STORAGE_KEY = "cgtevil_streamer_auth_session";
+        const SOUND_ENABLED_STORAGE_KEY = "cgtevil_streamer_sound_enabled";
+        const KNOWN_PENDING_IDS_KEY = "cgtevil_known_pending_uids";
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
@@ -492,6 +555,7 @@
         const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
+        const DEVICE_ID_STORAGE_KEY = "cgtevil_donor_device_id";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
         const TRANSFER_COOLDOWN_MS = 5 * 60 * 1000;
         const COPY_UNLOCK_DELAY_MS = 20 * 1000;
@@ -503,17 +567,22 @@
                 min: 3,
                 max: 50,
                 label: "ليبيانا",
+                prefix: "LBY",
                 presets: [3, 10, 20, 50]
             },
             almadar: {
                 min: 3,
                 max: 20,
                 label: "المدار",
+                prefix: "MDR",
                 presets: [3, 5, 10, 20]
             }
         };
 
         let selectedNetwork = "libyana";
+        let pendingTrackingCode = "";
+        let transferModalOpenedAtMs = 0;
+        let hasCopiedUssdCode = false;
         let activeLocalVideoUrl = DEFAULT_LOCAL_VIDEO_URL;
         let activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
         let lastSeenAlertId = "";
@@ -522,6 +591,9 @@
         let copyUnlockDeadlineMs = 0;
         let wasCopyDelayRunning = false;
         let cachedDonations = [];
+        let streamerAudioCtx = null;
+        let hasInitializedPendingTracker = false;
+        let knownPendingUidSet = new Set();
         const alertQueue = [];
         let broadcastChannel = null;
 
@@ -530,8 +602,245 @@
             almadar_phone: DEFAULT_ALMADAR_PHONE
         };
 
+        function isStreamerSoundEnabled() {
+            return safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === "1";
+        }
+
+        function ensureStreamerAudioContext() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return null;
+                if (!streamerAudioCtx) {
+                    streamerAudioCtx = new AudioCtx();
+                }
+                if (streamerAudioCtx.state === "suspended") {
+                    streamerAudioCtx.resume().catch(() => {});
+                }
+                return streamerAudioCtx;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function playStreamerNotificationChime(forcePlay = false) {
+            if (!forcePlay && !isStreamerSoundEnabled()) return;
+            try {
+                if (navigator.vibrate) {
+                    navigator.vibrate([220, 100, 260]);
+                }
+            } catch (e) {}
+
+            const ctx = ensureStreamerAudioContext();
+            if (!ctx) return;
+
+            try {
+                const now = ctx.currentTime;
+                const notes = [880, 1174.66, 1318.51];
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = "triangle";
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+
+                    gain.gain.setValueAtTime(0.0001, now + idx * 0.14);
+                    gain.gain.exponentialRampToValueAtTime(0.28, now + idx * 0.14 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.14 + 0.24);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.14);
+                    osc.stop(now + idx * 0.14 + 0.26);
+                });
+            } catch (e) {}
+        }
+
+        function updateStreamerSoundUI() {
+            const authed = isStreamerAuthenticated();
+            const enabled = isStreamerSoundEnabled();
+            const headerBtn = document.getElementById("btn-toggle-sound");
+            const panelBtn = document.getElementById("btn-panel-toggle-sound");
+
+            if (headerBtn) {
+                headerBtn.classList.toggle("hidden", !authed);
+                headerBtn.textContent = enabled ? "🔊 صوت التنبيه: مفعّل" : "🔔 تفعيل صوت التنبيهات";
+                headerBtn.className = enabled
+                    ? "px-3.5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs sm:text-sm font-black transition cursor-pointer"
+                    : "px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs sm:text-sm font-black text-emerald-200 transition cursor-pointer";
+            }
+
+            if (panelBtn) {
+                panelBtn.textContent = enabled ? "🔊 مفعّل (إيقاف)" : "🔔 تفعيل الصوت";
+                panelBtn.className = enabled
+                    ? "px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer"
+                    : "px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs cursor-pointer";
+            }
+        }
+
+        function toggleStreamerSoundAlert() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            const nextState = !isStreamerSoundEnabled();
+            safeStorageSet(SOUND_ENABLED_STORAGE_KEY, nextState ? "1" : "0");
+            if (nextState) {
+                ensureStreamerAudioContext();
+                playStreamerNotificationChime(true);
+                showToast("🔊 تم تفعيل التنبيه الصوتي للطلبات الجديدة على هذا الجهاز");
+            } else {
+                showToast("🔕 تم إيقاف التنبيه الصوتي");
+            }
+            updateStreamerSoundUI();
+        }
+
+        function loadKnownPendingSet() {
+            try {
+                const raw = safeStorageGet(KNOWN_PENDING_IDS_KEY);
+                const arr = raw ? JSON.parse(raw) : [];
+                if (Array.isArray(arr)) {
+                    knownPendingUidSet = new Set(arr);
+                }
+            } catch (e) {}
+        }
+
+        function persistKnownPendingSet() {
+            try {
+                safeStorageSet(KNOWN_PENDING_IDS_KEY, JSON.stringify(Array.from(knownPendingUidSet).slice(-100)));
+            } catch (e) {}
+        }
+
+        function handleStreamerPendingAlertsAndQuickBar(items) {
+            const authed = isStreamerAuthenticated();
+            const bar = document.getElementById("streamer-quick-approve-bar");
+            const countEl = document.getElementById("quick-pending-count");
+            const detailsEl = document.getElementById("quick-pending-details");
+
+            const pendingList = sortDonationsPendingFirst(items).filter(
+                (x) => !x.review_status || x.review_status === "pending"
+            );
+
+            if (!authed) {
+                if (bar) bar.classList.add("hidden");
+                return;
+            }
+
+            if (!hasInitializedPendingTracker) {
+                loadKnownPendingSet();
+                pendingList.forEach((p) => {
+                    const uid = p.alert_uid || String(p.id || "");
+                    if (uid) knownPendingUidSet.add(uid);
+                });
+                persistKnownPendingSet();
+                hasInitializedPendingTracker = true;
+            } else {
+                let hasBrandNewPending = false;
+                let newestItem = null;
+                pendingList.forEach((p) => {
+                    const uid = p.alert_uid || String(p.id || "");
+                    if (uid && !knownPendingUidSet.has(uid)) {
+                        knownPendingUidSet.add(uid);
+                        hasBrandNewPending = true;
+                        newestItem = p;
+                    }
+                });
+                if (hasBrandNewPending) {
+                    persistKnownPendingSet();
+                    playStreamerNotificationChime(false);
+                    if (newestItem) {
+                        showToast(`🔔 دعم جديد: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل)`);
+                    }
+                }
+            }
+
+            if (!bar) return;
+            if (!pendingList.length) {
+                bar.classList.add("hidden");
+                return;
+            }
+
+            const first = pendingList[0];
+            const firstUid = first.alert_uid || String(first.id || "");
+            const refCode = first.tracking_code || (first.message && (first.message.match(/(?:LBY|MDR)-\d{4}/) || [])[0]) || "";
+            const senderDigits = first.sender_last_digits || (first.message && (first.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
+
+            bar.setAttribute("data-target-uid", firstUid);
+            if (countEl) countEl.textContent = String(pendingList.length);
+            if (detailsEl) {
+                detailsEl.textContent = `${first.donor_name || "داعم"} • ${Number(first.amount) || 0} د.ل (${getNetworkLabel(first.network)})${refCode ? ` • ${refCode}` : ""}${senderDigits ? ` • آخر 4 أرقام: ${senderDigits}` : ""}`;
+            }
+            bar.classList.remove("hidden");
+        }
+
+        async function approveLatestPendingQuickly() {
+            const bar = document.getElementById("streamer-quick-approve-bar");
+            const uid = bar ? bar.getAttribute("data-target-uid") : "";
+            if (!uid) return;
+            await reviewDonation(uid, "approve");
+        }
+
+        async function rejectLatestPendingQuickly() {
+            const bar = document.getElementById("streamer-quick-approve-bar");
+            const uid = bar ? bar.getAttribute("data-target-uid") : "";
+            if (!uid) return;
+            await reviewDonation(uid, "reject");
+        }
+
+        function getOrCreateDeviceId() {
+            const existing = safeStorageGet(DEVICE_ID_STORAGE_KEY);
+            if (existing && existing.trim()) return existing.trim();
+            const generated = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 10);
+            safeStorageSet(DEVICE_ID_STORAGE_KEY, generated);
+            return generated;
+        }
+
+        function getDeviceCooldownKey() {
+            return `${TRANSFER_COOLDOWN_KEY}__${getOrCreateDeviceId()}`;
+        }
+
         function getNetworkLimits(net = selectedNetwork) {
             return NETWORK_SUPPORT_LIMITS[net] || NETWORK_SUPPORT_LIMITS.libyana;
+        }
+
+        function generateTrackingCode(net = selectedNetwork) {
+            const limits = getNetworkLimits(net);
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            return `${limits.prefix}-${randomNum}`;
+        }
+
+        function getDonorNameInput() {
+            return (document.getElementById("input-donor-name")?.value || "").trim();
+        }
+
+        function getSenderLastDigitsInput() {
+            return (document.getElementById("input-sender-last-digits")?.value || "").replace(/[^0-9]/g, "").slice(0, 4);
+        }
+
+        function handleSenderDigitsInput() {
+            const input = document.getElementById("input-sender-last-digits");
+            if (!input) return;
+            const cleaned = input.value.replace(/[^0-9]/g, "").slice(0, 4);
+            if (input.value !== cleaned) {
+                input.value = cleaned;
+            }
+            updateTransferCooldownUI();
+        }
+
+        function validateDonorName() {
+            const name = getDonorNameInput();
+            if (!name) {
+                const nameInput = document.getElementById("input-donor-name");
+                if (nameInput) {
+                    nameInput.focus();
+                    nameInput.classList.add("border-rose-500");
+                    setTimeout(() => nameInput.classList.remove("border-rose-500"), 1800);
+                }
+                return {
+                    valid: false,
+                    name: "",
+                    message: "⚠️ يرجى إدخال اسمك على البث أولاً قبل المتابعة"
+                };
+            }
+            return { valid: true, name, message: "" };
         }
 
         function validateSupportAmount(rawAmount, net = selectedNetwork) {
@@ -759,9 +1068,18 @@
             try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
         }
 
+        function getLastTransferTimestampMs() {
+            const devRaw = Number(safeStorageGet(getDeviceCooldownKey()) || 0);
+            const legacyRaw = Number(safeStorageGet(TRANSFER_COOLDOWN_KEY) || 0);
+            return Math.max(
+                Number.isFinite(devRaw) ? devRaw : 0,
+                Number.isFinite(legacyRaw) ? legacyRaw : 0
+            );
+        }
+
         function getRemainingCooldownMs() {
-            const rawTs = Number(safeStorageGet(TRANSFER_COOLDOWN_KEY) || 0);
-            if (!Number.isFinite(rawTs) || rawTs <= 0) return 0;
+            const rawTs = getLastTransferTimestampMs();
+            if (!rawTs || rawTs <= 0) return 0;
             const elapsed = Date.now() - rawTs;
             return elapsed < TRANSFER_COOLDOWN_MS ? (TRANSFER_COOLDOWN_MS - elapsed) : 0;
         }
@@ -780,7 +1098,9 @@
         }
 
         function startTransferCooldown() {
-            safeStorageSet(TRANSFER_COOLDOWN_KEY, String(Date.now()));
+            const nowStr = String(Date.now());
+            safeStorageSet(getDeviceCooldownKey(), nowStr);
+            safeStorageSet(TRANSFER_COOLDOWN_KEY, nowStr);
             wasCooldownActive = true;
             updateTransferCooldownUI();
         }
@@ -788,10 +1108,29 @@
         function updateTransferCooldownUI() {
             const remainingMs = getRemainingCooldownMs();
             const remainingCopySec = getRemainingCopySeconds();
+            const digitsVal = getSenderLastDigitsInput();
+            const digitsOk = /^\d{4}$/.test(digitsVal);
             const showBtn = document.getElementById("btn-show-transfer");
             const confirmBtn = document.getElementById("btn-confirm-transfer");
             const hintEl = document.getElementById("transfer-cooldown-hint");
             const copyReqEl = document.getElementById("transfer-copy-requirement");
+            const digitsHintEl = document.getElementById("sender-digits-hint");
+            const digitsInputEl = document.getElementById("input-sender-last-digits");
+
+            if (digitsHintEl) {
+                if (digitsOk) {
+                    digitsHintEl.textContent = `✅ تم إدخال آخر 4 أرقام (${digitsVal}) بنجاح.`;
+                    digitsHintEl.className = "text-[11px] font-bold text-emerald-300 text-center";
+                } else {
+                    digitsHintEl.textContent = `أدخل آخر 4 أرقام من رقم هاتفك المحوّل منه (${digitsVal.length}/4).`;
+                    digitsHintEl.className = "text-[11px] font-bold text-amber-300 text-center";
+                }
+            }
+
+            if (digitsInputEl) {
+                digitsInputEl.classList.toggle("border-emerald-400/70", digitsOk);
+                digitsInputEl.classList.toggle("border-white/15", !digitsOk);
+            }
 
             if (remainingMs > 0) {
                 wasCooldownActive = true;
@@ -830,45 +1169,46 @@
                 showBtn.classList.add("cursor-pointer");
             }
 
-            if (remainingCopySec > 0) {
-                wasCopyDelayRunning = true;
-                if (confirmBtn) {
+            const isCopyUnlocked = copyUnlockDeadlineMs > 0 && Date.now() >= copyUnlockDeadlineMs;
+            if (wasCopyDelayRunning && isCopyUnlocked) {
+                wasCopyDelayRunning = false;
+                showToast("✅ اكتملت 20 ثانية بعد النسخ");
+            }
+
+            const canEnableConfirm = isCopyUnlocked && digitsOk;
+            if (confirmBtn) {
+                if (canEnableConfirm) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = "✅ تم التحويل (إرسال للمراجعة)";
+                    confirmBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                    confirmBtn.classList.add("cursor-pointer");
+                } else {
                     confirmBtn.disabled = true;
-                    confirmBtn.textContent = `⏳ انتظر ${remainingCopySec} ثانية لتفعيل "تم التحويل"`;
+                    if (!copyUnlockDeadlineMs) {
+                        confirmBtn.textContent = "🔒 تم التحويل (انسخ الكود وأدخل 4 أرقام)";
+                    } else if (remainingCopySec > 0) {
+                        confirmBtn.textContent = `⏳ انتظر ${remainingCopySec}ث وأدخل 4 أرقام (${digitsVal.length}/4)`;
+                    } else {
+                        confirmBtn.textContent = `🔒 أدخل آخر 4 أرقام من رقمك (${digitsVal.length}/4)`;
+                    }
                     confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
                     confirmBtn.classList.remove("cursor-pointer");
                 }
-                if (copyReqEl) {
-                    copyReqEl.textContent = `تم نسخ الكود؛ سيُفعّل زر "تم التحويل" تلقائياً بعد ${remainingCopySec} ثانية.`;
+            }
+
+            if (copyReqEl) {
+                if (canEnableConfirm) {
+                    copyReqEl.textContent = "✅ اكتملت الشروط (نسخ الكود + 20 ثانية + 4 أرقام)؛ يمكنك الآن الضغط على \"تم التحويل\".";
+                    copyReqEl.className = "text-center text-xs font-bold text-emerald-300";
+                } else if (!copyUnlockDeadlineMs) {
+                    copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً وانتظر 20 ثانية مع إدخال آخر 4 أرقام من رقمك.";
+                    copyReqEl.className = "text-center text-xs font-bold text-amber-300";
+                } else if (remainingCopySec > 0) {
+                    copyReqEl.textContent = `متبقي ${remainingCopySec} ثانية بعد النسخ، وتأكد من إدخال 4 أرقام (${digitsVal.length}/4).`;
                     copyReqEl.className = "text-center text-xs font-bold text-sky-300";
-                }
-            } else {
-                const isUnlocked = copyUnlockDeadlineMs > 0 && Date.now() >= copyUnlockDeadlineMs;
-                if (wasCopyDelayRunning && isUnlocked) {
-                    wasCopyDelayRunning = false;
-                    showToast("✅ تم تفعيل زر \"تم التحويل\" الآن");
-                }
-                if (confirmBtn) {
-                    if (isUnlocked) {
-                        confirmBtn.disabled = false;
-                        confirmBtn.textContent = "✅ تم التحويل (اعتماد تلقائي وإرسال للبث)";
-                        confirmBtn.classList.remove("opacity-50", "cursor-not-allowed");
-                        confirmBtn.classList.add("cursor-pointer");
-                    } else {
-                        confirmBtn.disabled = true;
-                        confirmBtn.textContent = "🔒 تم التحويل (انسخ الكود أولاً)";
-                        confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
-                        confirmBtn.classList.remove("cursor-pointer");
-                    }
-                }
-                if (copyReqEl) {
-                    if (isUnlocked) {
-                        copyReqEl.textContent = "✅ اكتملت 20 ثانية؛ يمكنك الآن الضغط على \"تم التحويل\".";
-                        copyReqEl.className = "text-center text-xs font-bold text-emerald-300";
-                    } else {
-                        copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً، وسيُفعّل زر \"تم التحويل\" بعد 20 ثانية.";
-                        copyReqEl.className = "text-center text-xs font-bold text-amber-300";
-                    }
+                } else {
+                    copyReqEl.textContent = `⚠️ يرجى إدخال آخر 4 أرقام من رقمك المحوّل منه (${digitsVal.length}/4) لتفعيل زر "تم التحويل".`;
+                    copyReqEl.className = "text-center text-xs font-bold text-amber-300";
                 }
             }
 
@@ -910,7 +1250,7 @@
         function getStatusBadge(status, notified) {
             if (status === "approved") {
                 const alertTag = Number(notified) === 1 ? " • أُرسل إشعار البث" : "";
-                return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">معتمد تلقائياً${alertTag}</span>`;
+                return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">معتمد${alertTag}</span>`;
             }
             if (status === "rejected") {
                 return `<span class="px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 font-black text-[11px]">مرفوض</span>`;
@@ -974,13 +1314,24 @@
         function isStreamerAuthenticated() {
             if (getAccessRole() === "donor") return false;
             try {
-                const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+                const raw = safeStorageGet(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
                 if (!raw) return false;
                 const parsed = JSON.parse(raw);
                 return Boolean(parsed && parsed.verified && parsed.user === CORRECT_STREAMER_USER);
             } catch (e) {
                 return false;
             }
+        }
+
+        function logoutStreamer() {
+            try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) {}
+            try { sessionStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) {}
+            const panel = document.getElementById("streamer-panel-modal");
+            if (panel) panel.classList.add("hidden");
+            const bar = document.getElementById("streamer-quick-approve-bar");
+            if (bar) bar.classList.add("hidden");
+            updateAuthUI();
+            showToast("تم تسجيل الخروج من لوحة الستريمر");
         }
 
         function updateAuthUI() {
@@ -992,10 +1343,12 @@
             if (role === "donor") {
                 if (loginBtn) loginBtn.classList.add("hidden");
                 if (panelBtn) panelBtn.classList.add("hidden");
+                updateStreamerSoundUI();
                 return;
             }
             if (loginBtn) loginBtn.classList.toggle("hidden", authed);
             if (panelBtn) panelBtn.classList.toggle("hidden", !authed);
+            updateStreamerSoundUI();
         }
 
         function clearLoginError() {
@@ -1057,16 +1410,25 @@
 
             if (user === CORRECT_STREAMER_USER && pass === CORRECT_STREAMER_PASS) {
                 clearLoginError();
-                try {
-                    sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
-                        user: CORRECT_STREAMER_USER,
-                        verified: true,
-                        ts: Date.now()
-                    }));
-                } catch (e) {}
+                const sessionData = JSON.stringify({
+                    user: CORRECT_STREAMER_USER,
+                    verified: true,
+                    ts: Date.now()
+                });
+                safeStorageSet(AUTH_STORAGE_KEY, sessionData);
+                try { sessionStorage.setItem(AUTH_STORAGE_KEY, sessionData); } catch (e) {}
+
+                if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) {
+                    safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
+                }
+                ensureStreamerAudioContext();
+                playStreamerNotificationChime(true);
+
                 closeLoginModal();
                 updateAuthUI();
-                showToast("✅ تم تسجيل دخول الستريمر بنجاح");
+                startStreamerBackgroundPolling();
+                fetchDonationsFromDb();
+                showToast("✅ تم تسجيل دخول الستريمر وحفظ الجلسة");
                 toggleStreamerPanel(true);
             } else {
                 const wrongUser = user !== CORRECT_STREAMER_USER;
@@ -1085,6 +1447,7 @@
             if (show) {
                 syncStreamerPanelInputs();
                 updateYoutubeVideoStatusUI();
+                updateStreamerSoundUI();
                 panel.classList.remove("hidden");
                 fetchDonationsFromDb();
             } else {
@@ -1165,6 +1528,11 @@
                 showToast(`⏳ يرجى الانتظار ${formatCountdown(remainingMs)} قبل إجراء تحويل آخر`);
                 return;
             }
+            const nameCheck = validateDonorName();
+            if (!nameCheck.valid) {
+                showToast(nameCheck.message);
+                return;
+            }
             const rawAmount = document.getElementById("input-amount").value;
             const check = validateSupportAmount(rawAmount, selectedNetwork);
             if (!check.valid) {
@@ -1172,15 +1540,23 @@
                 return;
             }
             const amount = check.amount;
-            const donorName = document.getElementById("input-donor-name").value.trim() || "داعم مجهول";
+            const donorName = nameCheck.name;
             const phone = selectedNetwork === "libyana" ? streamerSettings.libyana_phone : streamerSettings.almadar_phone;
             const ussd = selectedNetwork === "libyana"
                 ? `*122*${phone}*${amount}#`
                 : `*140*4*1*${amount}*${phone}#`;
 
+            pendingTrackingCode = generateTrackingCode(selectedNetwork);
+            transferModalOpenedAtMs = Date.now();
+            hasCopiedUssdCode = false;
             copyUnlockDeadlineMs = 0;
             wasCopyDelayRunning = false;
+
+            const digitsInput = document.getElementById("input-sender-last-digits");
+            if (digitsInput) digitsInput.value = "";
+
             document.getElementById("ussd-code-display").textContent = ussd;
+            document.getElementById("tracking-code-display").textContent = `رمز التتبع: ${pendingTrackingCode}`;
             document.getElementById("ussd-call-link").href = `tel:${encodeURIComponent(ussd)}`;
             document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amount} د.ل • الشبكة: ${getNetworkLabel(selectedNetwork)} (${phone})`;
             updateTransferCooldownUI();
@@ -1200,12 +1576,13 @@
             try { document.execCommand("copy"); } catch (e) {}
             document.body.removeChild(temp);
 
+            hasCopiedUssdCode = true;
             if (!copyUnlockDeadlineMs || Date.now() >= copyUnlockDeadlineMs) {
                 copyUnlockDeadlineMs = Date.now() + COPY_UNLOCK_DELAY_MS;
                 wasCopyDelayRunning = true;
             }
             updateTransferCooldownUI();
-            showToast("✅ تم نسخ الكود؛ سيُفعّل زر \"تم التحويل\" خلال 20 ثانية");
+            showToast("✅ تم نسخ الكود؛ انتظر 20 ثانية وأدخل آخر 4 أرقام من رقمك");
         }
 
         function getLocalDonations() {
@@ -1223,12 +1600,29 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
         }
 
+        function sortDonationsPendingFirst(items) {
+            const list = Array.isArray(items) ? items.slice() : [];
+            const rank = (status) => {
+                if (!status || status === "pending") return 0;
+                if (status === "approved") return 1;
+                return 2;
+            };
+            return list.sort((a, b) => {
+                const diff = rank(a.review_status) - rank(b.review_status);
+                if (diff !== 0) return diff;
+                const ta = new Date(a.created_at || 0).getTime() || 0;
+                const tb = new Date(b.created_at || 0).getTime() || 0;
+                return tb - ta;
+            });
+        }
+
         function syncDonationsState(items) {
             const list = Array.isArray(items) ? items : [];
             cachedDonations = list;
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             renderTopSupporters(list);
             renderStreamerDonations(list);
+            handleStreamerPendingAlertsAndQuickBar(list);
             broadcastPayload("DONATIONS_UPDATED", { items: list, synced_at: Date.now() });
         }
 
@@ -1412,27 +1806,44 @@
 
         function renderStreamerDonations(items) {
             const container = document.getElementById("recent-donations-list");
+            const titleEl = document.getElementById("donations-panel-title");
             if (!container) return;
 
-            if (!items || !items.length) {
+            const ordered = sortDonationsPendingFirst(items);
+            const pendingCount = ordered.filter((x) => !x.review_status || x.review_status === "pending").length;
+
+            if (titleEl) {
+                titleEl.textContent = pendingCount > 0
+                    ? `طلبات الدعم وحالة الاعتماد (D1) • قيد المراجعة: ${pendingCount}`
+                    : "طلبات الدعم وحالة الاعتماد (D1)";
+            }
+
+            if (!ordered.length) {
                 container.innerHTML = `<div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">لا توجد طلبات دعم في قاعدة البيانات حتى الآن.</div>`;
                 return;
             }
 
-            container.innerHTML = items.map((item) => {
+            container.innerHTML = ordered.map((item) => {
                 const uid = item.alert_uid || String(item.id);
-                const status = item.review_status || "approved";
+                const status = item.review_status || "pending";
+                const isPending = status === "pending";
                 const canApprove = status !== "approved";
                 const canReject = status !== "rejected";
+                const refCode = item.tracking_code || (item.message && (item.message.match(/(?:LBY|MDR)-\d{4}/) || [])[0]) || "";
+                const senderDigits = item.sender_last_digits || (item.message && (item.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
+                const elapsedSec = Number(item.elapsed_seconds);
+                const copiedFlag = item.copied_code === true || Number(item.copied_code) === 1;
+                const copyLabel = copiedFlag ? "نسخ الكود: نعم" : "نسخ الكود: غير مؤكد";
+                const durationLabel = Number.isFinite(elapsedSec) && elapsedSec > 0 ? ` • مدة التفاعل: ${elapsedSec}ث` : "";
 
                 return `
-                    <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                    <div class="p-3.5 rounded-2xl ${isPending ? "bg-amber-500/10 border border-amber-400/35" : "bg-white/5 border border-white/10"} space-y-2">
                         <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <div class="font-black text-white">${escapeHtml(item.donor_name || "داعم مجهول")} • <span class="text-emerald-300">${Number(item.amount) || 0} د.ل</span></div>
+                            <div class="font-black text-white">${escapeHtml(item.donor_name || "داعم")} • <span class="text-emerald-300">${Number(item.amount) || 0} د.ل</span>${refCode ? ` • <span class="text-amber-300">${escapeHtml(refCode)}</span>` : ""}${senderDigits ? ` • <span class="text-sky-300">آخر 4 أرقام: ${escapeHtml(senderDigits)}</span>` : ""}</div>
                             ${getStatusBadge(status, item.alert_notified)}
                         </div>
                         <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-                            <span>الشبكة: <strong class="text-slate-200">${getNetworkLabel(item.network)}</strong></span>
+                            <span>الشبكة: <strong class="text-slate-200">${getNetworkLabel(item.network)}</strong> • <span class="text-slate-300">${escapeHtml(copyLabel)}${escapeHtml(durationLabel)}</span></span>
                             <span>الوقت: ${formatDateTime(item.created_at)}</span>
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
@@ -1452,6 +1863,7 @@
                 cachedDonations = localItems;
                 renderTopSupporters(localItems);
                 renderStreamerDonations(localItems);
+                handleStreamerPendingAlertsAndQuickBar(localItems);
                 return;
             }
             try {
@@ -1462,16 +1874,41 @@
                     safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(data.items));
                     renderTopSupporters(data.items);
                     renderStreamerDonations(data.items);
+                    handleStreamerPendingAlertsAndQuickBar(data.items);
                 }
             } catch (e) {
                 const localItems = getLocalDonations();
                 cachedDonations = localItems;
                 renderTopSupporters(localItems);
                 renderStreamerDonations(localItems);
+                handleStreamerPendingAlertsAndQuickBar(localItems);
             }
         }
 
+        function startStreamerBackgroundPolling() {
+            clearInterval(window.__streamerPendingPollInterval);
+            if (!isStreamerAuthenticated()) return;
+            window.__streamerPendingPollInterval = setInterval(() => {
+                if (isStreamerAuthenticated()) {
+                    fetchDonationsFromDb();
+                }
+            }, 4000);
+        }
+
         async function confirmAndDispatchSupport() {
+            const senderLastDigits = getSenderLastDigitsInput();
+            if (!/^\d{4}$/.test(senderLastDigits)) {
+                const digitsInput = document.getElementById("input-sender-last-digits");
+                if (digitsInput) {
+                    digitsInput.focus();
+                    digitsInput.classList.add("border-rose-500");
+                    setTimeout(() => digitsInput.classList.remove("border-rose-500"), 1800);
+                }
+                showToast("⚠️ يرجى إدخال آخر 4 أرقام من رقم هاتفك المحوّل منه لتفعيل زر \"تم التحويل\"");
+                updateTransferCooldownUI();
+                return;
+            }
+
             if (!copyUnlockDeadlineMs || Date.now() < copyUnlockDeadlineMs) {
                 const remSec = getRemainingCopySeconds();
                 showToast(remSec > 0
@@ -1488,6 +1925,12 @@
                 return;
             }
 
+            const nameCheck = validateDonorName();
+            if (!nameCheck.valid) {
+                showToast(nameCheck.message);
+                return;
+            }
+
             const rawAmount = document.getElementById("input-amount").value;
             const check = validateSupportAmount(rawAmount, selectedNetwork);
             if (!check.valid) {
@@ -1495,37 +1938,32 @@
                 return;
             }
             const amount = check.amount;
-            const donorName = document.getElementById("input-donor-name").value.trim() || "داعم مجهول";
-            const message = document.getElementById("input-donor-message").value.trim() || "دعم مباشر للبث!";
+            const donorName = nameCheck.name;
+            const rawMessage = document.getElementById("input-donor-message").value.trim() || "دعم مباشر للبث!";
+            const trackingCode = pendingTrackingCode || generateTrackingCode(selectedNetwork);
+            const digitsTag = ` [رقم:${senderLastDigits}]`;
+            const messageWithRef = `${rawMessage} [${trackingCode}]${digitsTag}`;
+            const elapsedSeconds = transferModalOpenedAtMs ? Math.max(1, Math.round((Date.now() - transferModalOpenedAtMs) / 1000)) : 20;
             const alertUid = "alert_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
 
             const record = {
                 id: alertUid,
                 alert_uid: alertUid,
                 streamer_username: CORRECT_STREAMER_USER,
+                device_id: getOrCreateDeviceId(),
                 donor_name: donorName,
                 amount: amount,
-                message: message,
+                message: messageWithRef,
+                tracking_code: trackingCode,
+                sender_last_digits: senderLastDigits,
+                copied_code: hasCopiedUssdCode ? 1 : 0,
+                elapsed_seconds: elapsedSeconds,
                 network: selectedNetwork,
                 video_url: activeLocalVideoUrl,
                 youtube_video_id: activeYoutubeVideoId,
                 created_at: new Date().toISOString(),
-                review_status: "approved",
-                alert_notified: 1
-            };
-
-            const approvedAlertPayload = {
-                id: record.alert_uid,
-                streamer_username: CORRECT_STREAMER_USER,
-                donor_name: record.donor_name,
-                amount: record.amount,
-                message: record.message,
-                network: record.network,
-                video_url: activeLocalVideoUrl,
-                youtube_video_id: activeYoutubeVideoId,
-                created_at: record.created_at,
-                review_status: "approved",
-                alert_notified: 1
+                review_status: "pending",
+                alert_notified: 0
             };
 
             if (isApiConfigured()) {
@@ -1541,27 +1979,18 @@
                         return;
                     }
 
-                    const savedItem = data.item || record;
-                    if (savedItem.review_status !== "approved" && savedItem.alert_uid) {
-                        try {
-                            await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(savedItem.alert_uid)}/approve`, {
-                                method: "POST"
-                            });
-                        } catch (approveErr) {}
-                    }
-
-                    lastSeenAlertId = approvedAlertPayload.id;
-                    broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
-                    showPanelLivePreview(approvedAlertPayload);
                     await fetchDonationsFromDb();
+                    pendingTrackingCode = "";
+                    transferModalOpenedAtMs = 0;
+                    hasCopiedUssdCode = false;
                     copyUnlockDeadlineMs = 0;
                     wasCopyDelayRunning = false;
                     closeTransferModal();
                     startTransferCooldown();
-                    showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
+                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) للمراجعة؛ سيظهر على البث فور اعتماده`);
                     return;
                 } catch (e) {
-                    showToast("⚠️ تعذر الاتصال بالخادم، تم الاعتماد محلياً في المتصفح");
+                    showToast("⚠️ تعذر الاتصال بالخادم، تم تسجيل الطلب محلياً قيد المراجعة");
                 }
             }
 
@@ -1570,14 +1999,15 @@
             cachedDonations = updatedLocal;
             renderTopSupporters(updatedLocal);
             renderStreamerDonations(updatedLocal);
-            lastSeenAlertId = approvedAlertPayload.id;
-            broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
-            showPanelLivePreview(approvedAlertPayload);
+            handleStreamerPendingAlertsAndQuickBar(updatedLocal);
+            pendingTrackingCode = "";
+            transferModalOpenedAtMs = 0;
+            hasCopiedUssdCode = false;
             copyUnlockDeadlineMs = 0;
             wasCopyDelayRunning = false;
             closeTransferModal();
             startTransferCooldown();
-            showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
+            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة؛ سيظهر على البث فور اعتماده`);
         }
 
         async function reviewDonation(alertUid, action) {
@@ -1648,6 +2078,7 @@
             }
             renderTopSupporters(list);
             renderStreamerDonations(list);
+            handleStreamerPendingAlertsAndQuickBar(list);
             showToast(action === "approve" ? "✅ تم اعتماد الطلب وإطلاق إشعار البث" : "تم رفض الطلب");
         }
 
@@ -1940,6 +2371,7 @@
                         safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
                         renderTopSupporters(cachedDonations);
                         renderStreamerDonations(cachedDonations);
+                        handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
@@ -1967,6 +2399,7 @@
                     safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
                     renderTopSupporters(cachedDonations);
                     renderStreamerDonations(cachedDonations);
+                    handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
@@ -1986,12 +2419,15 @@
                     activeYoutubeVideoId = extractYoutubeVideoId(event.newValue || "");
                     syncStreamerPanelInputs();
                     updateYoutubeVideoStatusUI();
+                } else if (event.key === SOUND_ENABLED_STORAGE_KEY) {
+                    updateStreamerSoundUI();
                 } else if (event.key === DONATIONS_STORAGE_KEY) {
                     try {
                         const parsed = event.newValue ? JSON.parse(event.newValue) : [];
                         cachedDonations = Array.isArray(parsed) ? parsed : [];
                         renderTopSupporters(cachedDonations);
                         renderStreamerDonations(cachedDonations);
+                        handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                     } catch (e) {}
                 } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
                     try {
@@ -2005,7 +2441,7 @@
                             enqueueAlert(incoming);
                         }
                     } catch (e) {}
-                } else if (event.key === TRANSFER_COOLDOWN_KEY) {
+                } else if (event.key === TRANSFER_COOLDOWN_KEY || event.key === getDeviceCooldownKey()) {
                     updateTransferCooldownUI();
                 }
             });
@@ -2041,6 +2477,7 @@
         }
 
         function initApp() {
+            getOrCreateDeviceId();
             loadSavedYoutubeSettings();
 
             const params = getCombinedUrlParams();
@@ -2085,6 +2522,12 @@
                 window.__cooldownInterval = setInterval(updateTransferCooldownUI, 1000);
                 fetchDonationsFromDb();
                 syncStreamerPanelInputs();
+                startStreamerBackgroundPolling();
+                document.addEventListener("pointerdown", () => {
+                    if (isStreamerAuthenticated() && isStreamerSoundEnabled()) {
+                        ensureStreamerAudioContext();
+                    }
+                }, { once: true });
                 if (getAccessRole() === "streamer" && !isStreamerAuthenticated()) {
                     openLoginModal();
                 }
