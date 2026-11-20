@@ -452,11 +452,14 @@
             <!-- رابط الويدجت -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio) — يظهر فقط بعد القبول من D1</label>
-                <div class="flex gap-2">
-                    <input id="widget-url-input" type="text" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
+                <div class="flex flex-wrap gap-2">
+                    <input id="widget-url-input" type="text" readonly class="flex-1 min-w-[210px] px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
                     <button type="button" onclick="copyWidgetUrl()" class="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
                         نسخ الرابط
                     </button>
+                    <a id="open-widget-link-btn" href="?widget=true#/d/cgtevil" target="_blank" rel="noopener" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-200 font-bold text-xs flex items-center">
+                        فتح الويدجت
+                    </a>
                 </div>
             </div>
 
@@ -600,12 +603,25 @@
             const text = String(rawMsg || "").trim();
             if (!text) return "شكراً لدعمك!";
             const cleaned = text
-                .replace(/\s*\[رقم:[0-9]{1,6}\]/g, "")
-                .replace(/\s*\(?\s*آخر\s*4\s*أرقام\s*:?\s*[0-9]{1,6}\s*\)?/g, "")
-                .replace(/\s*رقم\s*:\s*[0-9]{1,6}/g, "")
+                .replace(/\s*\[رقم:[^\]]*\]/gi, "")
+                .replace(/\s*\([^)]*(?:رقم|أرقام|تحويل|هاتف|09\d{7,}|[0-9]{4,})[^)]*\)/gi, "")
+                .replace(/\s*(?:آخر\s*4\s*أرقام|اخر\s*4\s*ارقام|رقم\s*(?:الداعم|الهاتف|المحوّل|المحول)?)\s*:?\s*[0-9٠-٩]{1,12}/gi, "")
+                .replace(/\s*رقم\s*:\s*[0-9٠-٩]{1,12}/gi, "")
                 .replace(/\s{2,}/g, " ")
                 .trim();
             return cleaned || "شكراً لدعمك!";
+        }
+
+        function stripDonorPhoneArtifacts(payload) {
+            const copy = Object.assign({}, payload);
+            delete copy.sender_last_digits;
+            delete copy.donor_phone;
+            delete copy.phone;
+            delete copy.sender_phone;
+            if (typeof copy.message === "string") {
+                copy.message = sanitizeAlertMessageForBroadcast(copy.message);
+            }
+            return copy;
         }
 
         function isApprovedAlertPayload(item) {
@@ -1558,13 +1574,16 @@
         }
 
         function syncStreamerPanelInputs() {
+            const widgetUrl = buildShareableWidgetUrl();
             const widgetInput = document.getElementById("widget-url-input");
+            const openWidgetBtn = document.getElementById("open-widget-link-btn");
             const topWidgetInput = document.getElementById("top-supporters-widget-url-input");
             const donorLinkInput = document.getElementById("donor-link-input");
             const streamerLinkInput = document.getElementById("streamer-link-input");
             const ytInput = document.getElementById("setting-youtube-video-url");
 
-            if (widgetInput) widgetInput.value = buildShareableWidgetUrl();
+            if (widgetInput) widgetInput.value = widgetUrl;
+            if (openWidgetBtn) openWidgetBtn.href = widgetUrl;
             if (topWidgetInput) topWidgetInput.value = buildTopSupportersWidgetUrl();
             if (donorLinkInput) donorLinkInput.value = buildRoleUrl("donor");
             if (streamerLinkInput) streamerLinkInput.value = buildRoleUrl("streamer");
@@ -2113,8 +2132,9 @@
 
                     if (action === "approve") {
                         const cleanBroadcastMessage = sanitizeAlertMessageForBroadcast(data.item.message);
-                        const approvedPayload = {
-                            id: data.item.alert_uid || String(data.item.id),
+                        const approvedPayload = stripDonorPhoneArtifacts({
+                            id: `${data.item.alert_uid || String(data.item.id)}__${Date.now()}`,
+                            alert_uid: data.item.alert_uid || String(data.item.id),
                             streamer_username: CORRECT_STREAMER_USER,
                             donor_name: data.item.donor_name,
                             amount: data.item.amount,
@@ -2125,11 +2145,11 @@
                             created_at: data.item.created_at,
                             review_status: "approved",
                             alert_notified: 1
-                        };
-                        lastSeenAlertId = approvedPayload.id;
+                        });
+                        lastSeenAlertId = "";
                         broadcastPayload("NEW_DONATION_ALERT", approvedPayload);
                         showPanelLivePreview(approvedPayload);
-                        showToast("✅ تم القبول من خانة D1 وإرسال التنبيه إلى البث المباشر (بدون آخر أرقام الداعم)");
+                        showToast("✅ تم القبول من خانة D1 وتفعيل التنبيه على رابط البث المباشر (بدون آخر أرقام الداعم)");
                     } else {
                         showToast("❌ تم رفض الطلب من خانة D1");
                     }
@@ -2156,8 +2176,9 @@
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
                 const cleanBroadcastMessage = sanitizeAlertMessageForBroadcast(target.message);
-                const broadcastItem = {
-                    id: target.alert_uid || String(target.id),
+                const broadcastItem = stripDonorPhoneArtifacts({
+                    id: `${target.alert_uid || String(target.id)}__${Date.now()}`,
+                    alert_uid: target.alert_uid || String(target.id),
                     streamer_username: CORRECT_STREAMER_USER,
                     donor_name: target.donor_name,
                     amount: target.amount,
@@ -2168,14 +2189,15 @@
                     video_url: activeLocalVideoUrl,
                     youtube_video_id: activeYoutubeVideoId,
                     created_at: target.created_at
-                };
+                });
+                lastSeenAlertId = "";
                 broadcastPayload("NEW_DONATION_ALERT", broadcastItem);
                 showPanelLivePreview(broadcastItem);
             }
             renderTopSupporters(list);
             renderStreamerDonations(list);
             handleStreamerPendingAlertsAndQuickBar(list);
-            showToast(action === "approve" ? "✅ تم القبول من خانة D1 وإرسال التنبيه إلى البث" : "❌ تم رفض الطلب من خانة D1");
+            showToast(action === "approve" ? "✅ تم القبول من خانة D1 وتفعيل التنبيه على البث" : "❌ تم رفض الطلب من خانة D1");
         }
 
         function escapeHtml(str) {
@@ -2188,10 +2210,7 @@
 
         function persistAlertForWidget(payload) {
             if (!isApprovedAlertPayload(payload)) return;
-            const cleanPayload = Object.assign({}, payload, {
-                message: sanitizeAlertMessageForBroadcast(payload.message)
-            });
-            delete cleanPayload.sender_last_digits;
+            const cleanPayload = stripDonorPhoneArtifacts(payload);
             try { safeStorageSet(LATEST_DISPATCH_KEY, JSON.stringify(cleanPayload)); } catch (e) {}
             try { window.name = WINDOW_NAME_PREFIX + JSON.stringify(cleanPayload); } catch (e) {}
         }
@@ -2199,10 +2218,7 @@
         function broadcastPayload(type, payload) {
             if (type === "NEW_DONATION_ALERT") {
                 if (!isApprovedAlertPayload(payload)) return;
-                const cleanPayload = Object.assign({}, payload, {
-                    message: sanitizeAlertMessageForBroadcast(payload.message)
-                });
-                delete cleanPayload.sender_last_digits;
+                const cleanPayload = stripDonorPhoneArtifacts(payload);
                 persistAlertForWidget(cleanPayload);
                 payload = cleanPayload;
             }
@@ -2237,7 +2253,7 @@
             const network = document.getElementById("test-donor-network").value || "libyana";
             const message = sanitizeAlertMessageForBroadcast((document.getElementById("test-donor-message").value || "").trim() || "تنبيه تجريبي مباشر 🔥");
 
-            const testPayload = {
+            const testPayload = stripDonorPhoneArtifacts({
                 id: "tiktok_test_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
                 streamer_username: CORRECT_STREAMER_USER,
                 donor_name: donorName,
@@ -2249,7 +2265,7 @@
                 video_url: activeLocalVideoUrl,
                 youtube_video_id: activeYoutubeVideoId,
                 created_at: new Date().toISOString()
-            };
+            });
 
             preloadLocalVideo(activeLocalVideoUrl);
             lastSeenAlertId = testPayload.id;
@@ -2293,8 +2309,9 @@
 
         function enqueueAlert(item) {
             if (!item || !isApprovedAlertPayload(item)) return;
-            if (item.id) lastSeenAlertId = item.id;
-            alertQueue.push(item);
+            const cleanItem = stripDonorPhoneArtifacts(item);
+            if (cleanItem.id) lastSeenAlertId = cleanItem.id;
+            alertQueue.push(cleanItem);
             if (!isShowingAlert) processNextAlert();
         }
 
@@ -2346,7 +2363,7 @@
                 return;
             }
             isShowingAlert = true;
-            const current = alertQueue.shift();
+            const current = stripDonorPhoneArtifacts(alertQueue.shift());
 
             if (!isApprovedAlertPayload(current)) {
                 isShowingAlert = false;
@@ -2416,14 +2433,16 @@
         async function checkLatestApprovedAlertFromDb() {
             if (!isApiConfigured()) return;
             try {
-                const res = await fetch(`${API_BASE_URL}/api/alerts/latest`);
+                const res = await fetch(`${API_BASE_URL}/api/alerts/latest?t=${Date.now()}`, { cache: "no-store" });
                 const data = await res.json();
                 if (data && data.ok && data.alert) {
                     if (data.alert.review_status !== "approved") return;
-                    const uid = data.alert.alert_uid || String(data.alert.id);
-                    if (uid && uid !== lastSeenAlertId) {
+                    const baseUid = data.alert.alert_uid || String(data.alert.id);
+                    const stamp = data.alert.updated_at || data.alert.created_at || "";
+                    const dedupKey = `${baseUid}__${stamp}`;
+                    if (dedupKey && dedupKey !== lastSeenAlertId) {
                         enqueueAlert({
-                            id: uid,
+                            id: dedupKey,
                             donor_name: data.alert.donor_name,
                             amount: data.alert.amount,
                             message: sanitizeAlertMessageForBroadcast(data.alert.message),
@@ -2445,10 +2464,7 @@
                 try {
                     const parsed = JSON.parse(rawLatest);
                     if (parsed && isApprovedAlertPayload(parsed) && parsed.id && parsed.id !== lastSeenAlertId) {
-                        const incoming = Object.assign({}, parsed, {
-                            message: sanitizeAlertMessageForBroadcast(parsed.message)
-                        });
-                        delete incoming.sender_last_digits;
+                        const incoming = stripDonorPhoneArtifacts(parsed);
                         if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                         if (!incoming.youtube_video_id && activeYoutubeVideoId) {
                             incoming.youtube_video_id = activeYoutubeVideoId;
@@ -2462,10 +2478,7 @@
                 if (typeof window.name === "string" && window.name.startsWith(WINDOW_NAME_PREFIX)) {
                     const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
                     if (parsedName && isApprovedAlertPayload(parsedName) && parsedName.id && parsedName.id !== lastSeenAlertId) {
-                        const incomingName = Object.assign({}, parsedName, {
-                            message: sanitizeAlertMessageForBroadcast(parsedName.message)
-                        });
-                        delete incomingName.sender_last_digits;
+                        const incomingName = stripDonorPhoneArtifacts(parsedName);
                         if (!incomingName.video_url) incomingName.video_url = activeLocalVideoUrl;
                         if (!incomingName.youtube_video_id && activeYoutubeVideoId) {
                             incomingName.youtube_video_id = activeYoutubeVideoId;
@@ -2498,10 +2511,7 @@
                         renderStreamerDonations(cachedDonations);
                         handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
-                        const incoming = Object.assign({}, event.data.payload, {
-                            message: sanitizeAlertMessageForBroadcast(event.data.payload.message)
-                        });
-                        delete incoming.sender_last_digits;
+                        const incoming = stripDonorPhoneArtifacts(event.data.payload);
                         if (!isApprovedAlertPayload(incoming)) return;
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
                         if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
@@ -2530,10 +2540,7 @@
                     renderStreamerDonations(cachedDonations);
                     handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
-                    const incoming = Object.assign({}, event.data.payload, {
-                        message: sanitizeAlertMessageForBroadcast(event.data.payload.message)
-                    });
-                    delete incoming.sender_last_digits;
+                    const incoming = stripDonorPhoneArtifacts(event.data.payload);
                     if (!isApprovedAlertPayload(incoming)) return;
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
                     if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
@@ -2566,10 +2573,7 @@
                     try {
                         const parsed = JSON.parse(event.newValue);
                         if (parsed && isApprovedAlertPayload(parsed) && parsed.id && parsed.id !== lastSeenAlertId) {
-                            const incoming = Object.assign({}, parsed, {
-                                message: sanitizeAlertMessageForBroadcast(parsed.message)
-                            });
-                            delete incoming.sender_last_digits;
+                            const incoming = stripDonorPhoneArtifacts(parsed);
                             if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                             if (!incoming.youtube_video_id && activeYoutubeVideoId) {
                                 incoming.youtube_video_id = activeYoutubeVideoId;
