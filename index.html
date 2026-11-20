@@ -357,11 +357,16 @@
 
             <!-- سجل طلبات الدعم وحالة المراجعة -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <span class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
-                    <button type="button" onclick="fetchDonationsFromDb()" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold cursor-pointer">
-                        🔄 تحديث
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-clear-old-donors" type="button" onclick="clearOldSupporters()" class="text-[11px] px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold cursor-pointer transition">
+                            🧹 مسح الداعمين القدامى
+                        </button>
+                        <button type="button" onclick="fetchDonationsFromDb()" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold cursor-pointer transition">
+                            🔄 تحديث
+                        </button>
+                    </div>
                 </div>
                 <div id="recent-donations-list" class="space-y-2 max-h-60 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
@@ -498,6 +503,7 @@
         let wasCooldownActive = false;
         let copyUnlockDeadlineMs = 0;
         let wasCopyDelayRunning = false;
+        let cachedDonations = [];
         const alertQueue = [];
         let broadcastChannel = null;
 
@@ -1109,6 +1115,101 @@
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
         }
 
+        function syncDonationsState(items) {
+            const list = Array.isArray(items) ? items : [];
+            cachedDonations = list;
+            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
+            renderTopSupporters(list);
+            renderStreamerDonations(list);
+            broadcastPayload("DONATIONS_UPDATED", { items: list, synced_at: Date.now() });
+        }
+
+        async function deleteDonationFromWorker(alertUid) {
+            if (!isApiConfigured()) return;
+            const encoded = encodeURIComponent(alertUid);
+            const attempts = [
+                { url: `${API_BASE_URL}/api/donations/${encoded}`, method: "DELETE" },
+                { url: `${API_BASE_URL}/api/donations/${encoded}/delete`, method: "POST" },
+                {
+                    url: `${API_BASE_URL}/api/donations/delete`,
+                    method: "POST",
+                    body: JSON.stringify({ alert_uid: alertUid, id: alertUid })
+                }
+            ];
+
+            for (const attempt of attempts) {
+                try {
+                    const res = await fetch(attempt.url, {
+                        method: attempt.method,
+                        headers: attempt.body ? { "Content-Type": "application/json" } : undefined,
+                        body: attempt.body
+                    });
+                    if (res.ok) return true;
+                } catch (e) {}
+            }
+            return false;
+        }
+
+        async function clearOldDonationsFromWorker(uidsToDelete) {
+            if (!isApiConfigured()) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/donations/clear`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ alert_uids: uidsToDelete })
+                });
+                if (res.ok) return true;
+            } catch (e) {}
+
+            for (const uid of uidsToDelete) {
+                await deleteDonationFromWorker(uid);
+            }
+            return false;
+        }
+
+        async function deleteSingleDonation(alertUid) {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const target = sourceList.find((item) => (item.alert_uid || String(item.id)) === alertUid);
+            const label = target ? `${target.donor_name || "داعم"} (${Number(target.amount) || 0} د.ل)` : "هذا الطلب";
+
+            if (!window.confirm(`هل تريد مسح طلب الدعم الخاص بـ ${label}؟`)) {
+                return;
+            }
+
+            const remaining = sourceList.filter((item) => (item.alert_uid || String(item.id)) !== alertUid);
+            syncDonationsState(remaining);
+            await deleteDonationFromWorker(alertUid);
+            showToast(`🗑️ تم مسح طلب ${label}`);
+        }
+
+        async function clearOldSupporters() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            if (!sourceList.length) {
+                showToast("لا توجد طلبات أو داعمون قدامى لمسحهم");
+                return;
+            }
+
+            if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم القديمة؟ سيتم تحديث قائمة أبرز 3 داعمين والويدجت الشفاف.")) {
+                return;
+            }
+
+            const uidsToDelete = sourceList
+                .map((item) => item.alert_uid || String(item.id || ""))
+                .filter(Boolean);
+
+            syncDonationsState([]);
+            await clearOldDonationsFromWorker(uidsToDelete);
+            showToast("🧹 تم مسح الداعمين القدامى وتحديث القائمة");
+        }
+
         function getTopThreeSupporters(items) {
             const approvedOnly = (items || []).filter((item) => item.review_status === "approved");
             if (!approvedOnly.length) return [];
@@ -1208,9 +1309,10 @@
                             <span>الوقت: ${formatDateTime(item.created_at)}</span>
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
-                        <div class="flex items-center justify-end gap-2 pt-1">
+                        <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
                             ${canApprove ? `<button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer">✅ اعتماد وإرسال إشعار البث</button>` : ""}
                             ${canReject ? `<button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer">✕ رفض</button>` : ""}
+                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
                 `;
@@ -1220,6 +1322,7 @@
         async function fetchDonationsFromDb() {
             if (!isApiConfigured()) {
                 const localItems = getLocalDonations();
+                cachedDonations = localItems;
                 renderTopSupporters(localItems);
                 renderStreamerDonations(localItems);
                 return;
@@ -1228,12 +1331,14 @@
                 const res = await fetch(`${API_BASE_URL}/api/donations`);
                 const data = await res.json();
                 if (data && data.ok && Array.isArray(data.items)) {
+                    cachedDonations = data.items;
                     safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(data.items));
                     renderTopSupporters(data.items);
                     renderStreamerDonations(data.items);
                 }
             } catch (e) {
                 const localItems = getLocalDonations();
+                cachedDonations = localItems;
                 renderTopSupporters(localItems);
                 renderStreamerDonations(localItems);
             }
@@ -1329,6 +1434,7 @@
 
             saveLocalDonation(record);
             const updatedLocal = getLocalDonations();
+            cachedDonations = updatedLocal;
             renderTopSupporters(updatedLocal);
             renderStreamerDonations(updatedLocal);
             lastSeenAlertId = approvedAlertPayload.id;
@@ -1397,6 +1503,7 @@
                 }
                 return item;
             });
+            cachedDonations = list;
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
@@ -1695,6 +1802,11 @@
                         safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYoutubeVideoId);
                         syncStreamerPanelInputs();
                         updateYoutubeVideoStatusUI();
+                    } else if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
+                        cachedDonations = event.data.payload.items;
+                        safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
+                        renderTopSupporters(cachedDonations);
+                        renderStreamerDonations(cachedDonations);
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
@@ -1717,6 +1829,11 @@
                     safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYoutubeVideoId);
                     syncStreamerPanelInputs();
                     updateYoutubeVideoStatusUI();
+                } else if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
+                    cachedDonations = event.data.payload.items;
+                    safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
+                    renderTopSupporters(cachedDonations);
+                    renderStreamerDonations(cachedDonations);
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
@@ -1736,9 +1853,12 @@
                     activeYoutubeVideoId = extractYoutubeVideoId(event.newValue || "");
                     syncStreamerPanelInputs();
                     updateYoutubeVideoStatusUI();
-                } else if (event.key === DONATIONS_STORAGE_KEY && event.newValue) {
+                } else if (event.key === DONATIONS_STORAGE_KEY) {
                     try {
-                        renderTopSupporters(JSON.parse(event.newValue));
+                        const parsed = event.newValue ? JSON.parse(event.newValue) : [];
+                        cachedDonations = Array.isArray(parsed) ? parsed : [];
+                        renderTopSupporters(cachedDonations);
+                        renderStreamerDonations(cachedDonations);
                     } catch (e) {}
                 } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
                     try {
