@@ -428,10 +428,13 @@
                 </div>
                 <div class="space-y-1">
                     <label for="streamer-link-input" class="block text-[11px] font-bold text-amber-300">رابط الستريمر الكامل</label>
-                    <div class="flex gap-2">
-                        <input id="streamer-link-input" type="text" readonly class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-slate-200">
+                    <div class="flex flex-wrap gap-2">
+                        <input id="streamer-link-input" type="text" readonly class="flex-1 min-w-[200px] px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-slate-200">
                         <button type="button" onclick="copyRoleLink('streamer-link-input', 'تم نسخ رابط الستريمر الكامل')" class="px-3.5 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-bold text-xs cursor-pointer">
                             نسخ
+                        </button>
+                        <button id="btn-renew-top-supporters" type="button" onclick="renewTopSupportersInSupportPage()" class="px-3.5 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer transition">
+                            🔄 تجديد قائمة أبرز 3 داعمين
                         </button>
                     </div>
                 </div>
@@ -1122,6 +1125,42 @@
             renderTopSupporters(list);
             renderStreamerDonations(list);
             broadcastPayload("DONATIONS_UPDATED", { items: list, synced_at: Date.now() });
+        }
+
+        async function renewTopSupportersInSupportPage() {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+            const btn = document.getElementById("btn-renew-top-supporters");
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "⏳ جاري التجديد...";
+            }
+
+            try {
+                if (isApiConfigured()) {
+                    const res = await fetch(`${API_BASE_URL}/api/donations`);
+                    const data = await res.json();
+                    if (data && data.ok && Array.isArray(data.items)) {
+                        syncDonationsState(data.items);
+                        showToast("🔄 تم تجديد قائمة أبرز 3 داعمين في صفحة الدعم");
+                        return;
+                    }
+                }
+                const localList = getLocalDonations();
+                syncDonationsState(localList);
+                showToast("🔄 تم تجديد قائمة أبرز 3 داعمين في صفحة الدعم");
+            } catch (e) {
+                const localList = getLocalDonations();
+                syncDonationsState(localList);
+                showToast("🔄 تم تجديد قائمة أبرز 3 داعمين من البيانات المحلية");
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "🔄 تجديد قائمة أبرز 3 داعمين";
+                }
+            }
         }
 
         async function deleteDonationFromWorker(alertUid) {
