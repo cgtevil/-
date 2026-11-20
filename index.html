@@ -117,7 +117,6 @@
     <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-3.5 flex items-start justify-start pointer-events-none">
         <div class="top-overlay-card w-full max-w-[270px] space-y-2">
             <div class="flex items-center gap-2 pb-1.5 border-b border-amber-300/35">
-                <span class="text-sm leading-none frameless-text-shadow">👑</span>
                 <span class="text-xs font-black tracking-wide text-amber-300 frameless-text-shadow">أبرز 3 داعمين</span>
             </div>
             <div id="widget-top-supporters-list" class="space-y-1">
@@ -221,10 +220,7 @@
             <aside class="lg:col-span-5 space-y-6">
                 <div class="glass-card rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-black text-white flex items-center gap-2">
-                            <span>🏆</span>
-                            <span>أفضل 3 داعمين</span>
-                        </h3>
+                        <h3 class="text-lg font-black text-white">أبرز 3 داعمين</h3>
                         <span class="text-xs text-amber-300 font-bold">الدعم المعتمد</span>
                     </div>
                     <div id="top-supporters-list" class="space-y-3">
@@ -361,7 +357,7 @@
 
             <!-- رابط أبرز 3 داعمين للبث المباشر -->
             <div class="space-y-2">
-                <label class="block text-xs font-bold text-cyan-300">🏆 رابط قائمة أبرز 3 داعمين (TikTok Live Studio)</label>
+                <label class="block text-xs font-bold text-cyan-300">رابط قائمة أبرز 3 داعمين (TikTok Live Studio)</label>
                 <div class="flex gap-2">
                     <input id="top-supporters-widget-url-input" type="text" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-cyan-400/30 text-xs text-slate-200">
                     <button type="button" onclick="copyRoleLink('top-supporters-widget-url-input', 'تم نسخ رابط أبرز 3 داعمين للبث المباشر')" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs cursor-pointer">
@@ -1090,7 +1086,6 @@
             const topContainer = document.getElementById("top-supporters-list");
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
             const sorted = getTopThreeSupporters(items);
-            const medals = ["🥇", "🥈", "🥉"];
 
             if (topContainer) {
                 if (!sorted.length) {
@@ -1099,7 +1094,7 @@
                     topContainer.innerHTML = sorted.map(([name, total], idx) => `
                         <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10">
                             <div class="flex items-center gap-3">
-                                <span class="text-xl">${medals[idx] || "⭐"}</span>
+                                <span class="text-xs font-black text-amber-300">#${idx + 1}</span>
                                 <span class="font-extrabold text-sm text-white">${escapeHtml(name)}</span>
                             </div>
                             <span class="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 font-black text-xs">${total} د.ل</span>
@@ -1122,7 +1117,6 @@
                             <div class="top-supporter-row flex items-center justify-between gap-2 py-1.5">
                                 <div class="flex items-center gap-2 min-w-0">
                                     <span class="text-xs font-black shrink-0 ${rankBadgeColor} frameless-text-shadow">#${idx + 1}</span>
-                                    <span class="text-sm leading-none shrink-0 frameless-text-shadow">${medals[idx] || "⭐"}</span>
                                     <span class="font-extrabold text-xs text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
                                 </div>
                                 <span class="shrink-0 text-emerald-300 font-black text-xs frameless-text-shadow">${total} د.ل</span>
