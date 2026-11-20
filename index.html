@@ -39,10 +39,6 @@
             color: #facc15;
             text-shadow: 0 3px 12px rgba(0, 0, 0, 0.96), 0 0 4px rgba(0, 0, 0, 0.98);
         }
-        .top-board-row {
-            background: transparent;
-            border: none;
-        }
         .top-rank-circle {
             width: 34px;
             height: 34px;
@@ -119,12 +115,11 @@
 </head>
 <body class="selection:bg-emerald-500 selection:text-slate-950">
 
-    <!-- شريط التنبيهات المنبثقة (Toast) -->
     <div id="toast-box" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-3 rounded-2xl bg-slate-900/95 border border-emerald-500/40 text-emerald-300 font-bold text-sm shadow-2xl">
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار: يظهر فقط بعد القبول اليدوي من D1 -->
+    <!-- واجهة الويدجت المخصصة للبث المباشر (?widget=true) فقط -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
             <div class="full-video-stage relative flex items-center justify-center">
@@ -167,9 +162,8 @@
         </div>
     </div>
 
-    <!-- واجهة الموقع الرئيسية (صفحة الدعم للزوار) -->
+    <!-- واجهة الموقع الرئيسية (صفحة الدعم واللوحة - لا تعرض فيديو إشعارات البث) -->
     <div id="main-app-view" class="min-h-screen flex flex-col">
-        <!-- الشريط العلوي -->
         <header class="w-full border-b border-white/10 bg-slate-950/75 backdrop-blur-md sticky top-0 z-30">
             <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
@@ -181,7 +175,7 @@
                             <span>دعم البث المباشر</span>
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">@cgtevil</span>
                         </h1>
-                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار مع مراجعة الستريمر وعرض فوري بعد القبول فقط</p>
+                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار وعرض الفيديو حصراً في رابط البث بعد القبول من D1</p>
                     </div>
                 </div>
 
@@ -199,7 +193,6 @@
             </div>
         </header>
 
-        <!-- شريط القبول السريع للستريمر عند وصول طلب جديد -->
         <div id="streamer-quick-approve-bar" class="hidden border-b border-amber-400/40 bg-amber-500/15 backdrop-blur-md">
             <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-0.5">
@@ -211,7 +204,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                     <button id="btn-quick-approve" type="button" onclick="approveLatestPendingQuickly()" class="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition cursor-pointer">
-                        ✅ قبول من D1 للبث
+                        ✅ قبول من D1 لرابط البث
                     </button>
                     <button id="btn-quick-reject" type="button" onclick="rejectLatestPendingQuickly()" class="px-3.5 py-2 rounded-xl bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 text-rose-200 font-bold text-xs sm:text-sm transition cursor-pointer">
                         ❌ رفض
@@ -220,10 +213,7 @@
             </div>
         </div>
 
-        <!-- المحتوى الرئيسي -->
         <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-            <!-- العمود الأيمن: نموذج إرسال الدعم -->
             <section class="lg:col-span-7 glass-card rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
                 <div class="space-y-1">
                     <span class="inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
@@ -233,7 +223,6 @@
                     <p class="text-sm text-slate-400">اكتب اسمك واختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل وأدخل آخر 4 أرقام من رقمك واضغط "تم التحويل" ليتم إرسال طلبك للمراجعة.</p>
                 </div>
 
-                <!-- اختيار الشبكة -->
                 <div class="space-y-2">
                     <label class="block text-sm font-bold text-slate-200">1. اختر شركة الاتصالات</label>
                     <div class="grid grid-cols-2 gap-3">
@@ -254,7 +243,6 @@
                     </div>
                 </div>
 
-                <!-- اختيار المبلغ -->
                 <div class="space-y-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <label for="input-amount" class="block text-sm font-bold text-slate-200">2. حدد قيمة الدعم (د.ل)</label>
@@ -271,7 +259,6 @@
                     <input id="input-amount" type="number" min="3" max="50" step="1" value="10" oninput="syncPresetHighlights()" placeholder="أدخل المبلغ بالدينار الليبي" class="w-full mt-2 px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white font-bold">
                 </div>
 
-                <!-- اسم الداعم والرسالة -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
                         <label for="input-donor-name" class="block text-sm font-bold text-slate-200">3. اسمك على البث <span class="text-rose-400">*</span></label>
@@ -291,7 +278,6 @@
                 </div>
             </section>
 
-            <!-- العمود الأيسر: معلومات سريعة -->
             <aside class="lg:col-span-5 space-y-6">
                 <div class="glass-card rounded-3xl p-5 sm:p-6 space-y-3">
                     <h4 class="text-sm font-black text-emerald-300">كيف يعمل النظام؟</h4>
@@ -299,14 +285,14 @@
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> من رقمك المحوّل منه لتفعيل زر <strong>"تم التحويل"</strong>.</li>
-                        <li>• يُسجَّل طلبك مع <strong>رمز تتبع</strong> ولا يظهر على البث إلا بعد <strong>قبوله</strong> من خانة D1 داخل لوحة الستريمر، مع تفعيل مؤقت 5 دقائق.</li>
+                        <li>• يُسجَّل طلبك في قاعدة D1 ولا يظهر الفيديو إلا في <strong>رابط البث المباشر (?widget=true)</strong> بعد قبوله من لوحة الستريمر.</li>
                     </ul>
                 </div>
             </aside>
         </main>
     </div>
 
-    <!-- نافذة كود التحويل وتأكيد الإرسال -->
+    <!-- نافذة كود التحويل -->
     <div id="transfer-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass-card w-full max-w-md rounded-3xl p-6 space-y-4 border border-emerald-400/30 shadow-2xl">
             <div class="flex items-center justify-between">
@@ -334,7 +320,7 @@
             </div>
 
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-400/25 text-amber-200 text-xs font-bold leading-relaxed text-center">
-                ⚠️ تنبيه: الظهور على شاشة البث مشروط بقبول الطلب من خانة D1 داخل لوحة الستريمر؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
+                ⚠️ تنبيه: الظهور على رابط البث مشروط بقبول الطلب من خانة D1 داخل لوحة الستريمر؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -388,12 +374,11 @@
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                     <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgtevil)</h3>
-                    <p class="text-xs text-slate-400">مراجعة وقبول طلبات الدعم من خانة D1 وإدارة إعدادات البث</p>
+                    <p class="text-xs text-slate-400">مراجعة وقبول طلبات الدعم من خانة D1 وإرسالها مباشرة لرابط البث (?widget=true)</p>
                 </div>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
 
-            <!-- تنبيهات الصوت والإشعارات على الهاتف/المتصفح (تظهر فقط في رابط الستريمر ?role=streamer) -->
             <div id="streamer-phone-alert-box" class="hidden p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2">
                 <div class="space-y-0.5">
                     <div class="text-xs font-black text-emerald-300">تنبيه الهاتف الفوري عند وصول دعم (صوت + اهتزاز + إشعار)</div>
@@ -409,7 +394,6 @@
                 </div>
             </div>
 
-            <!-- سجل طلبات الدعم وحالة المراجعة (خانة D1) -->
             <div id="d1-approval-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/75 border border-emerald-400/30">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم وحالة الاعتماد (D1)</span>
@@ -423,7 +407,7 @@
                     </div>
                 </div>
                 <p class="text-[11px] text-amber-200/90 font-semibold">
-                    القبول يتم حصراً بالضغط على زر «✅ قبول وإرسال للبث» في كل بطاقة داخل خانة D1.
+                    القبول يرسل الطلب إلى رابط البث المباشر (?widget=true) ولا يعرض أي فيديو داخل صفحة الموقع العادية.
                 </p>
                 <div id="recent-donations-list" class="space-y-2 max-h-60 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
@@ -432,7 +416,6 @@
                 </div>
             </div>
 
-            <!-- خانة استجلاب فيديو من يوتيوب للتنبيهات (اختياري) -->
             <div class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-rose-500/30">
                 <label for="setting-youtube-video-url" class="block text-xs font-black text-rose-300">
                     ▶️ استجلاب فيديو من يوتيوب للتنبيهات (اختياري - البديل هو فيديو GitHub المباشر)
@@ -449,21 +432,19 @@
                 <div id="youtube-video-status" class="text-xs text-slate-300"></div>
             </div>
 
-            <!-- رابط الويدجت -->
             <div class="space-y-2">
-                <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio) — يعمل ويعرض فقط عند القبول من D1</label>
+                <label class="block text-xs font-bold text-amber-300">رابط البث المباشر المخصص (TikTok Live Studio) — يعرض الفيديو هنا فقط بعد القبول من D1</label>
                 <div class="flex flex-wrap gap-2">
                     <input id="widget-url-input" type="text" readonly class="flex-1 min-w-[210px] px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
                     <button type="button" onclick="copyWidgetUrl()" class="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
                         نسخ الرابط
                     </button>
-                    <a id="open-widget-link-btn" href="?widget=true#/d/cgtevil" target="_blank" rel="noopener" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-200 font-bold text-xs flex items-center">
-                        فتح الويدجت
+                    <a id="open-widget-link-btn" href="https://cgtevil.github.io/-/?widget=true#/d/cgtevil" target="_blank" rel="noopener" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-200 font-bold text-xs flex items-center">
+                        فتح رابط البث
                     </a>
                 </div>
             </div>
 
-            <!-- رابط أبرز 3 داعمين للبث المباشر -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-cyan-300">رابط قائمة أبرز 3 داعمين (TikTok Live Studio)</label>
                 <div class="flex gap-2">
@@ -474,7 +455,6 @@
                 </div>
             </div>
 
-            <!-- روابط منفصلة للداعم والستريمر -->
             <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
                 <div class="text-xs font-black text-emerald-300">روابط الوصول المنفصلة</div>
                 <div class="space-y-1">
@@ -500,12 +480,11 @@
                 </div>
             </div>
 
-            <!-- اختبار دونيشن كامل -->
             <div class="space-y-3 p-4 rounded-2xl bg-slate-950/70 border border-amber-400/20">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-black text-amber-300">اختبار إشعار البث المباشر</span>
+                    <span class="text-xs font-black text-amber-300">اختبار إرسال إشعار إلى رابط البث المباشر</span>
                     <button type="button" onclick="triggerTestAlert()" class="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition cursor-pointer">
-                        🚀 إرسال اختبار
+                        🚀 إرسال لرابط البث
                     </button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -518,18 +497,8 @@
                 </div>
                 <input id="test-donor-message" type="text" placeholder="رسالة الاختبار للبث المباشر..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
                 <div id="tiktok-test-status" class="text-xs text-emerald-300"></div>
-
-                <div id="panel-live-preview" class="hidden p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
-                    <div class="text-[11px] font-bold text-amber-300">معاينة التنبيه الفورية:</div>
-                    <div class="flex items-center justify-between text-xs">
-                        <span id="panel-preview-donor" class="font-black text-white"></span>
-                        <span id="panel-preview-amount" class="font-black text-emerald-300"></span>
-                    </div>
-                    <p id="panel-preview-message" class="text-xs text-slate-300"></p>
-                </div>
             </div>
 
-            <!-- أزرار الإغلاق -->
             <div class="flex items-center justify-between gap-3 pt-2">
                 <button type="button" onclick="logoutStreamer()" class="px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-rose-200 text-xs font-bold cursor-pointer">
                     تسجيل الخروج
@@ -565,20 +534,8 @@
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
         const NETWORK_SUPPORT_LIMITS = {
-            libyana: {
-                min: 3,
-                max: 50,
-                label: "ليبيانا",
-                prefix: "LBY",
-                presets: [3, 10, 20, 50]
-            },
-            almadar: {
-                min: 3,
-                max: 20,
-                label: "المدار",
-                prefix: "MDR",
-                presets: [3, 5, 10, 20]
-            }
+            libyana: { min: 3, max: 50, label: "ليبيانا", prefix: "LBY", presets: [3, 10, 20, 50] },
+            almadar: { min: 3, max: 20, label: "المدار", prefix: "MDR", presets: [3, 5, 10, 20] }
         };
 
         let selectedNetwork = "libyana";
@@ -648,12 +605,8 @@
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 if (!AudioCtx) return null;
-                if (!streamerAudioCtx) {
-                    streamerAudioCtx = new AudioCtx();
-                }
-                if (streamerAudioCtx.state === "suspended") {
-                    streamerAudioCtx.resume().catch(() => {});
-                }
+                if (!streamerAudioCtx) streamerAudioCtx = new AudioCtx();
+                if (streamerAudioCtx.state === "suspended") streamerAudioCtx.resume().catch(() => {});
                 return streamerAudioCtx;
             } catch (e) {
                 return null;
@@ -684,9 +637,7 @@
                 });
                 notif.onclick = () => {
                     try { window.focus(); } catch (e) {}
-                    if (isStreamerAuthenticated()) {
-                        toggleStreamerPanel(true);
-                    }
+                    if (isStreamerAuthenticated()) toggleStreamerPanel(true);
                     notif.close();
                 };
             } catch (e) {}
@@ -695,9 +646,7 @@
         function playStreamerNotificationChime(forcePlay = false) {
             if (!forcePlay && !isStreamerSoundEnabled()) return;
             try {
-                if (navigator.vibrate) {
-                    navigator.vibrate([240, 110, 280, 110, 240]);
-                }
+                if (navigator.vibrate) navigator.vibrate([240, 110, 280, 110, 240]);
             } catch (e) {}
 
             const ctx = ensureStreamerAudioContext();
@@ -711,11 +660,9 @@
                     const gain = ctx.createGain();
                     osc.type = "triangle";
                     osc.frequency.setValueAtTime(freq, now + idx * 0.13);
-
                     gain.gain.setValueAtTime(0.0001, now + idx * 0.13);
                     gain.gain.exponentialRampToValueAtTime(0.3, now + idx * 0.13 + 0.02);
                     gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.13 + 0.24);
-
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start(now + idx * 0.13);
@@ -742,11 +689,7 @@
                     ? `${canShowPhoneAlert ? "" : "hidden "}px-3.5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs sm:text-sm font-black transition cursor-pointer`
                     : `${canShowPhoneAlert ? "" : "hidden "}px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs sm:text-sm font-black text-emerald-200 transition cursor-pointer`;
             }
-
-            if (panelBox) {
-                panelBox.classList.toggle("hidden", !canShowPhoneAlert);
-            }
-
+            if (panelBox) panelBox.classList.toggle("hidden", !canShowPhoneAlert);
             if (panelBtn) {
                 panelBtn.textContent = enabled ? "🔊 مفعّل (إيقاف)" : "🔔 تفعيل التنبيه";
                 panelBtn.className = enabled
@@ -757,17 +700,14 @@
 
         function toggleStreamerSoundAlert() {
             if (!isStreamerLinkRole()) return;
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const nextState = !isStreamerSoundEnabled();
             safeStorageSet(SOUND_ENABLED_STORAGE_KEY, nextState ? "1" : "0");
             if (nextState) {
                 requestPhoneNotificationPermission();
                 ensureStreamerAudioContext();
                 playStreamerNotificationChime(true);
-                showToast("🔊 تم تفعيل تنبيه الهاتف (صوت + اهتزاز + إشعار) للطلبات الجديدة");
+                showToast("🔊 تم تفعيل تنبيه الهاتف للطلبات الجديدة");
             } else {
                 showToast("🔕 تم إيقاف تنبيه الهاتف الصوتي");
             }
@@ -778,9 +718,7 @@
             try {
                 const raw = safeStorageGet(KNOWN_PENDING_IDS_KEY);
                 const arr = raw ? JSON.parse(raw) : [];
-                if (Array.isArray(arr)) {
-                    knownPendingUidSet = new Set(arr);
-                }
+                if (Array.isArray(arr)) knownPendingUidSet = new Set(arr);
             } catch (e) {}
         }
 
@@ -795,10 +733,7 @@
             const bar = document.getElementById("streamer-quick-approve-bar");
             const countEl = document.getElementById("quick-pending-count");
             const detailsEl = document.getElementById("quick-pending-details");
-
-            const pendingList = sortDonationsPendingFirst(items).filter(
-                (x) => !x.review_status || x.review_status === "pending"
-            );
+            const pendingList = sortDonationsPendingFirst(items).filter((x) => !x.review_status || x.review_status === "pending");
 
             if (!authed) {
                 if (bar) bar.classList.add("hidden");
@@ -828,12 +763,10 @@
                     persistKnownPendingSet();
                     if (isStreamerLinkRole()) {
                         playStreamerNotificationChime(false);
-                        if (newestItem) {
-                            triggerPhoneSystemNotification(newestItem);
-                        }
+                        if (newestItem) triggerPhoneSystemNotification(newestItem);
                     }
                     if (newestItem) {
-                        showToast(`🔔 دعم جديد في D1: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل) — اقبل من لوحة الستريمر`);
+                        showToast(`🔔 دعم جديد في D1: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل)`);
                     }
                 }
             }
@@ -860,15 +793,13 @@
         async function approveLatestPendingQuickly() {
             const bar = document.getElementById("streamer-quick-approve-bar");
             const uid = bar ? bar.getAttribute("data-target-uid") : "";
-            if (!uid) return;
-            await reviewDonation(uid, "approve");
+            if (uid) await reviewDonation(uid, "approve");
         }
 
         async function rejectLatestPendingQuickly() {
             const bar = document.getElementById("streamer-quick-approve-bar");
             const uid = bar ? bar.getAttribute("data-target-uid") : "";
-            if (!uid) return;
-            await reviewDonation(uid, "reject");
+            if (uid) await reviewDonation(uid, "reject");
         }
 
         function getOrCreateDeviceId() {
@@ -905,9 +836,7 @@
             const input = document.getElementById("input-sender-last-digits");
             if (!input) return;
             const cleaned = input.value.replace(/[^0-9]/g, "").slice(0, 4);
-            if (input.value !== cleaned) {
-                input.value = cleaned;
-            }
+            if (input.value !== cleaned) input.value = cleaned;
             updateTransferCooldownUI();
         }
 
@@ -920,11 +849,7 @@
                     nameInput.classList.add("border-rose-500");
                     setTimeout(() => nameInput.classList.remove("border-rose-500"), 1800);
                 }
-                return {
-                    valid: false,
-                    name: "",
-                    message: "⚠️ يرجى إدخال اسمك على البث أولاً قبل المتابعة"
-                };
+                return { valid: false, name: "", message: "⚠️ يرجى إدخال اسمك على البث أولاً قبل المتابعة" };
             }
             return { valid: true, name, message: "" };
         }
@@ -932,25 +857,11 @@
         function validateSupportAmount(rawAmount, net = selectedNetwork) {
             const limits = getNetworkLimits(net);
             const amount = Number(rawAmount);
-            if (!Number.isFinite(amount) || amount <= 0) {
+            if (!Number.isFinite(amount) || amount <= 0 || amount < limits.min || amount > limits.max) {
                 return {
                     valid: false,
                     amount: 0,
-                    message: `⚠️ يرجى إدخال مبلغ صحيح بين ${limits.min} و ${limits.max} د.ل لشبكة ${limits.label}`
-                };
-            }
-            if (amount < limits.min) {
-                return {
-                    valid: false,
-                    amount,
-                    message: `⚠️ الحد الأدنى للدعم عبر ${limits.label} هو ${limits.min} د.ل`
-                };
-            }
-            if (amount > limits.max) {
-                return {
-                    valid: false,
-                    amount,
-                    message: `⚠️ الحد الأقصى للدعم عبر ${limits.label} هو ${limits.max} د.ل`
+                    message: `⚠️ المبلغ يجب أن يكون بين ${limits.min} و ${limits.max} د.ل لشبكة ${limits.label}`
                 };
             }
             return { valid: true, amount, message: "" };
@@ -960,7 +871,6 @@
             const grid = document.getElementById("preset-amounts-grid");
             const limits = getNetworkLimits(selectedNetwork);
             if (!grid) return;
-
             grid.innerHTML = limits.presets.map((val) => `
                 <button type="button" data-preset="${val}" onclick="setPresetAmount(${val})" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">${val} د.ل</button>
             `).join("");
@@ -987,25 +897,19 @@
             const limits = getNetworkLimits(selectedNetwork);
             const amountInput = document.getElementById("input-amount");
             const badgeEl = document.getElementById("amount-limits-badge");
-
             if (amountInput) {
                 amountInput.min = String(limits.min);
                 amountInput.max = String(limits.max);
                 const currentNum = Number(amountInput.value);
-                if (!Number.isFinite(currentNum) || currentNum < limits.min) {
-                    amountInput.value = String(limits.min);
-                } else if (currentNum > limits.max) {
-                    amountInput.value = String(limits.max);
-                }
+                if (!Number.isFinite(currentNum) || currentNum < limits.min) amountInput.value = String(limits.min);
+                else if (currentNum > limits.max) amountInput.value = String(limits.max);
             }
-
             if (badgeEl) {
                 badgeEl.textContent = `${limits.label}: الحد الأدنى ${limits.min} د.ل • الحد الأقصى ${limits.max} د.ل`;
                 badgeEl.className = selectedNetwork === "almadar"
                     ? "text-xs font-extrabold text-sky-300 bg-sky-500/10 border border-sky-500/25 px-2.5 py-0.5 rounded-full"
                     : "text-xs font-extrabold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 rounded-full";
             }
-
             renderPresetButtons();
         }
 
@@ -1013,24 +917,17 @@
             if (!rawInput || typeof rawInput !== "string") return "";
             const trimmed = rawInput.trim();
             if (!trimmed) return "";
-
-            if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
-                return trimmed;
-            }
-
+            if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
             try {
                 const parsed = new URL(trimmed);
                 const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
-
                 if (host === "youtu.be") {
                     const id = parsed.pathname.split("/").filter(Boolean)[0] || "";
                     return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : "";
                 }
-
                 if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
                     const vParam = parsed.searchParams.get("v") || "";
                     if (/^[a-zA-Z0-9_-]{11}$/.test(vParam)) return vParam;
-
                     const parts = parsed.pathname.split("/").filter(Boolean);
                     const embedIdx = parts.findIndex((p) => p === "embed" || p === "shorts" || p === "live" || p === "v");
                     if (embedIdx !== -1 && parts[embedIdx + 1] && /^[a-zA-Z0-9_-]{11}$/.test(parts[embedIdx + 1])) {
@@ -1038,7 +935,6 @@
                     }
                 }
             } catch (e) {}
-
             return "";
         }
 
@@ -1048,16 +944,12 @@
 
         function buildYoutubeEmbedUrl(videoId) {
             if (!videoId) return "";
-            const params = new URLSearchParams({
-                autoplay: "1",
-                rel: "0",
-                modestbranding: "1",
-                playsinline: "1"
-            });
+            const params = new URLSearchParams({ autoplay: "1", rel: "0", modestbranding: "1", playsinline: "1" });
             return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?${params.toString()}`;
         }
 
         function preloadLocalVideo(url) {
+            if (!isWidgetMode()) return;
             const videoEl = document.getElementById("alert-local-video");
             if (!videoEl || !url) return;
             if (videoEl.getAttribute("data-src") !== url) {
@@ -1071,75 +963,44 @@
 
         function loadSavedYoutubeSettings() {
             const rawSaved = safeStorageGet(YOUTUBE_VIDEO_STORAGE_KEY);
-            if (rawSaved !== null) {
-                activeYoutubeVideoId = extractYoutubeVideoId(rawSaved);
-            } else {
-                activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
-            }
+            activeYoutubeVideoId = rawSaved !== null ? extractYoutubeVideoId(rawSaved) : DEFAULT_YOUTUBE_VIDEO_ID;
         }
 
         function updateYoutubeVideoStatusUI() {
             const ytInput = document.getElementById("setting-youtube-video-url");
             const statusEl = document.getElementById("youtube-video-status");
-            if (ytInput && !ytInput.value && activeYoutubeVideoId) {
-                ytInput.value = buildYoutubeWatchUrl(activeYoutubeVideoId);
-            }
+            if (ytInput && !ytInput.value && activeYoutubeVideoId) ytInput.value = buildYoutubeWatchUrl(activeYoutubeVideoId);
             if (!statusEl) return;
-
             if (activeYoutubeVideoId) {
-                statusEl.textContent = `✅ تم استجلاب فيديو يوتيوب (${activeYoutubeVideoId}) وسيُعرض فقط بعد قبول الطلب من D1.`;
+                statusEl.textContent = `✅ فيديو يوتيوب (${activeYoutubeVideoId}) مفعّل وسيُعرض فقط في رابط البث (?widget=true) بعد القبول من D1.`;
                 statusEl.className = "text-xs text-rose-300 font-bold";
             } else {
-                statusEl.textContent = `يتم استخدام الفيديو المحلي المباشر (${DEFAULT_LOCAL_VIDEO_URL}) فقط بعد قبول الطلب من D1.`;
+                statusEl.textContent = `يتم عرض الفيديو في رابط البث المباشر (?widget=true) فقط بعد القبول من D1.`;
                 statusEl.className = "text-xs text-emerald-300 font-semibold";
             }
         }
 
         function applyYoutubeAlertVideo() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const input = document.getElementById("setting-youtube-video-url");
             const videoId = extractYoutubeVideoId(input ? input.value : "");
-            if (!videoId) {
-                showToast("⚠️ يرجى إدخال رابط يوتيوب صحيح أو معرّف فيديو صالح");
-                return;
-            }
-
+            if (!videoId) { showToast("⚠️ يرجى إدخال رابط يوتيوب صحيح"); return; }
             activeYoutubeVideoId = videoId;
             safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYoutubeVideoId);
-
-            broadcastPayload("STREAMER_YOUTUBE_VIDEO_UPDATED", {
-                youtube_video_id: activeYoutubeVideoId,
-                synced_at: Date.now()
-            });
-
             syncStreamerPanelInputs();
             updateYoutubeVideoStatusUI();
-            showToast("✅ تم استجلاب فيديو يوتيوب للتنبيهات");
+            showToast("✅ تم حفظ فيديو يوتيوب لرابط البث المباشر");
         }
 
         function clearYoutubeAlertVideo() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             activeYoutubeVideoId = "";
             safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, "");
-
             const input = document.getElementById("setting-youtube-video-url");
             if (input) input.value = "";
-
-            broadcastPayload("STREAMER_YOUTUBE_VIDEO_UPDATED", {
-                youtube_video_id: "",
-                synced_at: Date.now()
-            });
-
-            preloadLocalVideo(activeLocalVideoUrl);
             syncStreamerPanelInputs();
             updateYoutubeVideoStatusUI();
-            showToast("تمت العودة إلى الفيديو المحلي المباشر");
+            showToast("تمت العودة إلى الفيديو المباشر في رابط البث");
         }
 
         function isApiConfigured() {
@@ -1157,10 +1018,7 @@
         function getLastTransferTimestampMs() {
             const devRaw = Number(safeStorageGet(getDeviceCooldownKey()) || 0);
             const legacyRaw = Number(safeStorageGet(TRANSFER_COOLDOWN_KEY) || 0);
-            return Math.max(
-                Number.isFinite(devRaw) ? devRaw : 0,
-                Number.isFinite(legacyRaw) ? legacyRaw : 0
-            );
+            return Math.max(Number.isFinite(devRaw) ? devRaw : 0, Number.isFinite(legacyRaw) ? legacyRaw : 0);
         }
 
         function getRemainingCooldownMs() {
@@ -1225,18 +1083,13 @@
                     showBtn.disabled = true;
                     showBtn.textContent = `⏳ متاح بعد ${formatted} لإجراء تحويل آخر`;
                     showBtn.classList.add("opacity-60", "cursor-not-allowed");
-                    showBtn.classList.remove("cursor-pointer");
                 }
                 if (confirmBtn) {
                     confirmBtn.disabled = true;
                     confirmBtn.textContent = `⏳ مؤقت 5 دقائق نشط (${formatted})`;
                     confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
-                    confirmBtn.classList.remove("cursor-pointer");
                 }
-                if (copyReqEl) {
-                    copyReqEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل (${formatted}).`;
-                    copyReqEl.className = "text-center text-xs font-bold text-amber-300";
-                }
+                if (copyReqEl) copyReqEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل (${formatted}).`;
                 if (hintEl) {
                     hintEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل؛ يمكنك إجراء تحويل آخر بعد ${formatted}`;
                     hintEl.classList.remove("hidden");
@@ -1244,10 +1097,7 @@
                 return;
             }
 
-            if (wasCooldownActive) {
-                wasCooldownActive = false;
-                showToast("✅ انتهى مؤقت الـ 5 دقائق، يمكنك إجراء تحويل جديد الآن");
-            }
+            wasCooldownActive = false;
             if (showBtn) {
                 showBtn.disabled = false;
                 showBtn.textContent = "⚡ إظهار كود التحويل السريع";
@@ -1256,11 +1106,6 @@
             }
 
             const isCopyUnlocked = copyUnlockDeadlineMs > 0 && Date.now() >= copyUnlockDeadlineMs;
-            if (wasCopyDelayRunning && isCopyUnlocked) {
-                wasCopyDelayRunning = false;
-                showToast("✅ اكتملت 20 ثانية بعد النسخ");
-            }
-
             const canEnableConfirm = isCopyUnlocked && digitsOk;
             if (confirmBtn) {
                 if (canEnableConfirm) {
@@ -1270,21 +1115,16 @@
                     confirmBtn.classList.add("cursor-pointer");
                 } else {
                     confirmBtn.disabled = true;
-                    if (!copyUnlockDeadlineMs) {
-                        confirmBtn.textContent = "🔒 تم التحويل (انسخ الكود وأدخل 4 أرقام)";
-                    } else if (remainingCopySec > 0) {
-                        confirmBtn.textContent = `⏳ انتظر ${remainingCopySec}ث وأدخل 4 أرقام (${digitsVal.length}/4)`;
-                    } else {
-                        confirmBtn.textContent = `🔒 أدخل آخر 4 أرقام من رقمك (${digitsVal.length}/4)`;
-                    }
+                    if (!copyUnlockDeadlineMs) confirmBtn.textContent = "🔒 تم التحويل (انسخ الكود وأدخل 4 أرقام)";
+                    else if (remainingCopySec > 0) confirmBtn.textContent = `⏳ انتظر ${remainingCopySec}ث وأدخل 4 أرقام (${digitsVal.length}/4)`;
+                    else confirmBtn.textContent = `🔒 أدخل آخر 4 أرقام من رقمك (${digitsVal.length}/4)`;
                     confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
-                    confirmBtn.classList.remove("cursor-pointer");
                 }
             }
 
             if (copyReqEl) {
                 if (canEnableConfirm) {
-                    copyReqEl.textContent = "✅ اكتملت الشروط (نسخ الكود + 20 ثانية + 4 أرقام)؛ يمكنك الآن الضغط على \"تم التحويل\".";
+                    copyReqEl.textContent = "✅ اكتملت الشروط؛ يمكنك الآن الضغط على \"تم التحويل\".";
                     copyReqEl.className = "text-center text-xs font-bold text-emerald-300";
                 } else if (!copyUnlockDeadlineMs) {
                     copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً وانتظر 20 ثانية مع إدخال آخر 4 أرقام من رقمك.";
@@ -1293,15 +1133,11 @@
                     copyReqEl.textContent = `متبقي ${remainingCopySec} ثانية بعد النسخ، وتأكد من إدخال 4 أرقام (${digitsVal.length}/4).`;
                     copyReqEl.className = "text-center text-xs font-bold text-sky-300";
                 } else {
-                    copyReqEl.textContent = `⚠️ يرجى إدخال آخر 4 أرقام من رقمك المحوّل منه (${digitsVal.length}/4) لتفعيل زر "تم التحويل".`;
+                    copyReqEl.textContent = `⚠️ يرجى إدخال آخر 4 أرقام من رقمك المحوّل منه (${digitsVal.length}/4).`;
                     copyReqEl.className = "text-center text-xs font-bold text-amber-300";
                 }
             }
-
-            if (hintEl) {
-                hintEl.textContent = "";
-                hintEl.classList.add("hidden");
-            }
+            if (hintEl) { hintEl.textContent = ""; hintEl.classList.add("hidden"); }
         }
 
         function showToast(message) {
@@ -1311,22 +1147,14 @@
             textEl.textContent = message;
             box.classList.remove("hidden");
             clearTimeout(window.__toastTimer);
-            window.__toastTimer = setTimeout(() => {
-                box.classList.add("hidden");
-            }, 3400);
+            window.__toastTimer = setTimeout(() => box.classList.add("hidden"), 3400);
         }
 
         function formatDateTime(isoStr) {
             if (!isoStr) return "الآن";
             const d = new Date(isoStr);
             if (Number.isNaN(d.getTime())) return isoStr;
-            return d.toLocaleString("ar-LY", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit"
-            });
+            return d.toLocaleString("ar-LY", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
         }
 
         function getNetworkLabel(net) {
@@ -1335,7 +1163,7 @@
 
         function getStatusBadge(status, notified) {
             if (status === "approved") {
-                const alertTag = Number(notified) === 1 ? " • بانتظار العرض على البث" : " • تم العرض";
+                const alertTag = Number(notified) === 1 ? " • بانتظار العرض في رابط البث" : " • تم الإرسال للبث";
                 return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">مقبول${alertTag}</span>`;
             }
             if (status === "rejected") {
@@ -1389,12 +1217,7 @@
             const input = document.getElementById(inputId);
             if (!input) return;
             input.select();
-            try {
-                document.execCommand("copy");
-                showToast(`✅ ${toastMessage}`);
-            } catch (e) {
-                showToast("انسخ الرابط الظاهر في الخانة يدوياً");
-            }
+            try { document.execCommand("copy"); showToast(`✅ ${toastMessage}`); } catch (e) {}
         }
 
         function isStreamerAuthenticated() {
@@ -1425,7 +1248,6 @@
             const authed = isStreamerAuthenticated();
             const loginBtn = document.getElementById("btn-open-login");
             const panelBtn = document.getElementById("btn-open-panel");
-
             if (role === "donor") {
                 if (loginBtn) loginBtn.classList.add("hidden");
                 if (panelBtn) panelBtn.classList.add("hidden");
@@ -1462,10 +1284,7 @@
         }
 
         function openLoginModal() {
-            if (getAccessRole() === "donor") {
-                showToast("هذا الرابط مخصص للداعم فقط");
-                return;
-            }
+            if (getAccessRole() === "donor") { showToast("هذا الرابط مخصص للداعم فقط"); return; }
             clearLoginError();
             document.getElementById("login-username").value = "";
             document.getElementById("login-password").value = "";
@@ -1480,39 +1299,21 @@
         function submitStreamerLogin() {
             const user = document.getElementById("login-username").value.trim();
             const pass = document.getElementById("login-password").value;
-
-            if (!user && !pass) {
-                setLoginError("⚠️ خطأ: يرجى إدخال اسم المستخدم وكلمة المرور.", true, true);
-                return;
-            }
-            if (!user) {
-                setLoginError("⚠️ خطأ: يرجى إدخال اسم المستخدم.", true, false);
-                return;
-            }
-            if (!pass) {
-                setLoginError("⚠️ خطأ: يرجى إدخال كلمة المرور.", false, true);
-                return;
-            }
+            if (!user && !pass) { setLoginError("⚠️ خطأ: يرجى إدخال اسم المستخدم وكلمة المرور.", true, true); return; }
+            if (!user) { setLoginError("⚠️ خطأ: يرجى إدخال اسم المستخدم.", true, false); return; }
+            if (!pass) { setLoginError("⚠️ خطأ: يرجى إدخال كلمة المرور.", false, true); return; }
 
             if (user === CORRECT_STREAMER_USER && pass === CORRECT_STREAMER_PASS) {
                 clearLoginError();
-                const sessionData = JSON.stringify({
-                    user: CORRECT_STREAMER_USER,
-                    verified: true,
-                    ts: Date.now()
-                });
+                const sessionData = JSON.stringify({ user: CORRECT_STREAMER_USER, verified: true, ts: Date.now() });
                 safeStorageSet(AUTH_STORAGE_KEY, sessionData);
                 try { sessionStorage.setItem(AUTH_STORAGE_KEY, sessionData); } catch (e) {}
-
                 if (isStreamerLinkRole()) {
-                    if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) {
-                        safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
-                    }
+                    if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
                     requestPhoneNotificationPermission();
                     ensureStreamerAudioContext();
                     playStreamerNotificationChime(true);
                 }
-
                 closeLoginModal();
                 updateAuthUI();
                 startStreamerBackgroundPolling();
@@ -1520,17 +1321,12 @@
                 showToast("✅ تم تسجيل دخول الستريمر وحفظ الجلسة");
                 toggleStreamerPanel(true);
             } else {
-                const wrongUser = user !== CORRECT_STREAMER_USER;
-                const wrongPass = pass !== CORRECT_STREAMER_PASS;
-                setLoginError("❌ خطأ: اسم المستخدم أو كلمة المرور غير صحيحة.", wrongUser, wrongPass);
+                setLoginError("❌ خطأ: اسم المستخدم أو كلمة المرور غير صحيحة.", user !== CORRECT_STREAMER_USER, pass !== CORRECT_STREAMER_PASS);
             }
         }
 
         function toggleStreamerPanel(show) {
-            if (show && !isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (show && !isStreamerAuthenticated()) { openLoginModal(); return; }
             const panel = document.getElementById("streamer-panel-modal");
             if (!panel) return;
             if (show) {
@@ -1549,9 +1345,7 @@
                 ? `${window.location.origin}${window.location.pathname}`
                 : TARGET_WIDGET_URL.split("?")[0];
             const query = new URLSearchParams({ widget: "true" });
-            if (activeYoutubeVideoId) {
-                query.set("yt", activeYoutubeVideoId);
-            }
+            if (activeYoutubeVideoId) query.set("yt", activeYoutubeVideoId);
             return `${currentBase}?${query.toString()}#/d/cgtevil`;
         }
 
@@ -1584,12 +1378,7 @@
             if (!input) return;
             input.value = buildShareableWidgetUrl();
             input.select();
-            try {
-                document.execCommand("copy");
-                showToast("✅ تم نسخ رابط الويدجت");
-            } catch (e) {
-                showToast("انسخ الرابط يدوياً");
-            }
+            try { document.execCommand("copy"); showToast("✅ تم نسخ رابط البث المباشر"); } catch (e) {}
         }
 
         function selectNetwork(net) {
@@ -1621,16 +1410,10 @@
                 return;
             }
             const nameCheck = validateDonorName();
-            if (!nameCheck.valid) {
-                showToast(nameCheck.message);
-                return;
-            }
-            const rawAmount = document.getElementById("input-amount").value;
-            const check = validateSupportAmount(rawAmount, selectedNetwork);
-            if (!check.valid) {
-                showToast(check.message);
-                return;
-            }
+            if (!nameCheck.valid) { showToast(nameCheck.message); return; }
+            const check = validateSupportAmount(document.getElementById("input-amount").value, selectedNetwork);
+            if (!check.valid) { showToast(check.message); return; }
+
             const amount = check.amount;
             const donorName = nameCheck.name;
             const phone = selectedNetwork === "libyana" ? DEFAULT_LIBYANA_PHONE : DEFAULT_ALMADAR_PHONE;
@@ -1702,9 +1485,7 @@
             return list.sort((a, b) => {
                 const diff = rank(a.review_status) - rank(b.review_status);
                 if (diff !== 0) return diff;
-                const ta = new Date(a.created_at || 0).getTime() || 0;
-                const tb = new Date(b.created_at || 0).getTime() || 0;
-                return tb - ta;
+                return (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0);
             });
         }
 
@@ -1715,20 +1496,12 @@
             renderTopSupporters(list);
             renderStreamerDonations(list);
             handleStreamerPendingAlertsAndQuickBar(list);
-            broadcastPayload("DONATIONS_UPDATED", { items: list, synced_at: Date.now() });
         }
 
         async function renewTopSupportersInSupportPage() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const btn = document.getElementById("btn-renew-top-supporters");
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = "⏳ جاري التجديد...";
-            }
-
+            if (btn) { btn.disabled = true; btn.textContent = "⏳ جاري التجديد..."; }
             try {
                 if (isApiConfigured()) {
                     const res = await fetch(`${API_BASE_URL}/api/donations`);
@@ -1739,44 +1512,22 @@
                         return;
                     }
                 }
-                const localList = getLocalDonations();
-                syncDonationsState(localList);
+                syncDonationsState(getLocalDonations());
                 showToast("🔄 تم تجديد قائمة أبرز 3 داعمين");
             } catch (e) {
-                const localList = getLocalDonations();
-                syncDonationsState(localList);
-                showToast("🔄 تم تجديد قائمة أبرز 3 داعمين من البيانات المحلية");
+                syncDonationsState(getLocalDonations());
             } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = "🔄 تجديد قائمة أبرز 3 داعمين";
-                }
+                if (btn) { btn.disabled = false; btn.textContent = "🔄 تجديد قائمة أبرز 3 داعمين"; }
             }
         }
 
         async function deleteDonationFromWorker(alertUid) {
             if (!isApiConfigured()) return;
             const encoded = encodeURIComponent(alertUid);
-            const attempts = [
-                { url: `${API_BASE_URL}/api/donations/${encoded}`, method: "DELETE" },
-                { url: `${API_BASE_URL}/api/donations/${encoded}/delete`, method: "POST" },
-                {
-                    url: `${API_BASE_URL}/api/donations/delete`,
-                    method: "POST",
-                    body: JSON.stringify({ alert_uid: alertUid, id: alertUid })
-                }
-            ];
-
-            for (const attempt of attempts) {
-                try {
-                    const res = await fetch(attempt.url, {
-                        method: attempt.method,
-                        headers: attempt.body ? { "Content-Type": "application/json" } : undefined,
-                        body: attempt.body
-                    });
-                    if (res.ok) return true;
-                } catch (e) {}
-            }
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/donations/${encoded}`, { method: "DELETE" });
+                if (res.ok) return true;
+            } catch (e) {}
             return false;
         }
 
@@ -1790,26 +1541,15 @@
                 });
                 if (res.ok) return true;
             } catch (e) {}
-
-            for (const uid of uidsToDelete) {
-                await deleteDonationFromWorker(uid);
-            }
             return false;
         }
 
         async function deleteSingleDonation(alertUid) {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
             const target = sourceList.find((item) => (item.alert_uid || String(item.id)) === alertUid);
             const label = target ? `${target.donor_name || "داعم"} (${Number(target.amount) || 0} د.ل)` : "هذا الطلب";
-
-            if (!window.confirm(`هل تريد مسح طلب الدعم الخاص بـ ${label}؟`)) {
-                return;
-            }
-
+            if (!window.confirm(`هل تريد مسح طلب الدعم الخاص بـ ${label}؟`)) return;
             const remaining = sourceList.filter((item) => (item.alert_uid || String(item.id)) !== alertUid);
             syncDonationsState(remaining);
             await deleteDonationFromWorker(alertUid);
@@ -1817,48 +1557,30 @@
         }
 
         async function clearOldSupporters() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const sourceList = cachedDonations.length ? cachedDonations : getLocalDonations();
-            if (!sourceList.length) {
-                showToast("لا توجد طلبات أو داعمون قدامى لمسحهم");
-                return;
-            }
-
-            if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم القديمة؟ سيتم تحديث قائمة أبرز 3 داعمين والويدجت الشفاف.")) {
-                return;
-            }
-
-            const uidsToDelete = sourceList
-                .map((item) => item.alert_uid || String(item.id || ""))
-                .filter(Boolean);
-
+            if (!sourceList.length) { showToast("لا توجد طلبات قديمة لمسحها"); return; }
+            if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم القديمة؟")) return;
+            const uidsToDelete = sourceList.map((item) => item.alert_uid || String(item.id || "")).filter(Boolean);
             syncDonationsState([]);
             await clearOldDonationsFromWorker(uidsToDelete);
-            showToast("🧹 تم مسح الداعمين القدامى وتحديث القائمة");
+            showToast("🧹 تم مسح الداعمين القدامى");
         }
 
         function getTopThreeSupporters(items) {
             const approvedOnly = (items || []).filter((item) => item.review_status === "approved");
             if (!approvedOnly.length) return [];
-
             const totalsMap = new Map();
             approvedOnly.forEach((item) => {
                 const name = item.donor_name || "داعم مجهول";
                 const amt = Number(item.amount) || 0;
                 totalsMap.set(name, (totalsMap.get(name) || 0) + amt);
             });
-
-            return Array.from(totalsMap.entries())
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3);
+            return Array.from(totalsMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
         }
 
         function formatSupporterAmount(total) {
-            const num = Number(total) || 0;
-            return `${num.toFixed(2)} د.ل`;
+            return `${(Number(total) || 0).toFixed(2)} د.ل`;
         }
 
         function getSupporterInitial(name) {
@@ -1869,30 +1591,24 @@
         function renderTopSupporters(items) {
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
             const sorted = getTopThreeSupporters(items);
-
-            if (widgetTopContainer) {
-                if (!sorted.length) {
-                    widgetTopContainer.innerHTML = `<div class="py-2 text-sm text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
-                } else {
-                    widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => {
-                        const rankClass = idx === 0
-                            ? "top-rank-1"
-                            : idx === 1
-                                ? "top-rank-2"
-                                : "top-rank-3";
-                        const initial = escapeHtml(getSupporterInitial(name));
-                        return `
-                            <div class="top-board-row flex items-center justify-between gap-4 py-1.5">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <span class="top-rank-circle ${rankClass}">${idx + 1}</span>
-                                    <span class="top-avatar-ring">${initial}</span>
-                                    <span class="font-black text-xl sm:text-2xl text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
-                                </div>
-                                <span class="shrink-0 text-amber-300 font-black text-xl sm:text-2xl frameless-text-shadow">${formatSupporterAmount(total)}</span>
+            if (!widgetTopContainer) return;
+            if (!sorted.length) {
+                widgetTopContainer.innerHTML = `<div class="py-2 text-sm text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
+            } else {
+                widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => {
+                    const rankClass = idx === 0 ? "top-rank-1" : idx === 1 ? "top-rank-2" : "top-rank-3";
+                    const initial = escapeHtml(getSupporterInitial(name));
+                    return `
+                        <div class="top-board-row flex items-center justify-between gap-4 py-1.5">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="top-rank-circle ${rankClass}">${idx + 1}</span>
+                                <span class="top-avatar-ring">${initial}</span>
+                                <span class="font-black text-xl sm:text-2xl text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
                             </div>
-                        `;
-                    }).join("");
-                }
+                            <span class="shrink-0 text-amber-300 font-black text-xl sm:text-2xl frameless-text-shadow">${formatSupporterAmount(total)}</span>
+                        </div>
+                    `;
+                }).join("");
             }
         }
 
@@ -1900,21 +1616,17 @@
             const container = document.getElementById("recent-donations-list");
             const titleEl = document.getElementById("donations-panel-title");
             if (!container) return;
-
             const ordered = sortDonationsPendingFirst(items);
             const pendingCount = ordered.filter((x) => !x.review_status || x.review_status === "pending").length;
-
             if (titleEl) {
                 titleEl.textContent = pendingCount > 0
                     ? `طلبات الدعم وحالة الاعتماد (D1) • بانتظار القبول/الرفض: ${pendingCount}`
                     : "طلبات الدعم وحالة الاعتماد (D1)";
             }
-
             if (!ordered.length) {
                 container.innerHTML = `<div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">لا توجد طلبات دعم في قاعدة البيانات حتى الآن.</div>`;
                 return;
             }
-
             container.innerHTML = ordered.map((item) => {
                 const uid = item.alert_uid || String(item.id);
                 const status = item.review_status || "pending";
@@ -1952,10 +1664,7 @@
         async function fetchDonationsFromDb() {
             if (!isApiConfigured()) {
                 const localItems = getLocalDonations();
-                cachedDonations = localItems;
-                renderTopSupporters(localItems);
-                renderStreamerDonations(localItems);
-                handleStreamerPendingAlertsAndQuickBar(localItems);
+                syncDonationsState(localItems);
                 return;
             }
             try {
@@ -1981,60 +1690,39 @@
             clearInterval(window.__streamerPendingPollInterval);
             if (!isStreamerAuthenticated()) return;
             window.__streamerPendingPollInterval = setInterval(() => {
-                if (isStreamerAuthenticated()) {
-                    fetchDonationsFromDb();
-                }
+                if (isStreamerAuthenticated()) fetchDonationsFromDb();
             }, 4000);
         }
 
         async function confirmAndDispatchSupport() {
             const senderLastDigits = getSenderLastDigitsInput();
             if (!/^\d{4}$/.test(senderLastDigits)) {
-                const digitsInput = document.getElementById("input-sender-last-digits");
-                if (digitsInput) {
-                    digitsInput.focus();
-                    digitsInput.classList.add("border-rose-500");
-                    setTimeout(() => digitsInput.classList.remove("border-rose-500"), 1800);
-                }
-                showToast("⚠️ يرجى إدخال آخر 4 أرقام من رقم هاتفك المحوّل منه لتفعيل زر \"تم التحويل\"");
+                showToast("⚠️ يرجى إدخال آخر 4 أرقام من رقم هاتفك المحوّل منه");
                 updateTransferCooldownUI();
                 return;
             }
-
             if (!copyUnlockDeadlineMs || Date.now() < copyUnlockDeadlineMs) {
                 const remSec = getRemainingCopySeconds();
-                showToast(remSec > 0
-                    ? `⏳ يرجى انتظار ${remSec} ثانية بعد نسخ الكود لتفعيل الزر`
-                    : "⚠️ يرجى الضغط على \"نسخ الكود\" أولاً والانتظار 20 ثانية");
+                showToast(remSec > 0 ? `⏳ يرجى انتظار ${remSec} ثانية بعد نسخ الكود` : "⚠️ اضغط على \"نسخ الكود\" أولاً وانتظر 20 ثانية");
                 updateTransferCooldownUI();
                 return;
             }
-
             const remainingMs = getRemainingCooldownMs();
             if (remainingMs > 0) {
                 updateTransferCooldownUI();
                 showToast(`⏳ يرجى الانتظار ${formatCountdown(remainingMs)} قبل إجراء تحويل آخر`);
                 return;
             }
-
             const nameCheck = validateDonorName();
-            if (!nameCheck.valid) {
-                showToast(nameCheck.message);
-                return;
-            }
+            if (!nameCheck.valid) { showToast(nameCheck.message); return; }
+            const check = validateSupportAmount(document.getElementById("input-amount").value, selectedNetwork);
+            if (!check.valid) { showToast(check.message); return; }
 
-            const rawAmount = document.getElementById("input-amount").value;
-            const check = validateSupportAmount(rawAmount, selectedNetwork);
-            if (!check.valid) {
-                showToast(check.message);
-                return;
-            }
             const amount = check.amount;
             const donorName = nameCheck.name;
             const rawMessage = document.getElementById("input-donor-message").value.trim() || "دعم مباشر للبث!";
             const trackingCode = pendingTrackingCode || generateTrackingCode(selectedNetwork);
-            const digitsTag = ` [رقم:${senderLastDigits}]`;
-            const messageWithRef = `${rawMessage} [${trackingCode}]${digitsTag}`;
+            const messageWithRef = `${rawMessage} [${trackingCode}] [رقم:${senderLastDigits}]`;
             const elapsedSeconds = transferModalOpenedAtMs ? Math.max(1, Math.round((Date.now() - transferModalOpenedAtMs) / 1000)) : 20;
             const alertUid = "alert_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
 
@@ -2066,11 +1754,7 @@
                         body: JSON.stringify(record)
                     });
                     const data = await res.json();
-                    if (!data.ok) {
-                        showToast(`⚠️ تعذر حفظ الطلب: ${data.error || "خطأ"}`);
-                        return;
-                    }
-
+                    if (!data.ok) { showToast(`⚠️ تعذر حفظ الطلب: ${data.error || "خطأ"}`); return; }
                     await fetchDonationsFromDb();
                     pendingTrackingCode = "";
                     transferModalOpenedAtMs = 0;
@@ -2079,7 +1763,7 @@
                     wasCopyDelayRunning = false;
                     closeTransferModal();
                     startTransferCooldown();
-                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) إلى خانة D1؛ لن يظهر على البث إلا بعد قبوله من لوحة الستريمر`);
+                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) إلى D1؛ سيظهر الفيديو في رابط البث بعد قبوله`);
                     return;
                 } catch (e) {
                     showToast("⚠️ تعذر الاتصال بالخادم، تم تسجيل الطلب محلياً قيد المراجعة");
@@ -2087,11 +1771,7 @@
             }
 
             saveLocalDonation(record);
-            const updatedLocal = getLocalDonations();
-            cachedDonations = updatedLocal;
-            renderTopSupporters(updatedLocal);
-            renderStreamerDonations(updatedLocal);
-            handleStreamerPendingAlertsAndQuickBar(updatedLocal);
+            syncDonationsState(getLocalDonations());
             pendingTrackingCode = "";
             transferModalOpenedAtMs = 0;
             hasCopiedUssdCode = false;
@@ -2099,14 +1779,11 @@
             wasCopyDelayRunning = false;
             closeTransferModal();
             startTransferCooldown();
-            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة؛ لن يظهر على البث إلا بعد قبوله من خانة D1`);
+            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة`);
         }
 
         async function reviewDonation(alertUid, action) {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
 
             if (isApiConfigured()) {
                 try {
@@ -2118,32 +1795,11 @@
                         showToast(`⚠️ تعذر تحديث حالة الطلب: ${data.error || "خطأ"}`);
                         return;
                     }
-
                     if (action === "approve") {
-                        const cleanBroadcastMessage = sanitizeAlertMessageForBroadcast(data.item.message);
-                        const manualApprovalToken = `apr_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-                        const approvedPayload = stripDonorPhoneArtifacts({
-                            id: `${data.item.alert_uid || String(data.item.id)}__${manualApprovalToken}`,
-                            alert_uid: data.item.alert_uid || String(data.item.id),
-                            manual_approval_token: manualApprovalToken,
-                            streamer_username: CORRECT_STREAMER_USER,
-                            donor_name: data.item.donor_name,
-                            amount: data.item.amount,
-                            message: cleanBroadcastMessage,
-                            network: data.item.network,
-                            video_url: activeLocalVideoUrl,
-                            youtube_video_id: activeYoutubeVideoId,
-                            created_at: data.item.created_at,
-                            review_status: "approved",
-                            alert_notified: 1
-                        });
-                        broadcastPayload("NEW_DONATION_ALERT", approvedPayload);
-                        showPanelLivePreview(approvedPayload);
-                        showToast("✅ تم القبول من خانة D1 وإرساله لرابط البث المباشر (بدون رمز التتبع أو أرقام الداعم)");
+                        showToast("✅ تم القبول من خانة D1 وإرساله إلى رابط البث المباشر (?widget=true)");
                     } else {
                         showToast("❌ تم رفض الطلب من خانة D1");
                     }
-
                     await fetchDonationsFromDb();
                     return;
                 } catch (e) {
@@ -2161,34 +1817,8 @@
                 }
                 return item;
             });
-            cachedDonations = list;
-            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
-            const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
-            if (action === "approve" && target) {
-                const cleanBroadcastMessage = sanitizeAlertMessageForBroadcast(target.message);
-                const manualApprovalToken = `apr_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-                const broadcastItem = stripDonorPhoneArtifacts({
-                    id: `${target.alert_uid || String(target.id)}__${manualApprovalToken}`,
-                    alert_uid: target.alert_uid || String(target.id),
-                    manual_approval_token: manualApprovalToken,
-                    streamer_username: CORRECT_STREAMER_USER,
-                    donor_name: target.donor_name,
-                    amount: target.amount,
-                    message: cleanBroadcastMessage,
-                    network: target.network,
-                    review_status: "approved",
-                    alert_notified: 1,
-                    video_url: activeLocalVideoUrl,
-                    youtube_video_id: activeYoutubeVideoId,
-                    created_at: target.created_at
-                });
-                broadcastPayload("NEW_DONATION_ALERT", broadcastItem);
-                showPanelLivePreview(broadcastItem);
-            }
-            renderTopSupporters(list);
-            renderStreamerDonations(list);
-            handleStreamerPendingAlertsAndQuickBar(list);
-            showToast(action === "approve" ? "✅ تم القبول من خانة D1 وتفعيل التنبيه على البث" : "❌ تم رفض الطلب من خانة D1");
+            syncDonationsState(list);
+            showToast(action === "approve" ? "✅ تم القبول من خانة D1" : "❌ تم رفض الطلب من خانة D1");
         }
 
         function escapeHtml(str) {
@@ -2199,72 +1829,15 @@
                 .replace(/"/g, "&quot;");
         }
 
-        function persistAlertForWidget(payload) {
-            if (!isExplicitlyApprovedForLiveStream(payload)) return;
-            const cleanPayload = stripDonorPhoneArtifacts(payload);
-            try { safeStorageSet(LATEST_DISPATCH_KEY, JSON.stringify(cleanPayload)); } catch (e) {}
-            try { window.name = WINDOW_NAME_PREFIX + JSON.stringify(cleanPayload); } catch (e) {}
-        }
-
-        function broadcastPayload(type, payload) {
-            if (type === "NEW_DONATION_ALERT") {
-                if (!isExplicitlyApprovedForLiveStream(payload)) return;
-                const cleanPayload = stripDonorPhoneArtifacts(payload);
-                persistAlertForWidget(cleanPayload);
-                payload = cleanPayload;
-            }
-            if (broadcastChannel) {
-                try { broadcastChannel.postMessage({ type, payload }); } catch (e) {}
-            }
-            try { window.postMessage({ type, payload }, "*"); } catch (e) {}
-            try {
-                if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({ type, payload }, "*");
-                }
-            } catch (e) {}
-        }
-
-        function showPanelLivePreview(payload) {
-            const box = document.getElementById("panel-live-preview");
-            const donor = document.getElementById("panel-preview-donor");
-            const amt = document.getElementById("panel-preview-amount");
-            const msg = document.getElementById("panel-preview-message");
-            if (!box || !payload) return;
-
-            if (donor) donor.textContent = payload.donor_name || "داعم";
-            if (amt) amt.textContent = `${payload.amount || 10} د.ل`;
-            if (msg) msg.textContent = sanitizeAlertMessageForBroadcast(payload.message);
-            box.classList.remove("hidden");
-        }
-
         function triggerTestAlert() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const donorName = (document.getElementById("test-donor-name").value || "").trim() || "أسطورة البث";
             const amount = Number(document.getElementById("test-donor-amount").value) || 25;
-            const network = document.getElementById("test-donor-network").value || "libyana";
-            const message = sanitizeAlertMessageForBroadcast((document.getElementById("test-donor-message").value || "").trim() || "تنبيه تجريبي مباشر 🔥");
-            const manualApprovalToken = `test_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-
-            const testPayload = stripDonorPhoneArtifacts({
-                id: "tiktok_test_" + manualApprovalToken,
-                manual_approval_token: manualApprovalToken,
-                streamer_username: CORRECT_STREAMER_USER,
-                donor_name: donorName,
-                amount: amount,
-                message: message,
-                network: network,
-                review_status: "approved",
-                is_manual_test: true,
-                video_url: activeLocalVideoUrl,
-                youtube_video_id: activeYoutubeVideoId,
-                created_at: new Date().toISOString()
-            });
-
-            preloadLocalVideo(activeLocalVideoUrl);
-            broadcastPayload("NEW_DONATION_ALERT", testPayload);
-            showPanelLivePreview(testPayload);
-            document.getElementById("tiktok-test-status").textContent = `✅ تم إطلاق اختبار إشعار (${donorName} - ${amount} د.ل) إلى الويدجت`;
-            showToast("✅ تم إطلاق اختبار الدونيشن");
+            const statusEl = document.getElementById("tiktok-test-status");
+            if (statusEl) {
+                statusEl.textContent = `ℹ️ إشعارات الفيديو تعمل حصراً داخل رابط البث (?widget=true) بعد القبول من خانة D1 (الطلب التجريبي: ${donorName} - ${amount} د.ل)`;
+            }
+            showToast("ℹ️ افتح رابط البث (?widget=true) في TikTok Live Studio واقبل طلباً من D1");
         }
 
         function clearActiveAlertTimers() {
@@ -2294,12 +1867,11 @@
             if (scrim) scrim.classList.add("hidden");
             if (card) card.classList.add("hidden");
 
-            window.__alertNextTimer = setTimeout(() => {
-                processNextAlert();
-            }, 400);
+            window.__alertNextTimer = setTimeout(() => processNextAlert(), 400);
         }
 
         function enqueueAlert(item) {
+            if (!isWidgetMode()) return;
             if (!item || !isExplicitlyApprovedForLiveStream(item)) return;
             const cleanItem = stripDonorPhoneArtifacts(item);
             if (cleanItem.id && cleanItem.id === lastSeenAlertId) return;
@@ -2324,7 +1896,6 @@
                     videoEl.onerror = null;
                     resolve(ok);
                 };
-
                 videoEl.onended = () => done(true);
                 videoEl.onerror = () => done(false);
 
@@ -2333,25 +1904,18 @@
                         await videoEl.play();
                     } catch (err) {
                         videoEl.muted = true;
-                        try {
-                            await videoEl.play();
-                        } catch (mutedErr) {
-                            done(false);
-                        }
+                        try { await videoEl.play(); } catch (mutedErr) { done(false); }
                     }
                 };
 
-                if (videoEl.readyState >= 2) {
-                    tryPlay();
-                } else {
-                    videoEl.addEventListener("canplay", tryPlay, { once: true });
-                }
+                if (videoEl.readyState >= 2) tryPlay();
+                else videoEl.addEventListener("canplay", tryPlay, { once: true });
             });
         }
 
         async function processNextAlert() {
             clearActiveAlertTimers();
-            if (!alertQueue.length) {
+            if (!isWidgetMode() || !alertQueue.length) {
                 isShowingAlert = false;
                 return;
             }
@@ -2378,57 +1942,38 @@
             if (amountEl) amountEl.textContent = current.amount || "10";
             if (msgEl) msgEl.textContent = sanitizeAlertMessageForBroadcast(current.message);
 
-            if (localVideo) {
-                localVideo.classList.add("hidden");
-                try { localVideo.pause(); } catch (e) {}
-            }
-            if (ytFrame) {
-                ytFrame.removeAttribute("src");
-                ytFrame.classList.add("hidden");
-            }
+            if (localVideo) { localVideo.classList.add("hidden"); try { localVideo.pause(); } catch (e) {} }
+            if (ytFrame) { ytFrame.removeAttribute("src"); ytFrame.classList.add("hidden"); }
             if (scrim) scrim.classList.add("hidden");
             if (card) card.classList.remove("hidden");
 
             const ytId = extractYoutubeVideoId(current.youtube_video_id || activeYoutubeVideoId || "");
             const localUrl = (current.video_url || activeLocalVideoUrl || DEFAULT_LOCAL_VIDEO_URL).trim();
 
-            window.__alertHideTimer = setTimeout(() => {
-                finishCurrentAlert();
-            }, ALERT_MAX_DURATION_MS);
+            window.__alertHideTimer = setTimeout(() => finishCurrentAlert(), ALERT_MAX_DURATION_MS);
 
             if (ytId && ytFrame) {
                 if (scrim) scrim.classList.remove("hidden");
                 ytFrame.src = buildYoutubeEmbedUrl(ytId);
                 ytFrame.classList.remove("hidden");
-                window.__alertHideTimer = setTimeout(() => {
-                    finishCurrentAlert();
-                }, 25000);
+                window.__alertHideTimer = setTimeout(() => finishCurrentAlert(), 25000);
                 return;
             }
 
             if (localUrl && localVideo) {
                 if (scrim) scrim.classList.remove("hidden");
                 const playedFull = await playLocalVideoFull(localVideo, localUrl);
-                if (playedFull) {
-                    finishCurrentAlert();
-                } else {
-                    window.__alertHideTimer = setTimeout(() => {
-                        finishCurrentAlert();
-                    }, 8000);
-                }
+                if (playedFull) finishCurrentAlert();
+                else window.__alertHideTimer = setTimeout(() => finishCurrentAlert(), 8000);
             } else {
-                window.__alertHideTimer = setTimeout(() => {
-                    finishCurrentAlert();
-                }, 8000);
+                window.__alertHideTimer = setTimeout(() => finishCurrentAlert(), 8000);
             }
         }
 
         async function pollApprovedLiveAlertsForWidget() {
             if (!isWidgetMode() || !isApiConfigured()) return;
             try {
-                const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch`, {
-                    cache: "no-store"
-                });
+                const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch`, { cache: "no-store" });
                 const data = await res.json();
                 if (data && data.ok && data.alert && data.alert.review_status === "approved") {
                     const approvedToken = `d1_${data.alert.alert_uid}_${Date.now()}`;
@@ -2455,90 +2000,15 @@
                 broadcastChannel = new BroadcastChannel("cgtevil_live_alerts_channel");
                 broadcastChannel.onmessage = (event) => {
                     if (!event || !event.data) return;
-                    if (event.data.type === "STREAMER_YOUTUBE_VIDEO_UPDATED" && event.data.payload) {
-                        activeYoutubeVideoId = extractYoutubeVideoId(event.data.payload.youtube_video_id || "");
-                        safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYoutubeVideoId);
-                        syncStreamerPanelInputs();
-                        updateYoutubeVideoStatusUI();
-                    } else if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
+                    if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
                         cachedDonations = event.data.payload.items;
                         safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
                         renderTopSupporters(cachedDonations);
                         renderStreamerDonations(cachedDonations);
                         handleStreamerPendingAlertsAndQuickBar(cachedDonations);
-                    } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
-                        const incoming = stripDonorPhoneArtifacts(event.data.payload);
-                        if (!isExplicitlyApprovedForLiveStream(incoming)) return;
-                        if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
-                        if (!incoming.youtube_video_id && activeYoutubeVideoId) {
-                            incoming.youtube_video_id = activeYoutubeVideoId;
-                        }
-                        enqueueAlert(incoming);
-                        if (isTopWidgetMode()) {
-                            fetchDonationsFromDb();
-                        }
                     }
                 };
             } catch (e) {}
-
-            window.addEventListener("message", (event) => {
-                if (!event || !event.data) return;
-                if (event.data.type === "STREAMER_YOUTUBE_VIDEO_UPDATED" && event.data.payload) {
-                    activeYoutubeVideoId = extractYoutubeVideoId(event.data.payload.youtube_video_id || "");
-                    safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYoutubeVideoId);
-                    syncStreamerPanelInputs();
-                    updateYoutubeVideoStatusUI();
-                } else if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
-                    cachedDonations = event.data.payload.items;
-                    safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(cachedDonations));
-                    renderTopSupporters(cachedDonations);
-                    renderStreamerDonations(cachedDonations);
-                    handleStreamerPendingAlertsAndQuickBar(cachedDonations);
-                } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
-                    const incoming = stripDonorPhoneArtifacts(event.data.payload);
-                    if (!isExplicitlyApprovedForLiveStream(incoming)) return;
-                    if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
-                    if (!incoming.youtube_video_id && activeYoutubeVideoId) {
-                        incoming.youtube_video_id = activeYoutubeVideoId;
-                    }
-                    enqueueAlert(incoming);
-                    if (isTopWidgetMode()) {
-                        fetchDonationsFromDb();
-                    }
-                }
-            });
-
-            window.addEventListener("storage", (event) => {
-                if (event.key === YOUTUBE_VIDEO_STORAGE_KEY) {
-                    activeYoutubeVideoId = extractYoutubeVideoId(event.newValue || "");
-                    syncStreamerPanelInputs();
-                    updateYoutubeVideoStatusUI();
-                } else if (event.key === SOUND_ENABLED_STORAGE_KEY) {
-                    updateStreamerSoundUI();
-                } else if (event.key === DONATIONS_STORAGE_KEY) {
-                    try {
-                        const parsed = event.newValue ? JSON.parse(event.newValue) : [];
-                        cachedDonations = Array.isArray(parsed) ? parsed : [];
-                        renderTopSupporters(cachedDonations);
-                        renderStreamerDonations(cachedDonations);
-                        handleStreamerPendingAlertsAndQuickBar(cachedDonations);
-                    } catch (e) {}
-                } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
-                    try {
-                        const parsed = JSON.parse(event.newValue);
-                        if (parsed && isExplicitlyApprovedForLiveStream(parsed)) {
-                            const incoming = stripDonorPhoneArtifacts(parsed);
-                            if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
-                            if (!incoming.youtube_video_id && activeYoutubeVideoId) {
-                                incoming.youtube_video_id = activeYoutubeVideoId;
-                            }
-                            enqueueAlert(incoming);
-                        }
-                    } catch (e) {}
-                } else if (event.key === TRANSFER_COOLDOWN_KEY || event.key === getDeviceCooldownKey()) {
-                    updateTransferCooldownUI();
-                }
-            });
 
             if (isWidgetMode()) {
                 purgeAllStoredWidgetAlerts();
@@ -2551,9 +2021,7 @@
             if (isTopWidgetMode()) {
                 fetchDonationsFromDb();
                 clearInterval(window.__topWidgetSyncInterval);
-                window.__topWidgetSyncInterval = setInterval(() => {
-                    fetchDonationsFromDb();
-                }, 4000);
+                window.__topWidgetSyncInterval = setInterval(() => fetchDonationsFromDb(), 4000);
             }
         }
 
