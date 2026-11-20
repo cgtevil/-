@@ -35,6 +35,13 @@
             border: none !important;
             box-shadow: none !important;
         }
+        .top-supporter-row {
+            background: transparent;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        }
+        .top-supporter-row:last-child {
+            border-bottom: none;
+        }
         @keyframes alertPop {
             0% {
                 opacity: 0;
@@ -106,20 +113,15 @@
         </div>
     </div>
 
-    <!-- واجهة ويدجت أبرز 3 داعمين الشفافة للبث المباشر (?top=true) -->
-    <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-3 flex items-start justify-start pointer-events-none">
-        <div class="top-overlay-card w-full max-w-xs p-2 space-y-2">
-            <div class="flex items-center justify-between pb-1.5">
-                <div class="flex items-center gap-1.5 text-xs font-black text-amber-300 frameless-text-shadow">
-                    <span>🏆</span>
-                    <span>أبرز 3 داعمين</span>
-                </div>
-                <span class="text-[10px] font-extrabold text-emerald-300 frameless-text-shadow">
-                    @cgtevil
-                </span>
+    <!-- واجهة ويدجت أبرز 3 داعمين الشفافة والاحترافية للبث المباشر (?top=true) -->
+    <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-3.5 flex items-start justify-start pointer-events-none">
+        <div class="top-overlay-card w-full max-w-[270px] space-y-2">
+            <div class="flex items-center gap-2 pb-1.5 border-b border-amber-300/35">
+                <span class="text-sm leading-none frameless-text-shadow">👑</span>
+                <span class="text-xs font-black tracking-wide text-amber-300 frameless-text-shadow">أبرز 3 داعمين</span>
             </div>
-            <div id="widget-top-supporters-list" class="space-y-1.5">
-                <div class="py-1.5 text-center text-xs text-slate-200 font-bold frameless-text-shadow">
+            <div id="widget-top-supporters-list" class="space-y-1">
+                <div class="py-1.5 text-xs text-slate-200 font-bold frameless-text-shadow">
                     لا يوجد داعمون معتمدون بعد
                 </div>
             </div>
@@ -236,7 +238,7 @@
                     <h4 class="text-sm font-black text-emerald-300">كيف يعمل النظام؟</h4>
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• اختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
-                        <li>• انسخ الكود ونفّذ التحويل من هاتفك ثم اضغط <strong>"تم التحويل"</strong> ليُسجّل طلبك في قاعدة البيانات.</li>
+                        <li>• انسخ الكود وانتظر 20 ثانية لتفعيل زر <strong>"تم التحويل"</strong> بعد إتمام التحويل من هاتفك.</li>
                         <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُفعّل مؤقت 5 دقائق قبل إجراء تحويل آخر.</li>
                     </ul>
                 </div>
@@ -268,7 +270,7 @@
             </div>
 
             <p id="transfer-copy-requirement" class="text-center text-xs font-bold text-amber-300">
-                اضغط على "نسخ الكود" أولاً لتفعيل زر "تم التحويل".
+                اضغط على "نسخ الكود" أولاً، وسيُفعّل زر "تم التحويل" بعد 20 ثانية.
             </p>
 
             <button id="btn-confirm-transfer" type="button" disabled onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition opacity-50 cursor-not-allowed">
@@ -445,6 +447,7 @@
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
         const TRANSFER_COOLDOWN_MS = 5 * 60 * 1000;
+        const COPY_UNLOCK_DELAY_MS = 20 * 1000;
         const ALERT_MAX_DURATION_MS = 120000;
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
@@ -454,7 +457,8 @@
         let lastSeenAlertId = "";
         let isShowingAlert = false;
         let wasCooldownActive = false;
-        let hasCopiedUssdCode = false;
+        let copyUnlockDeadlineMs = 0;
+        let wasCopyDelayRunning = false;
         const alertQueue = [];
         let broadcastChannel = null;
 
@@ -615,6 +619,12 @@
             return elapsed < TRANSFER_COOLDOWN_MS ? (TRANSFER_COOLDOWN_MS - elapsed) : 0;
         }
 
+        function getRemainingCopySeconds() {
+            if (!copyUnlockDeadlineMs) return 0;
+            const remMs = copyUnlockDeadlineMs - Date.now();
+            return remMs > 0 ? Math.ceil(remMs / 1000) : 0;
+        }
+
         function formatCountdown(ms) {
             const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
             const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -630,6 +640,7 @@
 
         function updateTransferCooldownUI() {
             const remainingMs = getRemainingCooldownMs();
+            const remainingCopySec = getRemainingCopySeconds();
             const showBtn = document.getElementById("btn-show-transfer");
             const confirmBtn = document.getElementById("btn-confirm-transfer");
             const hintEl = document.getElementById("transfer-cooldown-hint");
@@ -658,19 +669,40 @@
                     hintEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل؛ يمكنك إجراء تحويل آخر بعد ${formatted}`;
                     hintEl.classList.remove("hidden");
                 }
-            } else {
-                if (wasCooldownActive) {
-                    wasCooldownActive = false;
-                    showToast("✅ انتهى مؤقت الـ 5 دقائق، يمكنك إجراء تحويل جديد الآن");
+                return;
+            }
+
+            if (wasCooldownActive) {
+                wasCooldownActive = false;
+                showToast("✅ انتهى مؤقت الـ 5 دقائق، يمكنك إجراء تحويل جديد الآن");
+            }
+            if (showBtn) {
+                showBtn.disabled = false;
+                showBtn.textContent = "⚡ إظهار كود التحويل السريع";
+                showBtn.classList.remove("opacity-60", "cursor-not-allowed");
+                showBtn.classList.add("cursor-pointer");
+            }
+
+            if (remainingCopySec > 0) {
+                wasCopyDelayRunning = true;
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = `⏳ انتظر ${remainingCopySec} ثانية لتفعيل "تم التحويل"`;
+                    confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
+                    confirmBtn.classList.remove("cursor-pointer");
                 }
-                if (showBtn) {
-                    showBtn.disabled = false;
-                    showBtn.textContent = "⚡ إظهار كود التحويل السريع";
-                    showBtn.classList.remove("opacity-60", "cursor-not-allowed");
-                    showBtn.classList.add("cursor-pointer");
+                if (copyReqEl) {
+                    copyReqEl.textContent = `تم نسخ الكود؛ سيُفعّل زر "تم التحويل" تلقائياً بعد ${remainingCopySec} ثانية.`;
+                    copyReqEl.className = "text-center text-xs font-bold text-sky-300";
+                }
+            } else {
+                const isUnlocked = copyUnlockDeadlineMs > 0 && Date.now() >= copyUnlockDeadlineMs;
+                if (wasCopyDelayRunning && isUnlocked) {
+                    wasCopyDelayRunning = false;
+                    showToast("✅ تم تفعيل زر \"تم التحويل\" الآن");
                 }
                 if (confirmBtn) {
-                    if (hasCopiedUssdCode) {
+                    if (isUnlocked) {
                         confirmBtn.disabled = false;
                         confirmBtn.textContent = "✅ تم التحويل (اعتماد تلقائي وإرسال للبث)";
                         confirmBtn.classList.remove("opacity-50", "cursor-not-allowed");
@@ -683,18 +715,19 @@
                     }
                 }
                 if (copyReqEl) {
-                    if (hasCopiedUssdCode) {
-                        copyReqEl.textContent = "✅ تم نسخ الكود؛ يمكنك الآن الضغط على \"تم التحويل\".";
+                    if (isUnlocked) {
+                        copyReqEl.textContent = "✅ اكتملت 20 ثانية؛ يمكنك الآن الضغط على \"تم التحويل\".";
                         copyReqEl.className = "text-center text-xs font-bold text-emerald-300";
                     } else {
-                        copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً لتفعيل زر \"تم التحويل\".";
+                        copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً، وسيُفعّل زر \"تم التحويل\" بعد 20 ثانية.";
                         copyReqEl.className = "text-center text-xs font-bold text-amber-300";
                     }
                 }
-                if (hintEl) {
-                    hintEl.textContent = "";
-                    hintEl.classList.add("hidden");
-                }
+            }
+
+            if (hintEl) {
+                hintEl.textContent = "";
+                hintEl.classList.add("hidden");
             }
         }
 
@@ -992,7 +1025,8 @@
                 ? `*122*${phone}*${amount}#`
                 : `*140*4*1*${amount}*${phone}#`;
 
-            hasCopiedUssdCode = false;
+            copyUnlockDeadlineMs = 0;
+            wasCopyDelayRunning = false;
             document.getElementById("ussd-code-display").textContent = ussd;
             document.getElementById("ussd-call-link").href = `tel:${encodeURIComponent(ussd)}`;
             document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amount} د.ل • الشبكة: ${getNetworkLabel(selectedNetwork)} (${phone})`;
@@ -1013,9 +1047,12 @@
             try { document.execCommand("copy"); } catch (e) {}
             document.body.removeChild(temp);
 
-            hasCopiedUssdCode = true;
+            if (!copyUnlockDeadlineMs || Date.now() >= copyUnlockDeadlineMs) {
+                copyUnlockDeadlineMs = Date.now() + COPY_UNLOCK_DELAY_MS;
+                wasCopyDelayRunning = true;
+            }
             updateTransferCooldownUI();
-            showToast("✅ تم نسخ الكود وتفعيل زر \"تم التحويل\"");
+            showToast("✅ تم نسخ الكود؛ سيُفعّل زر \"تم التحويل\" خلال 20 ثانية");
         }
 
         function getLocalDonations() {
@@ -1073,17 +1110,25 @@
 
             if (widgetTopContainer) {
                 if (!sorted.length) {
-                    widgetTopContainer.innerHTML = `<div class="py-1.5 text-center text-xs text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
+                    widgetTopContainer.innerHTML = `<div class="py-1.5 text-xs text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
                 } else {
-                    widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => `
-                        <div class="flex items-center justify-between px-2 py-1">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <span class="text-base shrink-0 frameless-text-shadow">${medals[idx] || "⭐"}</span>
-                                <span class="font-extrabold text-xs text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+                    widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => {
+                        const rankBadgeColor = idx === 0
+                            ? "text-amber-300"
+                            : idx === 1
+                                ? "text-slate-200"
+                                : "text-amber-500";
+                        return `
+                            <div class="top-supporter-row flex items-center justify-between gap-2 py-1.5">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-xs font-black shrink-0 ${rankBadgeColor} frameless-text-shadow">#${idx + 1}</span>
+                                    <span class="text-sm leading-none shrink-0 frameless-text-shadow">${medals[idx] || "⭐"}</span>
+                                    <span class="font-extrabold text-xs text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+                                </div>
+                                <span class="shrink-0 text-emerald-300 font-black text-xs frameless-text-shadow">${total} د.ل</span>
                             </div>
-                            <span class="shrink-0 text-emerald-300 font-black text-xs frameless-text-shadow">${total} د.ل</span>
-                        </div>
-                    `).join("");
+                        `;
+                    }).join("");
                 }
             }
         }
@@ -1146,8 +1191,11 @@
         }
 
         async function confirmAndDispatchSupport() {
-            if (!hasCopiedUssdCode) {
-                showToast("⚠️ يرجى الضغط على \"نسخ الكود\" أولاً قبل تأكيد التحويل");
+            if (!copyUnlockDeadlineMs || Date.now() < copyUnlockDeadlineMs) {
+                const remSec = getRemainingCopySeconds();
+                showToast(remSec > 0
+                    ? `⏳ يرجى انتظار ${remSec} ثانية بعد نسخ الكود لتفعيل الزر`
+                    : "⚠️ يرجى الضغط على \"نسخ الكود\" أولاً والانتظار 20 ثانية");
                 updateTransferCooldownUI();
                 return;
             }
@@ -1219,7 +1267,8 @@
                     broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
                     showPanelLivePreview(approvedAlertPayload);
                     await fetchDonationsFromDb();
-                    hasCopiedUssdCode = false;
+                    copyUnlockDeadlineMs = 0;
+                    wasCopyDelayRunning = false;
                     closeTransferModal();
                     startTransferCooldown();
                     showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
@@ -1236,7 +1285,8 @@
             lastSeenAlertId = approvedAlertPayload.id;
             broadcastPayload("NEW_DONATION_ALERT", approvedAlertPayload);
             showPanelLivePreview(approvedAlertPayload);
-            hasCopiedUssdCode = false;
+            copyUnlockDeadlineMs = 0;
+            wasCopyDelayRunning = false;
             closeTransferModal();
             startTransferCooldown();
             showToast("✅ تم اعتماد طلبك تلقائياً وبدأ مؤقت الـ 5 دقائق");
