@@ -81,7 +81,7 @@
             font-size: 0.85rem;
             flex-shrink: 0;
             background: rgba(15, 23, 42, 0.72);
-            border: 2px solid rgba(250, 204, 21, 0.65);
+            border: 2px solid rgba(250, 204, 15, 0.65);
             color: #f8fafc;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85);
         }
@@ -207,17 +207,17 @@
             <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-0.5">
                     <div class="flex flex-wrap items-center gap-2 text-xs font-black text-amber-300">
-                        <span>🔔 طلب دعم جديد قيد المراجعة</span>
+                        <span>🔔 طلب دعم جديد بانتظار قرارك (قبول / رفض)</span>
                         <span id="quick-pending-count" class="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px]">1</span>
                     </div>
                     <div id="quick-pending-details" class="text-xs sm:text-sm font-extrabold text-white"></div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                     <button id="btn-quick-approve" type="button" onclick="approveLatestPendingQuickly()" class="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition cursor-pointer">
-                        ✅ اعتماد للبث فوراً
+                        ✅ قبول للبث فوراً
                     </button>
                     <button id="btn-quick-reject" type="button" onclick="rejectLatestPendingQuickly()" class="px-3.5 py-2 rounded-xl bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 text-rose-200 font-bold text-xs sm:text-sm transition cursor-pointer">
-                        ✕ رفض
+                        ❌ رفض
                     </button>
                 </div>
             </div>
@@ -397,18 +397,18 @@
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
 
-            <!-- تنبيهات الصوت على الهاتف/المتصفح -->
+            <!-- تنبيهات الصوت والإشعارات على الهاتف/المتصفح -->
             <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2">
                 <div class="space-y-0.5">
-                    <div class="text-xs font-black text-emerald-300">تنبيه صوتي فوري على الهاتف عند وصول دعم</div>
-                    <div class="text-[11px] text-slate-300">يصدر صوت رنين عند وصول طلب جديد حتى ولو كانت لوحة الستريمر مغلقة.</div>
+                    <div class="text-xs font-black text-emerald-300">تنبيه الهاتف الفوري عند وصول دعم (صوت + اهتزاز + إشعار)</div>
+                    <div class="text-[11px] text-slate-300">ينبّهك فوراً عند وصول أي طلب جديد لتقبله أو ترفضه بضغطة زر.</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="playStreamerNotificationChime(true)" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer">
-                        🔊 تجربة الصوت
+                        🔊 تجربة التنبيه
                     </button>
                     <button id="btn-panel-toggle-sound" type="button" onclick="toggleStreamerSoundAlert()" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
-                        تفعيل الصوت
+                        تفعيل التنبيه
                     </button>
                 </div>
             </div>
@@ -622,11 +622,43 @@
             }
         }
 
+        function requestPhoneNotificationPermission() {
+            try {
+                if ("Notification" in window && Notification.permission === "default") {
+                    Notification.requestPermission().catch(() => {});
+                }
+            } catch (e) {}
+        }
+
+        function triggerPhoneSystemNotification(item) {
+            try {
+                if (!("Notification" in window) || Notification.permission !== "granted") return;
+                const donor = item?.donor_name || "داعم";
+                const amt = Number(item?.amount) || 0;
+                const netLabel = getNetworkLabel(item?.network);
+                const digits = item?.sender_last_digits || (item?.message && (item.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
+                const bodyText = `${amt} د.ل (${netLabel})${digits ? ` • آخر 4 أرقام: ${digits}` : ""} — افتح للقبول أو الرفض`;
+
+                const notif = new Notification(`🔔 طلب دعم جديد من ${donor}`, {
+                    body: bodyText,
+                    tag: "cgtevil-new-donation",
+                    renotify: true
+                });
+                notif.onclick = () => {
+                    try { window.focus(); } catch (e) {}
+                    if (isStreamerAuthenticated()) {
+                        toggleStreamerPanel(true);
+                    }
+                    notif.close();
+                };
+            } catch (e) {}
+        }
+
         function playStreamerNotificationChime(forcePlay = false) {
             if (!forcePlay && !isStreamerSoundEnabled()) return;
             try {
                 if (navigator.vibrate) {
-                    navigator.vibrate([220, 100, 260]);
+                    navigator.vibrate([240, 110, 280, 110, 240]);
                 }
             } catch (e) {}
 
@@ -635,21 +667,21 @@
 
             try {
                 const now = ctx.currentTime;
-                const notes = [880, 1174.66, 1318.51];
+                const notes = [880, 1174.66, 1318.51, 1567.98];
                 notes.forEach((freq, idx) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = "triangle";
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.13);
 
-                    gain.gain.setValueAtTime(0.0001, now + idx * 0.14);
-                    gain.gain.exponentialRampToValueAtTime(0.28, now + idx * 0.14 + 0.02);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.14 + 0.24);
+                    gain.gain.setValueAtTime(0.0001, now + idx * 0.13);
+                    gain.gain.exponentialRampToValueAtTime(0.3, now + idx * 0.13 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.13 + 0.24);
 
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.start(now + idx * 0.14);
-                    osc.stop(now + idx * 0.14 + 0.26);
+                    osc.start(now + idx * 0.13);
+                    osc.stop(now + idx * 0.13 + 0.26);
                 });
             } catch (e) {}
         }
@@ -662,14 +694,14 @@
 
             if (headerBtn) {
                 headerBtn.classList.toggle("hidden", !authed);
-                headerBtn.textContent = enabled ? "🔊 صوت التنبيه: مفعّل" : "🔔 تفعيل صوت التنبيهات";
+                headerBtn.textContent = enabled ? "🔊 تنبيه الهاتف: مفعّل" : "🔔 تفعيل تنبيه الهاتف";
                 headerBtn.className = enabled
                     ? "px-3.5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs sm:text-sm font-black transition cursor-pointer"
                     : "px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs sm:text-sm font-black text-emerald-200 transition cursor-pointer";
             }
 
             if (panelBtn) {
-                panelBtn.textContent = enabled ? "🔊 مفعّل (إيقاف)" : "🔔 تفعيل الصوت";
+                panelBtn.textContent = enabled ? "🔊 مفعّل (إيقاف)" : "🔔 تفعيل التنبيه";
                 panelBtn.className = enabled
                     ? "px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer"
                     : "px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs cursor-pointer";
@@ -684,11 +716,12 @@
             const nextState = !isStreamerSoundEnabled();
             safeStorageSet(SOUND_ENABLED_STORAGE_KEY, nextState ? "1" : "0");
             if (nextState) {
+                requestPhoneNotificationPermission();
                 ensureStreamerAudioContext();
                 playStreamerNotificationChime(true);
-                showToast("🔊 تم تفعيل التنبيه الصوتي للطلبات الجديدة على هذا الجهاز");
+                showToast("🔊 تم تفعيل تنبيه الهاتف (صوت + اهتزاز + إشعار) للطلبات الجديدة");
             } else {
-                showToast("🔕 تم إيقاف التنبيه الصوتي");
+                showToast("🔕 تم إيقاف تنبيه الهاتف الصوتي");
             }
             updateStreamerSoundUI();
         }
@@ -747,7 +780,8 @@
                     persistKnownPendingSet();
                     playStreamerNotificationChime(false);
                     if (newestItem) {
-                        showToast(`🔔 دعم جديد: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل)`);
+                        triggerPhoneSystemNotification(newestItem);
+                        showToast(`🔔 دعم جديد: ${newestItem.donor_name || "داعم"} (${Number(newestItem.amount) || 0} د.ل) — اقبل أو ارفض`);
                     }
                 }
             }
@@ -1250,7 +1284,7 @@
         function getStatusBadge(status, notified) {
             if (status === "approved") {
                 const alertTag = Number(notified) === 1 ? " • أُرسل إشعار البث" : "";
-                return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">معتمد${alertTag}</span>`;
+                return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">مقبول${alertTag}</span>`;
             }
             if (status === "rejected") {
                 return `<span class="px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 font-black text-[11px]">مرفوض</span>`;
@@ -1421,6 +1455,7 @@
                 if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) {
                     safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
                 }
+                requestPhoneNotificationPermission();
                 ensureStreamerAudioContext();
                 playStreamerNotificationChime(true);
 
@@ -1814,7 +1849,7 @@
 
             if (titleEl) {
                 titleEl.textContent = pendingCount > 0
-                    ? `طلبات الدعم وحالة الاعتماد (D1) • قيد المراجعة: ${pendingCount}`
+                    ? `طلبات الدعم وحالة الاعتماد (D1) • بانتظار القبول/الرفض: ${pendingCount}`
                     : "طلبات الدعم وحالة الاعتماد (D1)";
             }
 
@@ -1827,8 +1862,8 @@
                 const uid = item.alert_uid || String(item.id);
                 const status = item.review_status || "pending";
                 const isPending = status === "pending";
-                const canApprove = status !== "approved";
-                const canReject = status !== "rejected";
+                const isApproved = status === "approved";
+                const isRejected = status === "rejected";
                 const refCode = item.tracking_code || (item.message && (item.message.match(/(?:LBY|MDR)-\d{4}/) || [])[0]) || "";
                 const senderDigits = item.sender_last_digits || (item.message && (item.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
                 const elapsedSec = Number(item.elapsed_seconds);
@@ -1848,8 +1883,8 @@
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
-                            ${canApprove ? `<button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer">✅ اعتماد وإرسال إشعار البث</button>` : ""}
-                            ${canReject ? `<button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer">✕ رفض</button>` : ""}
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3 py-1.5 rounded-xl ${isApproved ? "bg-emerald-500/20 border border-emerald-400/50 text-emerald-200" : "bg-emerald-400 hover:bg-emerald-300 text-slate-950"} font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl ${isRejected ? "bg-rose-500/35 border border-rose-400/60 text-rose-100" : "bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200"} font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
                             <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
@@ -2044,9 +2079,9 @@
                         lastSeenAlertId = approvedPayload.id;
                         broadcastPayload("NEW_DONATION_ALERT", approvedPayload);
                         showPanelLivePreview(approvedPayload);
-                        showToast("✅ تم اعتماد الطلب وإطلاق إشعار البث المباشر");
+                        showToast("✅ تم قبول الطلب وإطلاق إشعار البث المباشر");
                     } else {
-                        showToast("تم رفض الطلب");
+                        showToast("❌ تم رفض الطلب");
                     }
 
                     await fetchDonationsFromDb();
@@ -2079,7 +2114,7 @@
             renderTopSupporters(list);
             renderStreamerDonations(list);
             handleStreamerPendingAlertsAndQuickBar(list);
-            showToast(action === "approve" ? "✅ تم اعتماد الطلب وإطلاق إشعار البث" : "تم رفض الطلب");
+            showToast(action === "approve" ? "✅ تم قبول الطلب وإطلاق إشعار البث" : "❌ تم رفض الطلب");
         }
 
         function escapeHtml(str) {
