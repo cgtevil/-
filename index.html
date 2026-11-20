@@ -124,19 +124,16 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار: يظهر فقط عند اعتماد الطلب من D1 -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار: يظهر فقط عند اعتماد الطلب -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
-            <!-- مرحلة عرض الفيديو المحلي أو فيديو يوتيوب المستجلب مع التنبيه -->
             <div class="full-video-stage relative flex items-center justify-center">
                 <video id="alert-local-video" class="hidden w-full h-full object-contain" preload="auto" playsinline></video>
                 <iframe id="alert-youtube-frame" class="hidden w-full h-full border-0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
             </div>
 
-            <!-- تدرج وسطي خفيف عند وجود فيديو لإبراز النص بوضوح -->
             <div id="alert-video-scrim" class="hidden absolute inset-0 bg-gradient-to-b from-transparent via-black/45 to-transparent z-10"></div>
 
-            <!-- اسم الداعم والمبلغ أعلى المنتصف بقليل متبوعاً مباشرة برسالة الدعم -->
             <div class="absolute inset-0 px-5 flex flex-col items-center justify-center text-center z-20">
                 <div class="alert-stack-above-center flex flex-col items-center justify-center space-y-1">
                     <div class="flex flex-wrap items-center justify-center gap-2.5 text-base sm:text-lg font-extrabold frameless-text-shadow">
@@ -326,7 +323,6 @@
                 <div id="transfer-summary" class="text-xs text-slate-300 pt-1"></div>
             </div>
 
-            <!-- آخر 4 أرقام من رقم المرسل (إجباري لتفعيل زر تم التحويل) -->
             <div class="p-3.5 rounded-2xl bg-slate-950/75 border border-white/10 space-y-1.5">
                 <label for="input-sender-last-digits" class="block text-xs font-extrabold text-white">
                     آخر 4 أرقام من رقمك المحوّل منه <span class="text-rose-400">* (إجباري - 4 أرقام)</span>
@@ -2392,8 +2388,7 @@
                 const res = await fetch(`${API_BASE_URL}/api/alerts/latest`);
                 const data = await res.json();
                 if (data && data.ok && data.alert) {
-                    const status = data.alert.review_status || "approved";
-                    if (status !== "approved") return;
+                    if (data.alert.review_status !== "approved") return;
                     const uid = data.alert.alert_uid || String(data.alert.id);
                     if (uid && uid !== lastSeenAlertId) {
                         enqueueAlert({
