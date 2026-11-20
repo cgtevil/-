@@ -209,34 +209,45 @@
                         دعم فوري ومباشر
                     </span>
                     <h2 class="text-2xl font-black text-white">ادعم الستريمر واظهر على شاشة البث</h2>
-                    <p class="text-sm text-slate-400">اختر الشبكة والمبلغ، ثم نفّذ التحويل واضغط "تم التحويل" ليتم اعتماد طلبك وعرضه تلقائياً على البث.</p>
+                    <p class="text-sm text-slate-400">اختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل واضغط "تم التحويل" ليتم اعتماد طلبك وعرضه تلقائياً على البث.</p>
                 </div>
 
                 <!-- اختيار الشبكة -->
                 <div class="space-y-2">
                     <label class="block text-sm font-bold text-slate-200">1. اختر شركة الاتصالات</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <button id="net-libyana" type="button" onclick="selectNetwork('libyana')" class="p-3.5 rounded-2xl border-2 border-emerald-400 bg-emerald-500/15 text-white font-extrabold flex items-center justify-center gap-2 transition cursor-pointer">
-                            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
-                            <span>ليبيانا (Libyana)</span>
+                        <button id="net-libyana" type="button" onclick="selectNetwork('libyana')" class="p-3.5 rounded-2xl border-2 border-emerald-400 bg-emerald-500/15 text-white font-extrabold flex flex-col items-center justify-center gap-1 transition cursor-pointer">
+                            <span class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                                <span>ليبيانا (Libyana)</span>
+                            </span>
+                            <span class="text-[11px] font-bold text-emerald-300">من 3 إلى 50 د.ل</span>
                         </button>
-                        <button id="net-almadar" type="button" onclick="selectNetwork('almadar')" class="p-3.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold flex items-center justify-center gap-2 transition cursor-pointer">
-                            <span class="w-3 h-3 rounded-full bg-sky-400"></span>
-                            <span>المدار (Almadar)</span>
+                        <button id="net-almadar" type="button" onclick="selectNetwork('almadar')" class="p-3.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold flex flex-col items-center justify-center gap-1 transition cursor-pointer">
+                            <span class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-sky-400"></span>
+                                <span>المدار (Almadar)</span>
+                            </span>
+                            <span class="text-[11px] font-bold text-sky-300">من 3 إلى 20 د.ل</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- اختيار المبلغ -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-bold text-slate-200">2. حدد قيمة الدعم (د.ل)</label>
-                    <div class="grid grid-cols-4 gap-2.5">
-                        <button type="button" onclick="setPresetAmount(5)" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">5 د.ل</button>
-                        <button type="button" onclick="setPresetAmount(10)" class="preset-btn py-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400 font-black text-sm text-emerald-300 transition cursor-pointer">10 د.ل</button>
-                        <button type="button" onclick="setPresetAmount(20)" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">20 د.ل</button>
-                        <button type="button" onclick="setPresetAmount(50)" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">50 د.ل</button>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label for="input-amount" class="block text-sm font-bold text-slate-200">2. حدد قيمة الدعم (د.ل)</label>
+                        <span id="amount-limits-badge" class="text-xs font-extrabold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 rounded-full">
+                            ليبيانا: الحد الأدنى 3 د.ل • الحد الأقصى 50 د.ل
+                        </span>
                     </div>
-                    <input id="input-amount" type="number" min="1" value="10" placeholder="أدخل المبلغ بالدينار الليبي" class="w-full mt-2 px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white font-bold">
+                    <div id="preset-amounts-grid" class="grid grid-cols-4 gap-2.5">
+                        <button type="button" data-preset="3" onclick="setPresetAmount(3)" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">3 د.ل</button>
+                        <button type="button" data-preset="10" onclick="setPresetAmount(10)" class="preset-btn py-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400 font-black text-sm text-emerald-300 transition cursor-pointer">10 د.ل</button>
+                        <button type="button" data-preset="20" onclick="setPresetAmount(20)" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">20 د.ل</button>
+                        <button type="button" data-preset="50" onclick="setPresetAmount(50)" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">50 د.ل</button>
+                    </div>
+                    <input id="input-amount" type="number" min="3" max="50" step="1" value="10" oninput="syncPresetHighlights()" placeholder="أدخل المبلغ بالدينار الليبي" class="w-full mt-2 px-4 py-3 rounded-2xl bg-slate-950/80 border border-white/15 focus:border-emerald-400 focus:outline-none text-white font-bold">
                 </div>
 
                 <!-- اسم الداعم والرسالة -->
@@ -276,6 +287,7 @@
                 <div class="glass-card rounded-3xl p-5 sm:p-6 space-y-3">
                     <h4 class="text-sm font-black text-emerald-300">كيف يعمل النظام؟</h4>
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
+                        <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• اختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• انسخ الكود وانتظر 20 ثانية لتفعيل زر <strong>"تم التحويل"</strong> بعد إتمام التحويل من هاتفك.</li>
                         <li>• بمجرد الضغط على <strong>"تم التحويل"</strong>، يُعتمد طلبك تلقائياً ويُفعّل مؤقت 5 دقائق قبل إجراء تحويل آخر.</li>
@@ -450,7 +462,7 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <input id="test-donor-name" type="text" placeholder="اسم الداعم التجريبي" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
-                    <input id="test-donor-amount" type="number" min="1" value="25" placeholder="المبلغ" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
+                    <input id="test-donor-amount" type="number" min="3" max="50" value="25" placeholder="المبلغ" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
                     <select id="test-donor-network" class="px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-xs text-white">
                         <option value="libyana">ليبيانا</option>
                         <option value="almadar">المدار</option>
@@ -498,6 +510,21 @@
         const ALERT_MAX_DURATION_MS = 120000;
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
 
+        const NETWORK_SUPPORT_LIMITS = {
+            libyana: {
+                min: 3,
+                max: 50,
+                label: "ليبيانا",
+                presets: [3, 10, 20, 50]
+            },
+            almadar: {
+                min: 3,
+                max: 20,
+                label: "المدار",
+                presets: [3, 5, 10, 20]
+            }
+        };
+
         let selectedNetwork = "libyana";
         let activeLocalVideoUrl = DEFAULT_LOCAL_VIDEO_URL;
         let activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
@@ -514,6 +541,90 @@
             libyana_phone: DEFAULT_LIBYANA_PHONE,
             almadar_phone: DEFAULT_ALMADAR_PHONE
         };
+
+        function getNetworkLimits(net = selectedNetwork) {
+            return NETWORK_SUPPORT_LIMITS[net] || NETWORK_SUPPORT_LIMITS.libyana;
+        }
+
+        function validateSupportAmount(rawAmount, net = selectedNetwork) {
+            const limits = getNetworkLimits(net);
+            const amount = Number(rawAmount);
+            if (!Number.isFinite(amount) || amount <= 0) {
+                return {
+                    valid: false,
+                    amount: 0,
+                    message: `⚠️ يرجى إدخال مبلغ صحيح بين ${limits.min} و ${limits.max} د.ل لشبكة ${limits.label}`
+                };
+            }
+            if (amount < limits.min) {
+                return {
+                    valid: false,
+                    amount,
+                    message: `⚠️ الحد الأدنى للدعم عبر ${limits.label} هو ${limits.min} د.ل`
+                };
+            }
+            if (amount > limits.max) {
+                return {
+                    valid: false,
+                    amount,
+                    message: `⚠️ الحد الأقصى للدعم عبر ${limits.label} هو ${limits.max} د.ل`
+                };
+            }
+            return { valid: true, amount, message: "" };
+        }
+
+        function renderPresetButtons() {
+            const grid = document.getElementById("preset-amounts-grid");
+            const limits = getNetworkLimits(selectedNetwork);
+            if (!grid) return;
+
+            grid.innerHTML = limits.presets.map((val) => `
+                <button type="button" data-preset="${val}" onclick="setPresetAmount(${val})" class="preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer">${val} د.ل</button>
+            `).join("");
+            syncPresetHighlights();
+        }
+
+        function syncPresetHighlights() {
+            const currentVal = Number(document.getElementById("input-amount")?.value);
+            const isAlmadar = selectedNetwork === "almadar";
+            document.querySelectorAll(".preset-btn").forEach((btn) => {
+                const presetVal = Number(btn.getAttribute("data-preset"));
+                const isActive = presetVal === currentVal;
+                if (isActive) {
+                    btn.className = isAlmadar
+                        ? "preset-btn py-2.5 rounded-xl bg-sky-500/20 border border-sky-400 font-black text-sm text-sky-300 transition cursor-pointer"
+                        : "preset-btn py-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400 font-black text-sm text-emerald-300 transition cursor-pointer";
+                } else {
+                    btn.className = "preset-btn py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 font-black text-sm text-white transition cursor-pointer";
+                }
+            });
+        }
+
+        function updateNetworkAmountUI() {
+            const limits = getNetworkLimits(selectedNetwork);
+            const amountInput = document.getElementById("input-amount");
+            const badgeEl = document.getElementById("amount-limits-badge");
+
+            if (amountInput) {
+                amountInput.min = String(limits.min);
+                amountInput.max = String(limits.max);
+                const currentNum = Number(amountInput.value);
+                if (!Number.isFinite(currentNum) || currentNum < limits.min) {
+                    amountInput.value = String(limits.min);
+                } else if (currentNum > limits.max) {
+                    amountInput.value = String(limits.max);
+                }
+            }
+
+            if (badgeEl) {
+                badgeEl.textContent = `${limits.label}: الحد الأدنى ${limits.min} د.ل • الحد الأقصى ${limits.max} د.ل`;
+                badgeEl.className = selectedNetwork === "almadar"
+                    ? "text-xs font-extrabold text-sky-300 bg-sky-500/10 border border-sky-500/25 px-2.5 py-0.5 rounded-full"
+                    : "text-xs font-extrabold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 rounded-full";
+            }
+
+            renderPresetButtons();
+        }
 
         function extractYoutubeVideoId(rawInput) {
             if (!rawInput || typeof rawInput !== "string") return "";
@@ -1043,16 +1154,20 @@
             const libBtn = document.getElementById("net-libyana");
             const madBtn = document.getElementById("net-almadar");
             if (net === "libyana") {
-                libBtn.className = "p-3.5 rounded-2xl border-2 border-emerald-400 bg-emerald-500/15 text-white font-extrabold flex items-center justify-center gap-2 transition cursor-pointer";
-                madBtn.className = "p-3.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold flex items-center justify-center gap-2 transition cursor-pointer";
+                libBtn.className = "p-3.5 rounded-2xl border-2 border-emerald-400 bg-emerald-500/15 text-white font-extrabold flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+                madBtn.className = "p-3.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold flex flex-col items-center justify-center gap-1 transition cursor-pointer";
             } else {
-                madBtn.className = "p-3.5 rounded-2xl border-2 border-sky-400 bg-sky-500/15 text-white font-extrabold flex items-center justify-center gap-2 transition cursor-pointer";
-                libBtn.className = "p-3.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold flex items-center justify-center gap-2 transition cursor-pointer";
+                madBtn.className = "p-3.5 rounded-2xl border-2 border-sky-400 bg-sky-500/15 text-white font-extrabold flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+                libBtn.className = "p-3.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold flex flex-col items-center justify-center gap-1 transition cursor-pointer";
             }
+            updateNetworkAmountUI();
         }
 
         function setPresetAmount(val) {
-            document.getElementById("input-amount").value = val;
+            const limits = getNetworkLimits(selectedNetwork);
+            const clamped = Math.min(limits.max, Math.max(limits.min, Number(val)));
+            document.getElementById("input-amount").value = clamped;
+            syncPresetHighlights();
         }
 
         function openTransferModal() {
@@ -1062,11 +1177,13 @@
                 showToast(`⏳ يرجى الانتظار ${formatCountdown(remainingMs)} قبل إجراء تحويل آخر`);
                 return;
             }
-            const amount = Number(document.getElementById("input-amount").value);
-            if (!amount || amount <= 0) {
-                showToast("⚠️ يرجى إدخال مبلغ صحيح أكبر من صفر");
+            const rawAmount = document.getElementById("input-amount").value;
+            const check = validateSupportAmount(rawAmount, selectedNetwork);
+            if (!check.valid) {
+                showToast(check.message);
                 return;
             }
+            const amount = check.amount;
             const donorName = document.getElementById("input-donor-name").value.trim() || "داعم مجهول";
             const phone = selectedNetwork === "libyana" ? streamerSettings.libyana_phone : streamerSettings.almadar_phone;
             const ussd = selectedNetwork === "libyana"
@@ -1400,7 +1517,13 @@
                 return;
             }
 
-            const amount = Number(document.getElementById("input-amount").value) || 10;
+            const rawAmount = document.getElementById("input-amount").value;
+            const check = validateSupportAmount(rawAmount, selectedNetwork);
+            if (!check.valid) {
+                showToast(check.message);
+                return;
+            }
+            const amount = check.amount;
             const donorName = document.getElementById("input-donor-name").value.trim() || "داعم مجهول";
             const message = document.getElementById("input-donor-message").value.trim() || "دعم مباشر للبث!";
             const alertUid = "alert_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
@@ -1983,6 +2106,7 @@
                 }
             } else {
                 updateAuthUI();
+                updateNetworkAmountUI();
                 updateYoutubeVideoStatusUI();
                 wasCooldownActive = getRemainingCooldownMs() > 0;
                 updateTransferCooldownUI();
