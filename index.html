@@ -35,12 +35,55 @@
             border: none !important;
             box-shadow: none !important;
         }
-        .top-supporter-row {
-            background: transparent;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        .top-board-title {
+            color: #facc15;
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.96), 0 0 4px rgba(0, 0, 0, 0.98);
         }
-        .top-supporter-row:last-child {
-            border-bottom: none;
+        .top-board-row {
+            background: transparent;
+            border: none;
+        }
+        .top-rank-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85);
+        }
+        .top-rank-1 {
+            background: radial-gradient(circle at 30% 30%, #fef08a, #eab308);
+            color: #1e1b08;
+            border: 2px solid #fef9c3;
+        }
+        .top-rank-2 {
+            background: radial-gradient(circle at 30% 30%, #f1f5f9, #94a3b8);
+            color: #0f172a;
+            border: 2px solid #e2e8f0;
+        }
+        .top-rank-3 {
+            background: radial-gradient(circle at 30% 30%, #fdba74, #c2410c);
+            color: #fff7ed;
+            border: 2px solid #fed7aa;
+        }
+        .top-avatar-ring {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            background: rgba(15, 23, 42, 0.72);
+            border: 2px solid rgba(250, 204, 21, 0.65);
+            color: #f8fafc;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85);
         }
         @keyframes alertPop {
             0% {
@@ -113,14 +156,14 @@
         </div>
     </div>
 
-    <!-- واجهة ويدجت أبرز 3 داعمين الشفافة والاحترافية للبث المباشر (?top=true) -->
-    <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-3.5 flex items-start justify-start pointer-events-none">
-        <div class="top-overlay-card w-full max-w-[270px] space-y-2">
-            <div class="flex items-center gap-2 pb-1.5 border-b border-amber-300/35">
-                <span class="text-xs font-black tracking-wide text-amber-300 frameless-text-shadow">أبرز 3 داعمين</span>
+    <!-- واجهة ويدجت أبرز 3 داعمين الشفافة للبث المباشر (?top=true) -->
+    <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-5 flex items-start justify-start pointer-events-none">
+        <div class="top-overlay-card w-full max-w-[460px] space-y-4">
+            <div class="flex items-center justify-start">
+                <span class="top-board-title text-2xl sm:text-3xl font-black tracking-wide">أفضل الداعمين</span>
             </div>
-            <div id="widget-top-supporters-list" class="space-y-1">
-                <div class="py-1.5 text-xs text-slate-200 font-bold frameless-text-shadow">
+            <div id="widget-top-supporters-list" class="space-y-3">
+                <div class="py-2 text-sm text-slate-200 font-bold frameless-text-shadow">
                     لا يوجد داعمون معتمدون بعد
                 </div>
             </div>
@@ -1082,6 +1125,16 @@
                 .slice(0, 3);
         }
 
+        function formatSupporterAmount(total) {
+            const num = Number(total) || 0;
+            return `${num.toFixed(2)} د.ل`;
+        }
+
+        function getSupporterInitial(name) {
+            const clean = String(name || "").trim();
+            return clean ? clean.charAt(0) : "★";
+        }
+
         function renderTopSupporters(items) {
             const topContainer = document.getElementById("top-supporters-list");
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
@@ -1105,21 +1158,23 @@
 
             if (widgetTopContainer) {
                 if (!sorted.length) {
-                    widgetTopContainer.innerHTML = `<div class="py-1.5 text-xs text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
+                    widgetTopContainer.innerHTML = `<div class="py-2 text-sm text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
                 } else {
                     widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => {
-                        const rankBadgeColor = idx === 0
-                            ? "text-amber-300"
+                        const rankClass = idx === 0
+                            ? "top-rank-1"
                             : idx === 1
-                                ? "text-slate-200"
-                                : "text-amber-500";
+                                ? "top-rank-2"
+                                : "top-rank-3";
+                        const initial = escapeHtml(getSupporterInitial(name));
                         return `
-                            <div class="top-supporter-row flex items-center justify-between gap-2 py-1.5">
-                                <div class="flex items-center gap-2 min-w-0">
-                                    <span class="text-xs font-black shrink-0 ${rankBadgeColor} frameless-text-shadow">#${idx + 1}</span>
-                                    <span class="font-extrabold text-xs text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+                            <div class="top-board-row flex items-center justify-between gap-4 py-1.5">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <span class="top-rank-circle ${rankClass}">${idx + 1}</span>
+                                    <span class="top-avatar-ring">${initial}</span>
+                                    <span class="font-black text-xl sm:text-2xl text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
                                 </div>
-                                <span class="shrink-0 text-emerald-300 font-black text-xs frameless-text-shadow">${total} د.ل</span>
+                                <span class="shrink-0 text-amber-300 font-black text-xl sm:text-2xl frameless-text-shadow">${formatSupporterAmount(total)}</span>
                             </div>
                         `;
                     }).join("");
