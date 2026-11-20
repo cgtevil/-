@@ -1527,9 +1527,11 @@
         }
 
         function saveLocalDonation(record) {
-            const list = getLocalDonations().filter((x) => (x.alert_uid || x.id) !== (record.alert_uid || record.id));
-            list.unshift(record);
-            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
+            const filtered = filterOutDeletedItems(getLocalDonations()).filter(
+                (x) => (x.alert_uid || x.id) !== (record.alert_uid || record.id)
+            );
+            filtered.unshift(record);
+            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(filtered.slice(0, 50)));
         }
 
         function sortDonationsPendingFirst(items) {
@@ -1554,6 +1556,11 @@
             renderStreamerDonations(list);
             renderApprovedSupporters(list);
             handleStreamerPendingAlertsAndQuickBar(list);
+            try {
+                if (broadcastChannel) {
+                    broadcastChannel.postMessage({ type: "DONATIONS_UPDATED", payload: { items: list } });
+                }
+            } catch (e) {}
         }
 
         async function refreshAndPurgeOldDonations() {
@@ -2009,10 +2016,21 @@
                         }
                     });
                     const data = await res.json();
-                    if (!data.ok || !data.item) {
+                    if (!data.ok) {
                         showToast(`⚠️ تعذر تحديث حالة الطلب: ${data.error || "خطأ"}`);
                         return;
                     }
+                    const nextStatus = action === "approve" ? "approved" : "rejected";
+                    const baseList = cachedDonations.length ? cachedDonations : getLocalDonations();
+                    const optimisticList = baseList.map((it) => {
+                        const idMatch = String(it.alert_uid || it.id || "") === String(alertUid);
+                        if (!idMatch) return it;
+                        return Object.assign({}, it, data.item || {}, {
+                            review_status: nextStatus,
+                            alert_notified: action === "approve" ? 1 : 0
+                        });
+                    });
+                    syncDonationsState(optimisticList);
                     if (action === "approve") {
                         showToast("✅ تم قبول الطلب ونقله إلى الداعمين المقبولين وإرساله للبث (?widget=true)");
                     } else {
