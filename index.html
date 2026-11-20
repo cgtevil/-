@@ -124,7 +124,7 @@
         <span id="toast-text"></span>
     </div>
 
-    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار: اسم الداعم + المبلغ أعلى المنتصف بقليل وأسفله مباشرة رسالة الدعم -->
+    <!-- واجهة وضع الويدجت الشفاف للبث المباشر (?widget=true) بدون إطار: يظهر فقط عند اعتماد الطلب من D1 -->
     <div id="widget-view" class="hidden fixed inset-0 w-screen h-screen flex items-center justify-center pointer-events-none">
         <div id="live-alert-card" class="hidden alert-anim relative w-full h-full flex items-center justify-center overflow-hidden">
             <!-- مرحلة عرض الفيديو المحلي أو فيديو يوتيوب المستجلب مع التنبيه -->
@@ -202,7 +202,7 @@
             </div>
         </header>
 
-        <!-- شريط القبول السريع للستريمر عند وصول طلب جديد (يظهر تلقائياً على الهاتف/المتصفح دون الحاجة لفتح اللوحة) -->
+        <!-- شريط القبول السريع للستريمر عند وصول طلب جديد -->
         <div id="streamer-quick-approve-bar" class="hidden border-b border-amber-400/40 bg-amber-500/15 backdrop-blur-md">
             <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-0.5">
@@ -302,7 +302,7 @@
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> من رقمك المحوّل منه لتفعيل زر <strong>"تم التحويل"</strong>.</li>
-                        <li>• يُسجَّل طلبك مع <strong>رمز تتبع</strong> ويُعرض على البث فور تأكيد وصول الرصيد من لوحة الستريمر، مع تفعيل مؤقت 5 دقائق.</li>
+                        <li>• يُسجَّل طلبك مع <strong>رمز تتبع</strong> ولا يظهر على البث إلا بعد <strong>قبوله</strong> من «طلبات الدعم وحالة الاعتماد (D1)»، مع تفعيل مؤقت 5 دقائق.</li>
                     </ul>
                 </div>
             </aside>
@@ -338,7 +338,7 @@
             </div>
 
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-400/25 text-amber-200 text-xs font-bold leading-relaxed text-center">
-                ⚠️ تنبيه: الظهور على شاشة البث مشروط بوصول الرصيد الفعلي ومراجعته من الستريمر؛ الطلبات العشوائية أو غير المؤكدة يتم رفضها أو تجاهلها.
+                ⚠️ تنبيه: الظهور على شاشة البث مشروط بقبول الطلب من «طلبات الدعم وحالة الاعتماد (D1)»؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -452,7 +452,7 @@
 
             <!-- رابط الويدجت -->
             <div class="space-y-2">
-                <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio)</label>
+                <label class="block text-xs font-bold text-amber-300">رابط التنبيهات المدمج للبث المباشر (TikTok Live Studio) — يظهر فقط عند الاعتماد من D1</label>
                 <div class="flex gap-2">
                     <input id="widget-url-input" type="text" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
                     <button type="button" onclick="copyWidgetUrl()" class="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
@@ -597,10 +597,11 @@
         const alertQueue = [];
         let broadcastChannel = null;
 
-        const streamerSettings = {
-            libyana_phone: DEFAULT_LIBYANA_PHONE,
-            almadar_phone: DEFAULT_ALMADAR_PHONE
-        };
+        function isApprovedAlertPayload(item) {
+            if (!item || typeof item !== "object") return false;
+            if (item.is_manual_test === true) return true;
+            return item.review_status === "approved";
+        }
 
         function isStreamerSoundEnabled() {
             return safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === "1";
@@ -1035,10 +1036,10 @@
             if (!statusEl) return;
 
             if (activeYoutubeVideoId) {
-                statusEl.textContent = `✅ تم استجلاب فيديو يوتيوب (${activeYoutubeVideoId}) وسيُعرض مع التنبيهات.`;
+                statusEl.textContent = `✅ تم استجلاب فيديو يوتيوب (${activeYoutubeVideoId}) وسيُعرض مع التنبيهات المعتمدة.`;
                 statusEl.className = "text-xs text-rose-300 font-bold";
             } else {
-                statusEl.textContent = `يتم استخدام الفيديو المحلي المباشر (${DEFAULT_LOCAL_VIDEO_URL}) تلقائياً مع التنبيهات.`;
+                statusEl.textContent = `يتم استخدام الفيديو المحلي المباشر (${DEFAULT_LOCAL_VIDEO_URL}) تلقائياً مع التنبيهات المعتمدة.`;
                 statusEl.className = "text-xs text-emerald-300 font-semibold";
             }
         }
@@ -1576,7 +1577,7 @@
             }
             const amount = check.amount;
             const donorName = nameCheck.name;
-            const phone = selectedNetwork === "libyana" ? streamerSettings.libyana_phone : streamerSettings.almadar_phone;
+            const phone = selectedNetwork === "libyana" ? DEFAULT_LIBYANA_PHONE : DEFAULT_ALMADAR_PHONE;
             const ussd = selectedNetwork === "libyana"
                 ? `*122*${phone}*${amount}#`
                 : `*140*4*1*${amount}*${phone}#`;
@@ -2022,7 +2023,7 @@
                     wasCopyDelayRunning = false;
                     closeTransferModal();
                     startTransferCooldown();
-                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) للمراجعة؛ سيظهر على البث فور اعتماده`);
+                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) للمراجعة؛ لن يظهر على البث إلا بعد قبوله من D1`);
                     return;
                 } catch (e) {
                     showToast("⚠️ تعذر الاتصال بالخادم، تم تسجيل الطلب محلياً قيد المراجعة");
@@ -2042,7 +2043,7 @@
             wasCopyDelayRunning = false;
             closeTransferModal();
             startTransferCooldown();
-            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة؛ سيظهر على البث فور اعتماده`);
+            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة؛ لن يظهر على البث إلا بعد قبوله من D1`);
         }
 
         async function reviewDonation(alertUid, action) {
@@ -2106,6 +2107,7 @@
             const target = list.find((item) => (item.alert_uid || item.id) === alertUid);
             if (action === "approve" && target) {
                 broadcastPayload("NEW_DONATION_ALERT", Object.assign({}, target, {
+                    review_status: "approved",
                     video_url: activeLocalVideoUrl,
                     youtube_video_id: activeYoutubeVideoId
                 }));
@@ -2126,12 +2128,14 @@
         }
 
         function persistAlertForWidget(payload) {
+            if (!isApprovedAlertPayload(payload)) return;
             try { safeStorageSet(LATEST_DISPATCH_KEY, JSON.stringify(payload)); } catch (e) {}
             try { window.name = WINDOW_NAME_PREFIX + JSON.stringify(payload); } catch (e) {}
         }
 
         function broadcastPayload(type, payload) {
-            if (type === "NEW_DONATION_ALERT" && payload) {
+            if (type === "NEW_DONATION_ALERT") {
+                if (!isApprovedAlertPayload(payload)) return;
                 persistAlertForWidget(payload);
             }
             if (broadcastChannel) {
@@ -2172,6 +2176,8 @@
                 amount: amount,
                 message: message,
                 network: network,
+                review_status: "approved",
+                is_manual_test: true,
                 video_url: activeLocalVideoUrl,
                 youtube_video_id: activeYoutubeVideoId,
                 created_at: new Date().toISOString()
@@ -2218,7 +2224,7 @@
         }
 
         function enqueueAlert(item) {
-            if (!item) return;
+            if (!item || !isApprovedAlertPayload(item)) return;
             if (item.id) lastSeenAlertId = item.id;
             alertQueue.push(item);
             if (!isShowingAlert) processNextAlert();
@@ -2273,6 +2279,12 @@
             }
             isShowingAlert = true;
             const current = alertQueue.shift();
+
+            if (!isApprovedAlertPayload(current)) {
+                isShowingAlert = false;
+                processNextAlert();
+                return;
+            }
 
             const widgetView = document.getElementById("widget-view");
             const card = document.getElementById("live-alert-card");
@@ -2339,6 +2351,8 @@
                 const res = await fetch(`${API_BASE_URL}/api/alerts/latest`);
                 const data = await res.json();
                 if (data && data.ok && data.alert) {
+                    const status = data.alert.review_status || "approved";
+                    if (status !== "approved") return;
                     const uid = data.alert.alert_uid || String(data.alert.id);
                     if (uid && uid !== lastSeenAlertId) {
                         enqueueAlert({
@@ -2347,6 +2361,7 @@
                             amount: data.alert.amount,
                             message: data.alert.message,
                             network: data.alert.network,
+                            review_status: "approved",
                             video_url: activeLocalVideoUrl,
                             youtube_video_id: activeYoutubeVideoId
                         });
@@ -2360,7 +2375,7 @@
             if (rawLatest) {
                 try {
                     const parsed = JSON.parse(rawLatest);
-                    if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
+                    if (parsed && isApprovedAlertPayload(parsed) && parsed.id && parsed.id !== lastSeenAlertId) {
                         const incoming = Object.assign({}, parsed);
                         if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                         if (!incoming.youtube_video_id && activeYoutubeVideoId) {
@@ -2374,7 +2389,7 @@
             try {
                 if (typeof window.name === "string" && window.name.startsWith(WINDOW_NAME_PREFIX)) {
                     const parsedName = JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
-                    if (parsedName && parsedName.id && parsedName.id !== lastSeenAlertId) {
+                    if (parsedName && isApprovedAlertPayload(parsedName) && parsedName.id && parsedName.id !== lastSeenAlertId) {
                         const incomingName = Object.assign({}, parsedName);
                         if (!incomingName.video_url) incomingName.video_url = activeLocalVideoUrl;
                         if (!incomingName.youtube_video_id && activeYoutubeVideoId) {
@@ -2409,6 +2424,7 @@
                         handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                     } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                         const incoming = Object.assign({}, event.data.payload);
+                        if (!isApprovedAlertPayload(incoming)) return;
                         if (incoming.id && incoming.id === lastSeenAlertId) return;
                         if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                         if (!incoming.youtube_video_id && activeYoutubeVideoId) {
@@ -2437,6 +2453,7 @@
                     handleStreamerPendingAlertsAndQuickBar(cachedDonations);
                 } else if (event.data.type === "NEW_DONATION_ALERT" && event.data.payload) {
                     const incoming = Object.assign({}, event.data.payload);
+                    if (!isApprovedAlertPayload(incoming)) return;
                     if (incoming.id && incoming.id === lastSeenAlertId) return;
                     if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                     if (!incoming.youtube_video_id && activeYoutubeVideoId) {
@@ -2467,7 +2484,7 @@
                 } else if (event.key === LATEST_DISPATCH_KEY && event.newValue && isWidgetMode()) {
                     try {
                         const parsed = JSON.parse(event.newValue);
-                        if (parsed && parsed.id && parsed.id !== lastSeenAlertId) {
+                        if (parsed && isApprovedAlertPayload(parsed) && parsed.id && parsed.id !== lastSeenAlertId) {
                             const incoming = Object.assign({}, parsed);
                             if (!incoming.video_url) incoming.video_url = activeLocalVideoUrl;
                             if (!incoming.youtube_video_id && activeYoutubeVideoId) {
@@ -2532,21 +2549,6 @@
                 document.getElementById("top-widget-view").classList.add("hidden");
                 document.getElementById("widget-view").classList.remove("hidden");
                 preloadLocalVideo(activeLocalVideoUrl);
-
-                const urlDonor = params.get("donor_name");
-                const urlAmount = params.get("amount");
-                if (urlDonor && urlAmount) {
-                    enqueueAlert({
-                        id: params.get("alert_id") || ("url_" + Date.now()),
-                        streamer_username: CORRECT_STREAMER_USER,
-                        donor_name: urlDonor,
-                        amount: Number(urlAmount),
-                        message: params.get("message") || "شكراً لدعمك المباشر!",
-                        network: params.get("network") || "libyana",
-                        video_url: activeLocalVideoUrl,
-                        youtube_video_id: activeYoutubeVideoId
-                    });
-                }
             } else {
                 updateAuthUI();
                 updateNetworkAmountUI();
