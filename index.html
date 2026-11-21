@@ -378,7 +378,6 @@
                 </div>
             </div>
 
-            <!-- خانة طلبات الدعم وحالة الاعتماد (D1) -->
             <div id="d1-approval-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/75 border border-emerald-400/30">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم الواردة (D1)</span>
@@ -401,7 +400,6 @@
                 </div>
             </div>
 
-            <!-- خانة الداعمين المقبولين -->
             <div id="approved-supporters-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-emerald-400/25">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
@@ -546,6 +544,7 @@
         let hasInitializedPendingTracker = false;
         let knownPendingUidSet = new Set();
         let permanentlyDeletedUidSet = new Set();
+        let lastRenderedTopSignature = "";
         const alertQueue = [];
         let broadcastChannel = null;
 
@@ -1651,6 +1650,7 @@
                 if (!res.ok || !data.ok || !Array.isArray(data.items)) {
                     throw new Error(data.error || "تعذر تحميل البيانات");
                 }
+                lastRenderedTopSignature = "";
                 syncDonationsState(data.items);
                 showToast("🔄 تم تحديث قائمة أبرز 3 داعمين");
             } catch (e) {
@@ -1789,6 +1789,12 @@
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
             const sorted = getTopThreeSupporters(items);
             if (!widgetTopContainer) return;
+
+            const nextSignature = JSON.stringify(sorted);
+            if (nextSignature === lastRenderedTopSignature) {
+                return;
+            }
+            lastRenderedTopSignature = nextSignature;
 
             if (!sorted.length) {
                 widgetTopContainer.innerHTML = `<div class="py-2 text-sm text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
@@ -2302,7 +2308,7 @@
             if (isTopWidgetMode()) {
                 fetchDonationsFromDb();
                 clearInterval(window.__topWidgetSyncInterval);
-                window.__topWidgetSyncInterval = setInterval(() => fetchDonationsFromDb(), 4000);
+                window.__topWidgetSyncInterval = setInterval(() => fetchDonationsFromDb(), 15000);
             }
         }
 
@@ -2312,6 +2318,7 @@
             document.getElementById("main-app-view").classList.add("hidden");
             document.getElementById("widget-view").classList.add("hidden");
             document.getElementById("top-widget-view").classList.remove("hidden");
+            lastRenderedTopSignature = "";
             renderTopSupporters(getLocalDonations());
             fetchDonationsFromDb();
         }
