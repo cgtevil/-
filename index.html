@@ -1745,17 +1745,30 @@
             const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
             if (!sourceList.length) { showToast("لا توجد طلبات قديمة لمسحها"); return; }
             if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم القديمة؟")) return;
-            const uidsToDelete = [];
-            sourceList.forEach((item) => {
-                const u = String(item.alert_uid || "").trim();
-                const i = String(item.id || "").trim();
-                if (u) uidsToDelete.push(u);
-                if (i) uidsToDelete.push(i);
-            });
-            markUidsAsPermanentlyDeleted(uidsToDelete);
-            syncDonationsState([]);
-            await clearOldDonationsFromWorker(uidsToDelete);
-            showToast("🧹 تم مسح الداعمين القدامى");
+
+            isReviewActionInProgress = true;
+            clearInterval(window.__streamerPendingPollInterval);
+
+            try {
+                const uidsToDelete = [];
+                sourceList.forEach((item) => {
+                    const u = String(item.alert_uid || "").trim();
+                    const i = String(item.id || "").trim();
+                    if (u) uidsToDelete.push(u);
+                    if (i) uidsToDelete.push(i);
+                });
+                markUidsAsPermanentlyDeleted(uidsToDelete);
+                syncDonationsState([]);
+                if (isApiConfigured() && uidsToDelete.length > 0) {
+                    await clearOldDonationsFromWorker(uidsToDelete);
+                }
+                showToast("🧹 تم مسح الداعمين القدامى");
+            } catch (e) {
+                showToast("⚠️ حدث خطأ أثناء مسح الداعمين القدامى");
+            } finally {
+                isReviewActionInProgress = false;
+                startStreamerBackgroundPolling();
+            }
         }
 
         function getTopThreeSupporters(items) {
@@ -2055,10 +2068,17 @@
                 return;
             }
 
-            const cleanUid = String(alertUid || "").trim();
-            if (!cleanUid || activeReviewUidSet.has(cleanUid)) return;
+            const rawUid = String(alertUid || "").trim();
+            const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const targetItem = currentList.find(
+                (it) => String(it.alert_uid || "").trim() === rawUid || String(it.id || "").trim() === rawUid
+            );
+
+            const cleanUid = String((targetItem && (targetItem.alert_uid || targetItem.id)) || rawUid).trim();
+            if (!cleanUid || activeReviewUidSet.has(cleanUid) || activeReviewUidSet.has(rawUid)) return;
 
             activeReviewUidSet.add(cleanUid);
+            activeReviewUidSet.add(rawUid);
             isReviewActionInProgress = true;
             clearInterval(window.__streamerPendingPollInterval);
 
@@ -2067,14 +2087,12 @@
                 btnEl.textContent = action === "approve" ? "⏳ جاري القبول..." : "⏳ جاري الرفض...";
             }
 
-            const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
-            const targetItem = currentList.find(
-                (it) => String(it.alert_uid || "").trim() === cleanUid || String(it.id || "").trim() === cleanUid
-            );
-
-            const relatedIds = [cleanUid];
-            if (targetItem && targetItem.id) relatedIds.push(String(targetItem.id).trim());
-            if (targetItem && targetItem.alert_uid) relatedIds.push(String(targetItem.alert_uid).trim());
+            const relatedIds = Array.from(new Set([
+                rawUid,
+                cleanUid,
+                targetItem && targetItem.id ? String(targetItem.id).trim() : "",
+                targetItem && targetItem.alert_uid ? String(targetItem.alert_uid).trim() : ""
+            ].filter(Boolean)));
 
             const nextStatus = action === "approve" ? "approved" : "rejected";
             const nextNotified = action === "approve" ? 1 : 0;
@@ -2102,25 +2120,57 @@
 
             try {
                 if (isApiConfigured()) {
-                    const res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(cleanUid)}/${action}`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-Streamer-Pass": CORRECT_STREAMER_PASS
-                        }
-                    });
+                    const candidateIds = Array.from(new Set([
+                        targetItem && targetItem.alert_uid ? String(targetItem.alert_uid).trim() : "",
+                        cleanUid,
+                        rawUid,
+                        targetItem && targetItem.id ? String(targetItem.id).trim() : ""
+                    ].filter(Boolean)));
 
-                    const data = await res.json().catch(() => ({}));
-                    if (!res.ok || !data.ok) {
-                        showToast(`⚠️ خطأ الخادم (${res.status}): ${data.error || "تعذر تحديث الطلب في D1"}`);
+                    let res = null;
+                    let data = {};
+                    let lastStatus = 0;
+
+                    for (let idx = 0; idx < candidateIds.length; idx++) {
+                        const targetId = candidateIds[idx];
+                        res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(targetId)}/${action}`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Streamer-Pass": CORRECT_STREAMER_PASS
+                            }
+                        });
+                        lastStatus = res.status;
+                        data = await res.json().catch(() => ({}));
+                        if (res.ok && data.ok) break;
+                        if (res.status !== 404 && idx === candidateIds.length - 1) break;
+                    }
+
+                    if (!res || !res.ok || !data.ok) {
+                        const rollbackList = (cachedDonations.length ? cachedDonations : currentList).map((it) => {
+                            const u = String(it.alert_uid || "").trim();
+                            const i = String(it.id || "").trim();
+                            if (relatedIds.includes(u) || relatedIds.includes(i)) {
+                                return Object.assign({}, it, {
+                                    review_status: "pending",
+                                    alert_notified: 0
+                                });
+                            }
+                            return it;
+                        });
+                        if (action === "approve") removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
+                        else removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
+                        syncDonationsState(rollbackList);
+                        showToast(`⚠️ خطأ الخادم (${lastStatus || 500}): ${data.error || "تعذر تحديث الطلب في D1"}`);
                         return;
                     }
 
+                    const serverItem = data.item || {};
                     const confirmedList = (cachedDonations.length ? cachedDonations : optimisticList).map((it) => {
                         const u = String(it.alert_uid || "").trim();
                         const i = String(it.id || "").trim();
                         if (relatedIds.includes(u) || relatedIds.includes(i)) {
-                            return Object.assign({}, it, data.item || {}, {
+                            return Object.assign({}, it, serverItem, {
                                 review_status: nextStatus,
                                 alert_notified: nextNotified
                             });
@@ -2136,9 +2186,23 @@
                         : "❌ تم رفض الطلب وإزالته من القائمة"
                 );
             } catch (e) {
+                const rollbackList = (cachedDonations.length ? cachedDonations : currentList).map((it) => {
+                    const u = String(it.alert_uid || "").trim();
+                    const i = String(it.id || "").trim();
+                    if (relatedIds.includes(u) || relatedIds.includes(i)) {
+                        return Object.assign({}, it, {
+                            review_status: "pending",
+                            alert_notified: 0
+                        });
+                    }
+                    return it;
+                });
+                if (action === "approve") removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
+                else removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
+                syncDonationsState(rollbackList);
                 showToast("⚠️ تعذر الاتصال بالـ Worker؛ تأكد من الإنترنت أو رابط الـ API");
             } finally {
-                activeReviewUidSet.delete(cleanUid);
+                relatedIds.forEach((idKey) => activeReviewUidSet.delete(idKey));
                 isReviewActionInProgress = false;
                 startStreamerBackgroundPolling();
             }
