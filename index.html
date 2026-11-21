@@ -523,6 +523,8 @@
         const SOUND_ENABLED_STORAGE_KEY = "cgtevil_streamer_sound_enabled";
         const KNOWN_PENDING_IDS_KEY = "cgtevil_known_pending_uids";
         const DELETED_UIDS_KEY = "cgtevil_permanently_deleted_uids";
+        const MANUALLY_APPROVED_UIDS_KEY = "cgtevil_manually_approved_uids";
+        const MANUALLY_REJECTED_UIDS_KEY = "cgtevil_manually_rejected_uids";
         const DEFAULT_LIBYANA_PHONE = "0944630534";
         const DEFAULT_ALMADAR_PHONE = "0917043842";
         const TARGET_WIDGET_URL = "https://cgtevil.github.io/-/?widget=true#/d/cgtevil";
@@ -751,13 +753,16 @@
 
         function markUidsAsPermanentlyDeleted(uids) {
             loadDeletedUidSet();
-            (Array.isArray(uids) ? uids : [uids]).forEach((u) => {
+            const list = Array.isArray(uids) ? uids : [uids];
+            list.forEach((u) => {
                 const clean = String(u || "").trim();
                 if (clean) {
                     permanentlyDeletedUidSet.add(clean);
                     knownPendingUidSet.delete(clean);
                 }
             });
+            removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, list);
+            removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, list);
             persistDeletedUidSet();
             persistKnownPendingSet();
         }
@@ -774,12 +779,87 @@
             });
         }
 
+        function getStoredIdSet(storageKey) {
+            try {
+                const raw = safeStorageGet(storageKey);
+                const arr = raw ? JSON.parse(raw) : [];
+                return new Set(Array.isArray(arr) ? arr.map((x) => String(x || "").trim()).filter(Boolean) : []);
+            } catch (e) {
+                return new Set();
+            }
+        }
+
+        function addToStoredIdSet(storageKey, ids) {
+            const set = getStoredIdSet(storageKey);
+            (Array.isArray(ids) ? ids : [ids]).forEach((val) => {
+                const clean = String(val || "").trim();
+                if (clean) set.add(clean);
+            });
+            safeStorageSet(storageKey, JSON.stringify(Array.from(set).slice(-500)));
+        }
+
+        function removeFromStoredIdSet(storageKey, ids) {
+            const set = getStoredIdSet(storageKey);
+            (Array.isArray(ids) ? ids : [ids]).forEach((val) => {
+                const clean = String(val || "").trim();
+                if (clean) set.delete(clean);
+            });
+            safeStorageSet(storageKey, JSON.stringify(Array.from(set).slice(-500)));
+        }
+
+        function normalizeIncomingDonationItems(items) {
+            const approvedSet = getStoredIdSet(MANUALLY_APPROVED_UIDS_KEY);
+            const rejectedSet = getStoredIdSet(MANUALLY_REJECTED_UIDS_KEY);
+            const localMap = new Map();
+            getLocalDonations().forEach((loc) => {
+                const u = String(loc?.alert_uid || "").trim();
+                const i = String(loc?.id || "").trim();
+                if (u) localMap.set(u, loc);
+                if (i) localMap.set(i, loc);
+            });
+
+            return (Array.isArray(items) ? items : []).map((rawItem) => {
+                if (!rawItem || typeof rawItem !== "object") return rawItem;
+                const item = Object.assign({}, rawItem);
+                const u = String(item.alert_uid || "").trim();
+                const i = String(item.id || "").trim();
+                const localMatch = (u && localMap.get(u)) || (i && localMap.get(i)) || null;
+
+                const isManuallyApproved = (u && approvedSet.has(u)) || (i && approvedSet.has(i)) || Boolean(item.manual_approval_token);
+                const isManuallyRejected = (u && rejectedSet.has(u)) || (i && rejectedSet.has(i));
+
+                if (isManuallyRejected) {
+                    item.review_status = "rejected";
+                    return item;
+                }
+
+                if (isManuallyApproved) {
+                    item.review_status = "approved";
+                    return item;
+                }
+
+                // إذا عاد السجل من الخادم بحالة approved تلقائياً دون أي اعتماد يدوي مسجّل، أعده إلى pending ليظهر في خانة D1 للمراجعة
+                if (item.review_status === "approved") {
+                    const localStatus = localMatch && localMatch.review_status;
+                    if (!localStatus || localStatus === "pending") {
+                        item.review_status = "pending";
+                        item.alert_notified = 0;
+                    }
+                } else if (!item.review_status) {
+                    item.review_status = "pending";
+                }
+
+                return item;
+            });
+        }
+
         function getIncomingPendingDonations(items) {
-            return sortDonationsPendingFirst(items).filter((x) => !x.review_status || x.review_status === "pending");
+            return sortDonationsPendingFirst(normalizeIncomingDonationItems(items))
+                .filter((x) => x && (!x.review_status || x.review_status === "pending"));
         }
 
         function getApprovedSupporters(items) {
-            return (Array.isArray(items) ? items : [])
+            return normalizeIncomingDonationItems(items)
                 .filter((x) => x && x.review_status === "approved")
                 .slice()
                 .sort((a, b) => (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0));
@@ -1549,7 +1629,7 @@
         }
 
         function syncDonationsState(items) {
-            const list = filterOutDeletedItems(Array.isArray(items) ? items : []);
+            const list = normalizeIncomingDonationItems(filterOutDeletedItems(Array.isArray(items) ? items : []));
             cachedDonations = list;
             safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify(list));
             renderTopSupporters(list);
@@ -1964,9 +2044,15 @@
                     });
                     const data = await res.json();
                     if (!data.ok) { showToast(`⚠️ تعذر حفظ الطلب: ${data.error || "خطأ"}`); return; }
+                    const resolvedUid = (data.item && data.item.alert_uid) || alertUid;
+                    const resolvedId = (data.item && data.item.id) || alertUid;
+                    removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, [alertUid, resolvedUid, resolvedId]);
+                    removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, [alertUid, resolvedUid, resolvedId]);
                     const serverItem = Object.assign({}, record, data.item || {}, {
-                        alert_uid: (data.item && data.item.alert_uid) || alertUid,
-                        review_status: (data.item && data.item.review_status) || "pending"
+                        id: resolvedId,
+                        alert_uid: resolvedUid,
+                        review_status: "pending",
+                        alert_notified: 0
                     });
                     saveLocalDonation(serverItem);
                     await fetchDonationsFromDb();
@@ -2005,6 +2091,20 @@
 
         async function reviewDonation(alertUid, action) {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
+            const cleanUid = String(alertUid || "").trim();
+            const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
+            const targetItem = currentList.find((it) => String(it.alert_uid || it.id || "") === cleanUid);
+            const relatedIds = [cleanUid];
+            if (targetItem && targetItem.id) relatedIds.push(String(targetItem.id).trim());
+            if (targetItem && targetItem.alert_uid) relatedIds.push(String(targetItem.alert_uid).trim());
+
+            if (action === "approve") {
+                addToStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
+                removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
+            } else {
+                addToStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
+                removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
+            }
 
             if (isApiConfigured()) {
                 try {
