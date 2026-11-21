@@ -268,7 +268,7 @@
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
-                        <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> كمرجع للمراجعة اليدوية؛ هذا ليس رمز OTP ولا يثبت ملكية رقم الهاتف.</li>
+                        <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> كمرجع للمراجعة اليدوية فقط؛ هذا ليس رمز OTP ولا يثبت ملكية رقم الهاتف.</li>
                         <li>• يُسجَّل طلبك في قاعدة D1 ولا يظهر الفيديو إلا في <strong>رابط البث المباشر (?widget=true)</strong> بعد قبوله من لوحة الستريمر.</li>
                     </ul>
                 </div>
@@ -2329,6 +2329,7 @@
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
+                sessionStorage.removeItem(WIDGET_CURSOR_STORAGE_KEY);
                 purgeAllStoredWidgetAlerts();
                 document.body.classList.add("widget-mode");
                 document.getElementById("main-app-view").classList.add("hidden");
@@ -2376,6 +2377,7 @@
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
+                sessionStorage.removeItem(WIDGET_CURSOR_STORAGE_KEY);
                 purgeAllStoredWidgetAlerts();
                 document.body.classList.remove("top-widget-mode");
                 document.body.classList.add("widget-mode");
@@ -2389,9 +2391,3 @@
     </script>
 </body>
 </html>
-```[cite: 1, 6]
-
-<ElicitationsGroup message="إذا أردت خطوة إضافية:">
-  <Elicitation label="تم التعديل كما طلبت" query="شكراً، سأرفع هذا الملف المعدّل إلى GitHub Pages"/>
-  <Elicitation label="تعديل شكل المبلغ" query="عدّل شكل أو لون المبلغ بجانب الاسم في قائمة أفضل 3 داعمين"/>
-</ElicitationsGroup>
