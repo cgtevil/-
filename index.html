@@ -401,7 +401,7 @@
                 </div>
             </div>
 
-            <!-- خانة الداعمين المقبولين -->
+            <!-- خانة الداعمين المقبولين (بديلة عن خانة اختبار إرسال إشعار رابط البث المباشر) -->
             <div id="approved-supporters-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-emerald-400/25">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
@@ -495,6 +495,7 @@
     </div>
 
     <script>
+        
         const API_BASE_URL = "https://cgtevil-donations-api.dis517226.workers.dev";
 
         const CORRECT_STREAMER_USER = "cgtevil";
@@ -808,6 +809,7 @@
                 const item = Object.assign({}, rawItem);
                 const u = String(item.alert_uid || "").trim();
                 const i = String(item.id || "").trim();
+                const localMatch = (u && localMap.get(u)) || (i && localMap.get(i)) || null;
 
                 const isManuallyApproved = (u && approvedSet.has(u)) || (i && approvedSet.has(i)) || Boolean(item.manual_approval_token);
                 const isManuallyRejected = (u && rejectedSet.has(u)) || (i && rejectedSet.has(i));
@@ -822,6 +824,7 @@
                     return item;
                 }
 
+                // حالة الاعتماد تأتي من D1 فقط؛ لا نغيّر قرار الخادم اعتماداً على ذاكرة المتصفح.
                 if (!item.review_status) item.review_status = "pending";
 
                 return item;
@@ -1796,33 +1799,31 @@
             return clean ? clean.charAt(0) : "★";
         }
 
-        // التعديل هنا فقط: ضبط عرض الصف والمبلغ بوضوح في اتجاه RTL
         function renderTopSupporters(items) {
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
             const sorted = getTopThreeSupporters(items);
             if (!widgetTopContainer) return;
-
             if (!sorted.length) {
                 widgetTopContainer.innerHTML = `<div class="py-2 text-sm text-slate-200 font-bold frameless-text-shadow">لا يوجد داعمون معتمدون بعد</div>`;
-                return;
-            }
-
-            widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => {
-                const rankClass = idx === 0 ? "top-rank-1" : idx === 1 ? "top-rank-2" : "top-rank-3";
-                const initial = escapeHtml(getSupporterInitial(name));
-                return `
-                    <div class="top-board-row flex items-center justify-between gap-3 py-1.5 w-full overflow-hidden">
-                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                            <span class="top-rank-circle ${rankClass}">${idx + 1}</span>
-                            <span class="top-avatar-ring">${initial}</span>
-                            <span class="font-black text-xl sm:text-2xl text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+            } else {
+                widgetTopContainer.innerHTML = sorted.map(([name, total], idx) => {
+                    const rankClass = idx === 0 ? "top-rank-1" : idx === 1 ? "top-rank-2" : "top-rank-3";
+                    const initial = escapeHtml(getSupporterInitial(name));
+                    return `
+                        <div class="top-board-row flex items-center justify-between gap-4 py-1.5">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="top-rank-circle ${rankClass}">${idx + 1}</span>
+                                <span class="top-avatar-ring">${initial}</span>
+                                <span class="font-black text-xl sm:text-2xl text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+                            </div>
+                            <span class="shrink-0 text-amber-300 font-black text-xl sm:text-2xl frameless-text-shadow">${formatSupporterAmount(total)}</span>
                         </div>
-                        <span dir="ltr" class="shrink-0 whitespace-nowrap text-amber-300 font-black text-xl sm:text-2xl frameless-text-shadow">${escapeHtml(formatSupporterAmount(total))}</span>
-                    </div>
-                `;
-            }).join("");
+                    `;
+                }).join("");
+            }
         }
 
+        // تعرض خانة D1 الطلبات الواردة (قيد المراجعة) فقط
         function renderStreamerDonations(items) {
             const container = document.getElementById("recent-donations-list");
             const titleEl = document.getElementById("donations-panel-title");
@@ -1871,6 +1872,7 @@
             }).join("");
         }
 
+        // خانة الداعمين المقبولين
         function renderApprovedSupporters(items) {
             const container = document.getElementById("approved-supporters-list");
             const countEl = document.getElementById("approved-supporters-count");
@@ -1927,6 +1929,7 @@
                     syncDonationsState(data.items);
                 }
             } catch (e) {
+                // احتفظ بالعرض الحالي دون اعتبار التخزين المحلي مصدراً موثوقاً لحالة D1.
             } finally {
                 isFetchingDonations = false;
             }
@@ -1994,6 +1997,7 @@
                 alert_notified: 0
             };
 
+            // إزالة أي أثر سابق لهذا المعرّف من قائمة المحذوفات الدائمة عند إرسال طلب دعم جديد
             loadDeletedUidSet();
             permanentlyDeletedUidSet.delete(alertUid);
             persistDeletedUidSet();
@@ -2393,7 +2397,7 @@
                 pollApprovedLiveAlertsForWidget();
             }
         });
+    
     </script>
 </body>
 </html>
-```[cite: 1]
