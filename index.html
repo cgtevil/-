@@ -1802,7 +1802,7 @@
                 return;
             }
 
-            widgetTopContainer.innerHTML = sorted.map(([name], idx) => {
+            widgetTopContainer.innerHTML = sorted.map(([name, amount], idx) => {
                 const rankClass = idx === 0 ? "top-rank-1" : idx === 1 ? "top-rank-2" : "top-rank-3";
                 const initial = escapeHtml(getSupporterInitial(name));
                 return `
@@ -1810,6 +1810,7 @@
                         <span class="top-rank-circle ${rankClass}">${idx + 1}</span>
                         <span class="top-avatar-ring">${initial}</span>
                         <span class="font-black text-xl sm:text-2xl text-white truncate frameless-text-shadow">${escapeHtml(name)}</span>
+                        <span class="font-black text-lg sm:text-xl text-emerald-300 shrink-0 frameless-text-shadow">${Number(amount) || 0} د.ل</span>
                     </div>
                 `;
             }).join("");
@@ -1855,8 +1856,8 @@
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
                             <button type="button" data-review-action="approve" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
-                            <button type="button" data-review-action="reject" data-review-uid="${escapeHtml(uid)}" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
-                            <button type="button" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
+                            <button type="button" data-review-action="reject" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
+                            <button type="button" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
                 `;
@@ -2388,10 +2389,9 @@
     </script>
 </body>
 </html>
-```[cite: 1]
+```[cite: 1, 6]
 
 <ElicitationsGroup message="إذا أردت خطوة إضافية:">
-  <Elicitation label="إظهار المبلغ مع الاسم" query="أضف قيمة الدعم بجانب اسم الداعم في قائمة أفضل 3 داعمين"/>
-  <Elicitation label="إبقاء الاسم فقط" query="سأبقي هذه النسخة التي تعرض الاسم فقط في قائمة أفضل 3 داعمين"/>
-  <Elicitation label="تعديل تنسيق القائمة" query="عدّل حجم الخط أو الألوان في قائمة أفضل 3 داعمين لتناسب البث المباشر"/>
+  <Elicitation label="تم التعديل كما طلبت" query="شكراً، سأرفع هذا الملف المعدّل إلى GitHub Pages"/>
+  <Elicitation label="تعديل شكل المبلغ" query="عدّل شكل أو لون المبلغ بجانب الاسم في قائمة أفضل 3 داعمين"/>
 </ElicitationsGroup>
