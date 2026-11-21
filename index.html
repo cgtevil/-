@@ -378,7 +378,7 @@
                 </div>
             </div>
 
-            <!-- خانة طلبات الدعم وحالة الاعتماد (D1) - تعرض الطلبات الواردة فقط -->
+            <!-- خانة طلبات الدعم وحالة الاعتماد (D1) -->
             <div id="d1-approval-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/75 border border-emerald-400/30">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم الواردة (D1)</span>
@@ -578,7 +578,7 @@
         function isExplicitlyApprovedForLiveStream(item) {
             if (!item || typeof item !== "object") return false;
             if (item.is_manual_test === true) return true;
-            return item.review_status === "approved" && Boolean(item.manual_approval_token);
+            return item.review_status === "approved";
         }
 
         function purgeAllStoredWidgetAlerts() {
@@ -795,13 +795,6 @@
         function normalizeIncomingDonationItems(items) {
             const approvedSet = getStoredIdSet(MANUALLY_APPROVED_UIDS_KEY);
             const rejectedSet = getStoredIdSet(MANUALLY_REJECTED_UIDS_KEY);
-            const localMap = new Map();
-            getLocalDonations().forEach((loc) => {
-                const u = String(loc?.alert_uid || "").trim();
-                const i = String(loc?.id || "").trim();
-                if (u) localMap.set(u, loc);
-                if (i) localMap.set(i, loc);
-            });
 
             return (Array.isArray(items) ? items : []).map((rawItem) => {
                 if (!rawItem || typeof rawItem !== "object") return rawItem;
@@ -1855,9 +1848,9 @@
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
-                            <button type="button" data-review-action="approve" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
-                            <button type="button" data-review-action="reject" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
-                            <button type="button" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve', this)" data-review-action="approve" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject', this)" data-review-action="reject" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
+                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
                 `;
@@ -1891,7 +1884,7 @@
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                             <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px]">مقبول</span>
-                            <button type="button" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف نهائي</button>
+                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف نهائي</button>
                         </div>
                     </div>
                 `;
@@ -2050,7 +2043,10 @@
             clearInterval(window.__streamerPendingPollInterval);
 
             const originalText = btnEl ? btnEl.textContent : "";
-            if (btnEl) { btnEl.disabled = true; btnEl.textContent = normalizedAction === "approve" ? "⏳ جارٍ القبول..." : "⏳ جارٍ الرفض..."; }
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = normalizedAction === "approve" ? "⏳ جارٍ القبول..." : "⏳ جارٍ الرفض...";
+            }
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(rawUid)}/${normalizedAction}`, {
@@ -2059,14 +2055,21 @@
                     body: JSON.stringify({ action: normalizedAction })
                 });
                 const data = await response.json().catch(() => ({}));
+                if (response.status === 401) {
+                    logoutStreamer();
+                    openLoginModal();
+                    throw new Error("انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى");
+                }
                 if (!response.ok || !data.ok || !data.item) {
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
 
                 const serverItem = Object.assign({}, data.item, {
                     review_status: normalizedAction === "approve" ? "approved" : "rejected",
+                    alert_notified: normalizedAction === "approve" ? 0 : data.item.alert_notified,
                     manual_approval_token: normalizedAction === "approve" ? "server-approved" : undefined
                 });
+
                 const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
                 const serverId = String(serverItem.alert_uid || serverItem.id || rawUid);
                 const nextList = currentList.filter(item =>
@@ -2087,7 +2090,7 @@
                     ? "✅ تم قبول الطلب في D1 وإرساله إلى رابط البث."
                     : "❌ تم رفض الطلب وتحديث D1.");
             } catch (error) {
-                showToast(`⚠️ لم يتم تغيير الطلب في الخادم: ${error.message || "خطأ اتصال"}`);
+                showToast(`⚠️ ${error.message || "لم يتم تغيير الطلب في الخادم"}`);
                 await fetchDonationsFromDb(true);
             } finally {
                 activeReviewUidSet.delete(rawUid);
@@ -2358,19 +2361,6 @@
                 }
             }
         }
-
-        document.addEventListener("click", (event) => {
-            const btn = event.target && event.target.closest ? event.target.closest("[data-review-action]") : null;
-            if (!btn) return;
-            const action = btn.getAttribute("data-review-action");
-            const uid = btn.getAttribute("data-review-uid") || "";
-            if (!uid) return;
-            if (action === "approve" || action === "reject") {
-                reviewDonation(uid, action, btn);
-            } else if (action === "delete") {
-                deleteSingleDonation(uid);
-            }
-        });
 
         window.addEventListener("DOMContentLoaded", initApp);
         window.addEventListener("hashchange", () => {
