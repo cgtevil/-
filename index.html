@@ -204,7 +204,7 @@
                         دعم فوري ومباشر
                     </span>
                     <h2 class="text-2xl font-black text-white">ادعم الستريمر واظهر على شاشة البث</h2>
-                    <p class="text-sm text-slate-400">اكتب اسمك واختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل وأدخل آخر 4 أرقام من رقمك واضغط "تم التحويل" ليتم إرسال طلبك للمراجعة.</p>
+                    <p class="text-sm text-slate-400">اكتب اسمك واختر الشبكة والمبلغ ثم نفّذ التحويل. أدخل آخر 4 أرقام كمرجع للمراجعة اليدوية فقط، ثم أرسل الطلب.</p>
                 </div>
 
                 <div class="space-y-2">
@@ -268,7 +268,7 @@
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
-                        <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> من رقمك المحوّل منه لتفعيل زر <strong>"تم التحويل"</strong>.</li>
+                        <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> كمرجع للمراجعة اليدوية؛ هذا ليس رمز OTP ولا يثبت ملكية رقم الهاتف.</li>
                         <li>• يُسجَّل طلبك في قاعدة D1 ولا يظهر الفيديو إلا في <strong>رابط البث المباشر (?widget=true)</strong> بعد قبوله من لوحة الستريمر.</li>
                     </ul>
                 </div>
@@ -295,11 +295,11 @@
 
             <div class="p-3.5 rounded-2xl bg-slate-950/75 border border-white/10 space-y-1.5">
                 <label for="input-sender-last-digits" class="block text-xs font-extrabold text-white">
-                    آخر 4 أرقام من رقمك المحوّل منه <span class="text-rose-400">* (إجباري - 4 أرقام)</span>
+                    آخر 4 أرقام من الرقم المحوّل منه <span class="text-rose-400">* (مرجع للمراجعة اليدوية)</span>
                 </label>
                 <input id="input-sender-last-digits" type="text" inputmode="numeric" maxlength="4" required oninput="handleSenderDigitsInput()" placeholder="مثال: 0534" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 focus:border-emerald-400 focus:outline-none text-white text-sm font-black tracking-[0.25em] text-center">
                 <div id="sender-digits-hint" class="text-[11px] font-bold text-amber-300 text-center">
-                    أدخل 4 أرقام صحيحة من رقم هاتفك المحوّل منه (0/4).
+                    أدخل 4 أرقام كمرجع للمراجعة اليدوية (0/4).
                 </div>
             </div>
 
@@ -495,11 +495,12 @@
     </div>
 
     <script>
+        
         const API_BASE_URL = "https://cgtevil-donations-api.dis517226.workers.dev";
 
         const CORRECT_STREAMER_USER = "cgtevil";
-        const CORRECT_STREAMER_PASS = "0918064401Ee";
         const AUTH_STORAGE_KEY = "cgtevil_streamer_auth_session";
+        const STREAMER_TOKEN_STORAGE_KEY = "cgtevil_streamer_token";
         const SOUND_ENABLED_STORAGE_KEY = "cgtevil_streamer_sound_enabled";
         const KNOWN_PENDING_IDS_KEY = "cgtevil_known_pending_uids";
         const DELETED_UIDS_KEY = "cgtevil_permanently_deleted_uids";
@@ -512,6 +513,7 @@
         const DEFAULT_YOUTUBE_VIDEO_ID = "";
         const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
+        const WIDGET_CURSOR_STORAGE_KEY = "cgtevil_widget_last_seen_id";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const DEVICE_ID_STORAGE_KEY = "cgtevil_donor_device_id";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
@@ -532,6 +534,7 @@
         let activeLocalVideoUrl = DEFAULT_LOCAL_VIDEO_URL;
         let activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
         let lastSeenAlertId = "";
+        const seenWidgetAlertIds = new Set();
         let isShowingAlert = false;
         let wasCooldownActive = false;
         let copyUnlockDeadlineMs = 0;
@@ -821,16 +824,8 @@
                     return item;
                 }
 
-                // إذا عاد السجل من الخادم بحالة approved تلقائياً دون أي اعتماد يدوي مسجّل، أعده إلى pending ليظهر في خانة D1 للمراجعة
-                if (item.review_status === "approved") {
-                    const localStatus = localMatch && localMatch.review_status;
-                    if (!localStatus || localStatus === "pending") {
-                        item.review_status = "pending";
-                        item.alert_notified = 0;
-                    }
-                } else if (!item.review_status) {
-                    item.review_status = "pending";
-                }
+                // حالة الاعتماد تأتي من D1 فقط؛ لا نغيّر قرار الخادم اعتماداً على ذاكرة المتصفح.
+                if (!item.review_status) item.review_status = "pending";
 
                 return item;
             });
@@ -941,7 +936,7 @@
         function validateSupportAmount(rawAmount, net = selectedNetwork) {
             const limits = getNetworkLimits(net);
             const amount = Number(rawAmount);
-            if (!Number.isFinite(amount) || amount <= 0 || amount < limits.min || amount > limits.max) {
+            if (!Number.isInteger(amount) || amount <= 0 || amount < limits.min || amount > limits.max) {
                 return {
                     valid: false,
                     amount: 0,
@@ -1150,7 +1145,7 @@
                     digitsHintEl.textContent = `✅ تم إدخال آخر 4 أرقام (${digitsVal}) بنجاح.`;
                     digitsHintEl.className = "text-[11px] font-bold text-emerald-300 text-center";
                 } else {
-                    digitsHintEl.textContent = `أدخل آخر 4 أرقام من رقم هاتفك المحوّل منه (${digitsVal.length}/4).`;
+                    digitsHintEl.textContent = `أدخل آخر 4 أرقام كمرجع للمراجعة اليدوية (${digitsVal.length}/4).`;
                     digitsHintEl.className = "text-[11px] font-bold text-amber-300 text-center";
                 }
             }
@@ -1304,19 +1299,37 @@
             try { document.execCommand("copy"); showToast(`✅ ${toastMessage}`); } catch (e) {}
         }
 
+        function getStreamerToken() {
+            try {
+                const token = sessionStorage.getItem(STREAMER_TOKEN_STORAGE_KEY);
+                return token && token.trim() ? token.trim() : "";
+            } catch (e) {
+                return "";
+            }
+        }
+
+        function streamerApiHeaders(extra = {}) {
+            const headers = Object.assign({ "Content-Type": "application/json" }, extra);
+            const token = getStreamerToken();
+            if (token) headers.Authorization = `Bearer ${token}`;
+            return headers;
+        }
+
         function isStreamerAuthenticated() {
             if (getAccessRole() === "donor") return false;
+            const token = getStreamerToken();
+            if (!token) return false;
             try {
-                const raw = safeStorageGet(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
-                if (!raw) return false;
-                const parsed = JSON.parse(raw);
-                return Boolean(parsed && parsed.verified && parsed.user === CORRECT_STREAMER_USER);
+                const part = token.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
+                const payload = JSON.parse(atob(part + "=".repeat((4 - part.length % 4) % 4)));
+                return payload.sub === CORRECT_STREAMER_USER && Number(payload.exp) > Math.floor(Date.now() / 1000);
             } catch (e) {
                 return false;
             }
         }
 
         function logoutStreamer() {
+            try { sessionStorage.removeItem(STREAMER_TOKEN_STORAGE_KEY); } catch (e) {}
             try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) {}
             try { sessionStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) {}
             const panel = document.getElementById("streamer-panel-modal");
@@ -1378,18 +1391,38 @@
             document.getElementById("login-modal").classList.add("hidden");
         }
 
-        function submitStreamerLogin() {
+        async function submitStreamerLogin() {
             const user = document.getElementById("login-username").value.trim();
             const pass = document.getElementById("login-password").value;
-            if (!user && !pass) { setLoginError("⚠️ خطأ: يرجى إدخال اسم المستخدم وكلمة المرور.", true, true); return; }
-            if (!user) { setLoginError("⚠️ خطأ: يرجى إدخال اسم المستخدم.", true, false); return; }
-            if (!pass) { setLoginError("⚠️ خطأ: يرجى إدخال كلمة المرور.", false, true); return; }
+            if (!user || !pass) {
+                setLoginError("يرجى إدخال اسم المستخدم وكلمة المرور.", !user, !pass);
+                return;
+            }
+            if (!isApiConfigured()) {
+                setLoginError("خادم تسجيل الدخول غير مضبوط.", false, false);
+                return;
+            }
 
-            if (user === CORRECT_STREAMER_USER && pass === CORRECT_STREAMER_PASS) {
+            const submitButton = document.querySelector("#login-modal button[onclick='submitStreamerLogin()']");
+            if (submitButton) { submitButton.disabled = true; submitButton.textContent = "⏳ جارٍ التحقق..."; }
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.ok || !data.token) {
+                    setLoginError(data.error || "تعذر تسجيل الدخول. تحقق من البيانات وإعدادات الخادم.", true, true);
+                    return;
+                }
+
+                try { sessionStorage.setItem(STREAMER_TOKEN_STORAGE_KEY, data.token); }
+                catch (e) {
+                    setLoginError("المتصفح يمنع حفظ جلسة الدخول. اسمح بملفات الجلسة ثم أعد المحاولة.", false, false);
+                    return;
+                }
                 clearLoginError();
-                const sessionData = JSON.stringify({ user: CORRECT_STREAMER_USER, verified: true, ts: Date.now() });
-                safeStorageSet(AUTH_STORAGE_KEY, sessionData);
-                try { sessionStorage.setItem(AUTH_STORAGE_KEY, sessionData); } catch (e) {}
                 if (isStreamerLinkRole()) {
                     if (safeStorageGet(SOUND_ENABLED_STORAGE_KEY) === null) safeStorageSet(SOUND_ENABLED_STORAGE_KEY, "1");
                     requestPhoneNotificationPermission();
@@ -1398,12 +1431,16 @@
                 }
                 closeLoginModal();
                 updateAuthUI();
+                await fetchDonationsFromDb(true);
                 startStreamerBackgroundPolling();
-                fetchDonationsFromDb();
-                showToast("✅ تم تسجيل دخول الستريمر وحفظ الجلسة");
+                showToast("✅ تم تسجيل الدخول والتحقق من الخادم");
                 toggleStreamerPanel(true);
-            } else {
-                setLoginError("❌ خطأ: اسم المستخدم أو كلمة المرور غير صحيحة.", user !== CORRECT_STREAMER_USER, pass !== CORRECT_STREAMER_PASS);
+            } catch (error) {
+                setLoginError("تعذر الاتصال بخادم تسجيل الدخول. حاول مجدداً.", false, false);
+            } finally {
+                if (submitButton) { submitButton.disabled = false; submitButton.textContent = "تسجيل الدخول"; }
+                const passInput = document.getElementById("login-password");
+                if (passInput) passInput.value = "";
             }
         }
 
@@ -1524,15 +1561,32 @@
             document.getElementById("transfer-modal").classList.add("hidden");
         }
 
-        function copyUssdCode() {
-            const code = document.getElementById("ussd-code-display").textContent;
-            const temp = document.createElement("textarea");
-            temp.value = code;
-            document.body.appendChild(temp);
-            temp.select();
-            try { document.execCommand("copy"); } catch (e) {}
-            document.body.removeChild(temp);
-
+        async function copyUssdCode() {
+            const code = document.getElementById("ussd-code-display")?.textContent || "";
+            if (!code) return;
+            let copied = false;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(code);
+                    copied = true;
+                } else {
+                    const temp = document.createElement("textarea");
+                    temp.value = code;
+                    temp.setAttribute("readonly", "");
+                    temp.style.position = "fixed";
+                    temp.style.opacity = "0";
+                    document.body.appendChild(temp);
+                    temp.select();
+                    copied = document.execCommand("copy");
+                    temp.remove();
+                }
+            } catch (e) {
+                copied = false;
+            }
+            if (!copied) {
+                showToast("⚠️ تعذر نسخ الكود تلقائياً؛ حدده وانسخه يدوياً.");
+                return;
+            }
             hasCopiedUssdCode = true;
             if (!copyUnlockDeadlineMs || Date.now() >= copyUnlockDeadlineMs) {
                 copyUnlockDeadlineMs = Date.now() + COPY_UNLOCK_DELAY_MS;
@@ -1589,182 +1643,135 @@
         }
 
         async function refreshAndPurgeOldDonations() {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
-
-            const previousList = cachedDonations.length ? cachedDonations : getLocalDonations();
-            const oldUids = previousList
-                .map((item) => item.alert_uid || String(item.id || ""))
-                .filter(Boolean);
-
-            cachedDonations = [];
-            knownPendingUidSet = new Set();
-            persistKnownPendingSet();
-            safeStorageSet(DONATIONS_STORAGE_KEY, JSON.stringify([]));
-            renderTopSupporters([]);
-            renderStreamerDonations([]);
-            renderApprovedSupporters([]);
-
-            if (isApiConfigured() && oldUids.length > 0) {
-                await clearOldDonationsFromWorker(oldUids);
-            }
-
-            await fetchDonationsFromDb();
-            showToast("🔄 تم حذف الطلبات القديمة وجلب الجديد");
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
+            await fetchDonationsFromDb(true);
+            showToast("🔄 تم تحديث الطلبات من D1 دون حذفها.");
         }
 
         async function renewTopSupportersInSupportPage() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const btn = document.getElementById("btn-renew-top-supporters");
-            if (btn) { btn.disabled = true; btn.textContent = "⏳ جاري التجديد..."; }
+            if (btn) { btn.disabled = true; btn.textContent = "⏳ جاري التحديث..."; }
             try {
-                if (isApiConfigured()) {
-                    const res = await fetch(`${API_BASE_URL}/api/donations`, { cache: "no-store" });
-                    const data = await res.json();
-                    if (data && data.ok && Array.isArray(data.items)) {
-                        syncDonationsState(data.items);
-                        showToast("🔄 تم تجديد قائمة أبرز 3 داعمين");
-                        return;
-                    }
+                const res = await fetch(`${API_BASE_URL}/api/donations`, {
+                    cache: "no-store",
+                    headers: streamerApiHeaders()
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.ok || !Array.isArray(data.items)) {
+                    throw new Error(data.error || "تعذر تحميل البيانات");
                 }
-                syncDonationsState(getLocalDonations());
-                showToast("🔄 تم تجديد قائمة أبرز 3 داعمين");
+                syncDonationsState(data.items);
+                showToast("🔄 تم تحديث قائمة أبرز 3 داعمين");
             } catch (e) {
-                syncDonationsState(getLocalDonations());
+                showToast("⚠️ تعذر تحديث قائمة الداعمين من D1");
             } finally {
                 if (btn) { btn.disabled = false; btn.textContent = "🔄 تجديد قائمة أبرز 3 داعمين"; }
             }
         }
 
         async function deleteDonationFromWorker(alertUid) {
-            if (!isApiConfigured()) return;
+            if (!isApiConfigured() || !isStreamerAuthenticated()) return false;
             const encoded = encodeURIComponent(alertUid);
             try {
                 const res = await fetch(`${API_BASE_URL}/api/donations/${encoded}`, {
                     method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-Streamer-Pass": CORRECT_STREAMER_PASS
-                    }
+                    headers: streamerApiHeaders()
                 });
-                if (res.ok) return true;
-            } catch (e) {}
-            return false;
+                const data = await res.json().catch(() => ({}));
+                return res.ok && data.ok === true;
+            } catch (e) {
+                return false;
+            }
         }
 
         async function clearOldDonationsFromWorker(uidsToDelete) {
-            if (!isApiConfigured()) return false;
-            const list = Array.isArray(uidsToDelete) ? uidsToDelete.map((x) => String(x || "").trim()).filter(Boolean) : [];
+            if (!isApiConfigured() || !isStreamerAuthenticated()) return false;
+            const list = Array.isArray(uidsToDelete)
+                ? [...new Set(uidsToDelete.map((x) => String(x || "").trim()).filter(Boolean))]
+                : [];
             if (!list.length) return true;
-            let anyOk = false;
             try {
                 const res = await fetch(`${API_BASE_URL}/api/donations/clear`, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-Streamer-Pass": CORRECT_STREAMER_PASS
-                    },
-                    body: JSON.stringify({ alert_uids: list, ids: list })
+                    headers: streamerApiHeaders(),
+                    body: JSON.stringify({ alert_uids: list })
                 });
-                if (res.ok) anyOk = true;
-            } catch (e) {}
-
-            // حذف كل عنصر بشكل مباشر أيضاً لضمان الحذف الفعلي في قاعدة D1
-            const results = await Promise.all(list.map((uid) => deleteDonationFromWorker(uid)));
-            return anyOk || results.some(Boolean);
+                const data = await res.json().catch(() => ({}));
+                return res.ok && data.ok === true;
+            } catch (e) {
+                return false;
+            }
         }
 
         async function deleteSingleDonation(alertUid) {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
             const cleanUid = String(alertUid || "").trim();
             if (!cleanUid) return;
-
-            const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
-            const target = sourceList.find((item) => String(item.alert_uid || item.id || "") === cleanUid);
+            const sourceList = filterOutDeletedItems(cachedDonations);
+            const target = sourceList.find((item) =>
+                String(item.alert_uid || "") === cleanUid || String(item.id || "") === cleanUid
+            );
             const label = target ? `${target.donor_name || "داعم"} (${Number(target.amount) || 0} د.ل)` : "الداعم";
-            const idsToPurge = [cleanUid];
-            if (target && target.id) idsToPurge.push(String(target.id).trim());
-            if (target && target.alert_uid) idsToPurge.push(String(target.alert_uid).trim());
-
+            const serverId = String((target && (target.alert_uid || target.id)) || cleanUid);
+            if (!await deleteDonationFromWorker(serverId)) {
+                showToast("⚠️ لم يتم الحذف من D1. لم نغيّر القائمة المحلية.");
+                return;
+            }
+            const idsToPurge = [cleanUid, serverId, target?.id, target?.alert_uid].filter(Boolean);
             markUidsAsPermanentlyDeleted(idsToPurge);
-
-            // إزالة فورية من الذاكرة والتخزين المحلي
             const remaining = sourceList.filter((item) => {
                 const u = String(item.alert_uid || "").trim();
                 const i = String(item.id || "").trim();
-                return !permanentlyDeletedUidSet.has(u) && !permanentlyDeletedUidSet.has(i);
+                return !idsToPurge.includes(u) && !idsToPurge.includes(i);
             });
             syncDonationsState(remaining);
-
-            // حذف نهائي من قاعدة البيانات D1 عبر الـ Worker
-            if (isApiConfigured()) {
-                await clearOldDonationsFromWorker(idsToPurge);
-            }
-
-            showToast(`🗑️ تم حذف ${label} نهائياً`);
+            showToast(`🗑️ تم حذف ${label} نهائياً من D1`);
         }
 
         async function clearAllApprovedSupporters() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
-            const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
+            const sourceList = filterOutDeletedItems(cachedDonations);
             const approvedList = getApprovedSupporters(sourceList);
-            if (!approvedList.length) {
-                showToast("لا يوجد داعمون مقبولون لمسحهم");
-                return;
-            }
+            if (!approvedList.length) { showToast("لا يوجد داعمون مقبولون لمسحهم"); return; }
             if (!window.confirm(`هل أنت متأكد من مسح جميع الداعمين المقبولين (${approvedList.length}) نهائياً؟`)) return;
 
-            const approvedUids = [];
-            approvedList.forEach((item) => {
-                const u = String(item.alert_uid || "").trim();
-                const i = String(item.id || "").trim();
-                if (u) approvedUids.push(u);
-                if (i) approvedUids.push(i);
-            });
-
+            const approvedUids = [...new Set(approvedList.flatMap(item =>
+                [item.alert_uid, item.id].map(x => String(x || "").trim()).filter(Boolean)
+            ))];
+            if (!await clearOldDonationsFromWorker(approvedUids)) {
+                showToast("⚠️ تعذر حذف الداعمين من D1؛ لم يتم تغيير القائمة.");
+                return;
+            }
             markUidsAsPermanentlyDeleted(approvedUids);
-
-            const remaining = sourceList.filter((item) => {
+            const remaining = sourceList.filter(item => {
                 const u = String(item.alert_uid || "").trim();
                 const i = String(item.id || "").trim();
-                return !permanentlyDeletedUidSet.has(u) && !permanentlyDeletedUidSet.has(i);
+                return !approvedUids.includes(u) && !approvedUids.includes(i);
             });
             syncDonationsState(remaining);
-
-            if (isApiConfigured() && approvedUids.length > 0) {
-                await clearOldDonationsFromWorker(approvedUids);
-            }
-
-            showToast(`🗑️ تم مسح جميع الداعمين المقبولين (${approvedList.length}) نهائياً`);
+            showToast(`🗑️ تم مسح جميع الداعمين المقبولين (${approvedList.length})`);
         }
 
         async function clearOldSupporters() {
             if (!isStreamerAuthenticated()) { openLoginModal(); return; }
-            const sourceList = filterOutDeletedItems(cachedDonations.length ? cachedDonations : getLocalDonations());
-            if (!sourceList.length) { showToast("لا توجد طلبات قديمة لمسحها"); return; }
-            if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم القديمة؟")) return;
+            const sourceList = filterOutDeletedItems(cachedDonations);
+            if (!sourceList.length) { showToast("لا توجد طلبات لمسحها"); return; }
+            if (!window.confirm("هل أنت متأكد من مسح جميع الداعمين وطلبات الدعم نهائياً؟")) return;
 
             isReviewActionInProgress = true;
             clearInterval(window.__streamerPendingPollInterval);
-
             try {
-                const uidsToDelete = [];
-                sourceList.forEach((item) => {
-                    const u = String(item.alert_uid || "").trim();
-                    const i = String(item.id || "").trim();
-                    if (u) uidsToDelete.push(u);
-                    if (i) uidsToDelete.push(i);
-                });
-                markUidsAsPermanentlyDeleted(uidsToDelete);
-                syncDonationsState([]);
-                if (isApiConfigured() && uidsToDelete.length > 0) {
-                    await clearOldDonationsFromWorker(uidsToDelete);
+                const ids = [...new Set(sourceList.flatMap(item =>
+                    [item.alert_uid, item.id].map(x => String(x || "").trim()).filter(Boolean)
+                ))];
+                if (!await clearOldDonationsFromWorker(ids)) {
+                    showToast("⚠️ تعذر الحذف من D1؛ لم يتم تغيير القائمة.");
+                    return;
                 }
-                showToast("🧹 تم مسح الداعمين القدامى");
-            } catch (e) {
-                showToast("⚠️ حدث خطأ أثناء مسح الداعمين القدامى");
+                markUidsAsPermanentlyDeleted(ids);
+                syncDonationsState([]);
+                showToast("🧹 تم مسح جميع الطلبات من D1");
             } finally {
                 isReviewActionInProgress = false;
                 startStreamerBackgroundPolling();
@@ -1893,7 +1900,7 @@
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                             <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px]">مقبول</span>
-                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف نهائي</button>
+                            <button type="button" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold text-[10px] cursor-pointer transition">🗑️ حذف نهائي</button>
                         </div>
                     </div>
                 `;
@@ -1905,37 +1912,24 @@
                 return;
             }
             if (!isApiConfigured()) {
-                syncDonationsState(getLocalDonations());
+                showToast("خادم الطلبات غير مضبوط؛ لا يمكن تحميل بيانات موثوقة.");
                 return;
             }
             isFetchingDonations = true;
             try {
-                const res = await fetch(`${API_BASE_URL}/api/donations?_t=${Date.now()}`, { cache: "no-store" });
+                const res = await fetch(`${API_BASE_URL}/api/donations?_t=${Date.now()}`, { cache: "no-store", headers: streamerApiHeaders() });
+                if (res.status === 401 && getStreamerToken()) {
+                    logoutStreamer();
+                    openLoginModal();
+                    return;
+                }
                 const data = await res.json();
                 if (!force && isReviewActionInProgress) return;
                 if (data && data.ok && Array.isArray(data.items)) {
-                    const remoteIds = new Set(
-                        data.items.map((x) => String(x.alert_uid || x.id || "").trim()).filter(Boolean)
-                    );
-                    const recentLocalPending = getLocalDonations().filter((localItem) => {
-                        const lid = String(localItem.alert_uid || localItem.id || "").trim();
-                        if (!lid || remoteIds.has(lid)) return false;
-                        const ageMs = Date.now() - (new Date(localItem.created_at || 0).getTime() || 0);
-                        return (!localItem.review_status || localItem.review_status === "pending") && ageMs < 2 * 60 * 1000;
-                    });
-                    const mergedMap = new Map();
-                    [...recentLocalPending, ...data.items].forEach((item) => {
-                        const key = String(item.alert_uid || item.id || "").trim();
-                        if (key && !mergedMap.has(key)) {
-                            mergedMap.set(key, item);
-                        }
-                    });
-                    syncDonationsState(Array.from(mergedMap.values()));
+                    syncDonationsState(data.items);
                 }
             } catch (e) {
-                if (!isReviewActionInProgress) {
-                    syncDonationsState(getLocalDonations());
-                }
+                // احتفظ بالعرض الحالي دون اعتبار التخزين المحلي مصدراً موثوقاً لحالة D1.
             } finally {
                 isFetchingDonations = false;
             }
@@ -1979,7 +1973,7 @@
             const donorName = nameCheck.name;
             const rawMessage = document.getElementById("input-donor-message").value.trim() || "دعم مباشر للبث!";
             const trackingCode = pendingTrackingCode || generateTrackingCode(selectedNetwork);
-            const messageWithRef = `${rawMessage} [${trackingCode}] [رقم:${senderLastDigits}]`;
+            const messageWithRef = `${rawMessage} [${trackingCode}]`;
             const elapsedSeconds = transferModalOpenedAtMs ? Math.max(1, Math.round((Date.now() - transferModalOpenedAtMs) / 1000)) : 20;
             const alertUid = "alert_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
 
@@ -2046,210 +2040,71 @@
                     showToast(`⏳ تم إرسال طلبك (${trackingCode}) إلى D1؛ سيظهر الفيديو في رابط البث بعد قبوله`);
                     return;
                 } catch (e) {
-                    showToast("⚠️ تعذر الاتصال بالخادم، تم تسجيل الطلب محلياً قيد المراجعة");
+                    showToast("⚠️ تعذر الاتصال بالخادم؛ لم يتم تسجيل الطلب. تحقق من اتصالك ثم أعد المحاولة.");
+                    return;
                 }
             }
 
-            saveLocalDonation(record);
-            syncDonationsState(getLocalDonations());
-            pendingTrackingCode = "";
-            transferModalOpenedAtMs = 0;
-            hasCopiedUssdCode = false;
-            copyUnlockDeadlineMs = 0;
-            wasCopyDelayRunning = false;
-            closeTransferModal();
-            startTransferCooldown();
-            showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة`);
+            showToast("⚠️ خدمة تسجيل الطلبات غير متاحة حالياً؛ لم يتم تسجيل أي طلب.");
+            return;
         }
 
         async function reviewDonation(alertUid, action, btnEl = null) {
-            if (!isStreamerAuthenticated()) {
-                openLoginModal();
-                return;
-            }
+            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
+            if (!isApiConfigured()) { showToast("خادم الطلبات غير متاح."); return; }
 
             const normalizedAction = action === "reject" ? "reject" : "approve";
             const rawUid = String(alertUid || "").trim();
-            const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
-            const targetItem = currentList.find(
-                (it) => String(it.alert_uid || "").trim() === rawUid || String(it.id || "").trim() === rawUid
-            ) || null;
-
-            const primaryUid = String((targetItem && (targetItem.alert_uid || targetItem.id)) || rawUid).trim();
-            if (!primaryUid || activeReviewUidSet.has(primaryUid) || activeReviewUidSet.has(rawUid)) return;
-
-            const relatedIds = Array.from(new Set([
-                rawUid,
-                primaryUid,
-                targetItem && targetItem.id ? String(targetItem.id).trim() : "",
-                targetItem && targetItem.alert_uid ? String(targetItem.alert_uid).trim() : ""
-            ].filter(Boolean)));
-
-            relatedIds.forEach((k) => activeReviewUidSet.add(k));
+            if (!rawUid || activeReviewUidSet.has(rawUid)) return;
+            activeReviewUidSet.add(rawUid);
             isReviewActionInProgress = true;
             clearInterval(window.__streamerPendingPollInterval);
 
-            if (btnEl) {
-                btnEl.disabled = true;
-                btnEl.textContent = normalizedAction === "approve" ? "⏳ جاري القبول..." : "⏳ جاري الرفض...";
-            }
+            const originalText = btnEl ? btnEl.textContent : "";
+            if (btnEl) { btnEl.disabled = true; btnEl.textContent = normalizedAction === "approve" ? "⏳ جارٍ القبول..." : "⏳ جارٍ الرفض..."; }
 
-            const nextStatus = normalizedAction === "approve" ? "approved" : "rejected";
-            const nextNotified = normalizedAction === "approve" ? 1 : 0;
-            const approvalToken = normalizedAction === "approve"
-                ? `approved_${primaryUid}_${Date.now()}`
-                : "";
-
-            // حفظ الحالة محلياً أولاً حتى لا تضيع عند التحديث أو عند عدم توفر مسار في الـ Worker
-            if (normalizedAction === "approve") {
-                addToStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
-                removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
-            } else {
-                addToStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
-                removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
-            }
-
-            const baseItem = targetItem || {
-                id: primaryUid,
-                alert_uid: primaryUid,
-                streamer_username: CORRECT_STREAMER_USER,
-                donor_name: "داعم",
-                amount: 10,
-                message: "دعم مباشر للبث!",
-                network: selectedNetwork,
-                video_url: activeLocalVideoUrl,
-                youtube_video_id: activeYoutubeVideoId,
-                created_at: new Date().toISOString()
-            };
-
-            const updatedRecord = Object.assign({}, baseItem, {
-                id: baseItem.id || primaryUid,
-                alert_uid: baseItem.alert_uid || primaryUid,
-                review_status: nextStatus,
-                alert_notified: nextNotified,
-                manual_approval_token: approvalToken || undefined
-            });
-
-            const hasInList = currentList.some((it) => {
-                const u = String(it.alert_uid || "").trim();
-                const i = String(it.id || "").trim();
-                return relatedIds.includes(u) || relatedIds.includes(i);
-            });
-
-            const optimisticList = hasInList
-                ? currentList.map((it) => {
-                    const u = String(it.alert_uid || "").trim();
-                    const i = String(it.id || "").trim();
-                    if (relatedIds.includes(u) || relatedIds.includes(i)) {
-                        return Object.assign({}, it, updatedRecord);
-                    }
-                    return it;
-                })
-                : [updatedRecord, ...currentList];
-
-            saveLocalDonation(updatedRecord);
-            syncDonationsState(optimisticList);
-
-            let workerSynced = false;
-            let workerErrorMsg = "";
-
-            if (isApiConfigured()) {
-                const candidateIds = Array.from(new Set([
-                    baseItem.alert_uid ? String(baseItem.alert_uid).trim() : "",
-                    primaryUid,
-                    rawUid,
-                    baseItem.id ? String(baseItem.id).trim() : ""
-                ].filter(Boolean)));
-
-                const headers = {
-                    "Content-Type": "application/json",
-                    "X-Streamer-Pass": CORRECT_STREAMER_PASS
-                };
-
-                // 1) محاولة المسار القياسي /api/donations/:id/approve أو /reject
-                for (let idx = 0; idx < candidateIds.length; idx++) {
-                    const idToTry = candidateIds[idx];
-                    try {
-                        const res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(idToTry)}/${normalizedAction}`, {
-                            method: "POST",
-                            headers,
-                            body: JSON.stringify({
-                                id: idToTry,
-                                alert_uid: baseItem.alert_uid || primaryUid,
-                                action: normalizedAction,
-                                review_status: nextStatus,
-                                alert_notified: nextNotified
-                            })
-                        });
-                        const data = await res.json().catch(() => ({}));
-                        if (res.ok && (data.ok !== false)) {
-                            workerSynced = true;
-                            if (data.item && typeof data.item === "object") {
-                                const mergedFromServer = Object.assign({}, updatedRecord, data.item, {
-                                    review_status: nextStatus,
-                                    alert_notified: nextNotified,
-                                    manual_approval_token: approvalToken || undefined
-                                });
-                                saveLocalDonation(mergedFromServer);
-                            }
-                            break;
-                        }
-                        workerErrorMsg = data.error || `HTTP ${res.status}`;
-                    } catch (netErr) {
-                        workerErrorMsg = netErr && netErr.message ? netErr.message : "Network error";
-                    }
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(rawUid)}/${normalizedAction}`, {
+                    method: "POST",
+                    headers: streamerApiHeaders(),
+                    body: JSON.stringify({ action: normalizedAction })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.ok || !data.item) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
                 }
 
-                // 2) مسار احتياطي عام /api/donations/:id (PATCH/PUT) إذا لم يستجب المسار الفرعي
-                if (!workerSynced) {
-                    for (let idx = 0; idx < candidateIds.length; idx++) {
-                        const idToTry = candidateIds[idx];
-                        try {
-                            const patchRes = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(idToTry)}`, {
-                                method: "PATCH",
-                                headers,
-                                body: JSON.stringify({
-                                    review_status: nextStatus,
-                                    alert_notified: nextNotified,
-                                    approved: normalizedAction === "approve"
-                                })
-                            });
-                            const patchData = await patchRes.json().catch(() => ({}));
-                            if (patchRes.ok && (patchData.ok !== false)) {
-                                workerSynced = true;
-                                break;
-                            }
-                        } catch (e) {}
-                    }
+                const serverItem = Object.assign({}, data.item, {
+                    review_status: normalizedAction === "approve" ? "approved" : "rejected",
+                    manual_approval_token: normalizedAction === "approve" ? "server-approved" : undefined
+                });
+                const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
+                const serverId = String(serverItem.alert_uid || serverItem.id || rawUid);
+                const nextList = currentList.filter(item =>
+                    String(item.alert_uid || item.id || "") !== rawUid &&
+                    String(item.alert_uid || item.id || "") !== serverId
+                );
+                nextList.unshift(serverItem);
+                saveLocalDonation(serverItem);
+                syncDonationsState(nextList);
+
+                if (normalizedAction === "approve" && broadcastChannel) {
+                    broadcastChannel.postMessage({
+                        type: "LIVE_ALERT_DISPATCH",
+                        payload: stripDonorPhoneArtifacts(serverItem)
+                    });
                 }
-            }
-
-            // بث التنبيه فوراً عبر BroadcastChannel لأي نافذة مفتوحة للويدجت في نفس المتصفح
-            if (normalizedAction === "approve") {
-                try {
-                    if (broadcastChannel) {
-                        broadcastChannel.postMessage({
-                            type: "LIVE_ALERT_DISPATCH",
-                            payload: stripDonorPhoneArtifacts(Object.assign({}, updatedRecord, {
-                                manual_approval_token: approvalToken
-                            }))
-                        });
-                    }
-                } catch (e) {}
-            }
-
-            relatedIds.forEach((k) => activeReviewUidSet.delete(k));
-            isReviewActionInProgress = false;
-            startStreamerBackgroundPolling();
-
-            if (normalizedAction === "approve") {
-                if (workerSynced) {
-                    showToast("✅ تم قبول الطلب وإرساله للبث المباشر (?widget=true)");
-                } else {
-                    showToast(`✅ تم اعتماد الطلب محلياً وإرساله للبث${workerErrorMsg ? ` (ملاحظة الخادم: ${workerErrorMsg})` : ""}`);
-                }
-            } else {
-                showToast(workerSynced ? "❌ تم رفض الطلب وتحديث الحالة" : "❌ تم رفض الطلب محلياً");
+                showToast(normalizedAction === "approve"
+                    ? "✅ تم قبول الطلب في D1 وإرساله إلى رابط البث."
+                    : "❌ تم رفض الطلب وتحديث D1.");
+            } catch (error) {
+                showToast(`⚠️ لم يتم تغيير الطلب في الخادم: ${error.message || "خطأ اتصال"}`);
+                await fetchDonationsFromDb(true);
+            } finally {
+                activeReviewUidSet.delete(rawUid);
+                isReviewActionInProgress = false;
+                if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalText; }
+                startStreamerBackgroundPolling();
             }
         }
 
@@ -2258,7 +2113,8 @@
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
         }
 
         function clearActiveAlertTimers() {
@@ -2295,8 +2151,13 @@
             if (!isWidgetMode()) return;
             if (!item || !isExplicitlyApprovedForLiveStream(item)) return;
             const cleanItem = stripDonorPhoneArtifacts(item);
-            if (cleanItem.id && cleanItem.id === lastSeenAlertId) return;
-            if (cleanItem.id) lastSeenAlertId = cleanItem.id;
+            const stableId = String(cleanItem.alert_uid || cleanItem.id || "").trim();
+            if (stableId && seenWidgetAlertIds.has(stableId)) return;
+            if (stableId) {
+                seenWidgetAlertIds.add(stableId);
+                lastSeenAlertId = stableId;
+            }
+            cleanItem.id = stableId || cleanItem.id;
             alertQueue.push(cleanItem);
             if (!isShowingAlert) processNextAlert();
         }
@@ -2394,25 +2255,34 @@
         async function pollApprovedLiveAlertsForWidget() {
             if (!isWidgetMode() || !isApiConfigured()) return;
             try {
-                const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch`, { cache: "no-store" });
+                const cursor = Number(sessionStorage.getItem(WIDGET_CURSOR_STORAGE_KEY) || 0);
+                const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch?after=${encodeURIComponent(cursor)}`, { cache: "no-store" });
+                if (!res.ok) return;
                 const data = await res.json();
-                if (data && data.ok && data.alert && data.alert.review_status === "approved") {
-                    const approvedToken = `d1_${data.alert.alert_uid}_${Date.now()}`;
+                const alerts = Array.isArray(data.items) ? data.items : (data.alert ? [data.alert] : []);
+                let newestId = cursor;
+                alerts.forEach((alert) => {
+                    if (!alert) return;
+                    newestId = Math.max(newestId, Number(alert.id) || 0);
+                    if (alert.review_status !== "approved") return;
+                    const stableId = String(alert.alert_uid || alert.id || "").trim();
+                    if (!stableId) return;
                     enqueueAlert(stripDonorPhoneArtifacts({
-                        id: approvedToken,
-                        alert_uid: data.alert.alert_uid,
-                        manual_approval_token: approvedToken,
+                        id: stableId,
+                        alert_uid: stableId,
+                        manual_approval_token: `server-approved-${stableId}`,
                         streamer_username: CORRECT_STREAMER_USER,
-                        donor_name: data.alert.donor_name,
-                        amount: data.alert.amount,
-                        message: sanitizeAlertMessageForBroadcast(data.alert.message),
-                        network: data.alert.network,
+                        donor_name: alert.donor_name,
+                        amount: alert.amount,
+                        message: sanitizeAlertMessageForBroadcast(alert.message),
+                        network: alert.network,
                         video_url: activeLocalVideoUrl,
                         youtube_video_id: activeYoutubeVideoId,
-                        created_at: data.alert.created_at,
+                        created_at: alert.created_at,
                         review_status: "approved"
                     }));
-                }
+                });
+                if (newestId > cursor) sessionStorage.setItem(WIDGET_CURSOR_STORAGE_KEY, String(newestId));
             } catch (e) {}
         }
 
@@ -2527,6 +2397,7 @@
                 pollApprovedLiveAlertsForWidget();
             }
         });
+    
     </script>
 </body>
 </html>
