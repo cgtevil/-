@@ -2068,36 +2068,40 @@
                 return;
             }
 
+            const normalizedAction = action === "reject" ? "reject" : "approve";
             const rawUid = String(alertUid || "").trim();
             const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
             const targetItem = currentList.find(
                 (it) => String(it.alert_uid || "").trim() === rawUid || String(it.id || "").trim() === rawUid
-            );
+            ) || null;
 
-            const cleanUid = String((targetItem && (targetItem.alert_uid || targetItem.id)) || rawUid).trim();
-            if (!cleanUid || activeReviewUidSet.has(cleanUid) || activeReviewUidSet.has(rawUid)) return;
+            const primaryUid = String((targetItem && (targetItem.alert_uid || targetItem.id)) || rawUid).trim();
+            if (!primaryUid || activeReviewUidSet.has(primaryUid) || activeReviewUidSet.has(rawUid)) return;
 
-            activeReviewUidSet.add(cleanUid);
-            activeReviewUidSet.add(rawUid);
+            const relatedIds = Array.from(new Set([
+                rawUid,
+                primaryUid,
+                targetItem && targetItem.id ? String(targetItem.id).trim() : "",
+                targetItem && targetItem.alert_uid ? String(targetItem.alert_uid).trim() : ""
+            ].filter(Boolean)));
+
+            relatedIds.forEach((k) => activeReviewUidSet.add(k));
             isReviewActionInProgress = true;
             clearInterval(window.__streamerPendingPollInterval);
 
             if (btnEl) {
                 btnEl.disabled = true;
-                btnEl.textContent = action === "approve" ? "⏳ جاري القبول..." : "⏳ جاري الرفض...";
+                btnEl.textContent = normalizedAction === "approve" ? "⏳ جاري القبول..." : "⏳ جاري الرفض...";
             }
 
-            const relatedIds = Array.from(new Set([
-                rawUid,
-                cleanUid,
-                targetItem && targetItem.id ? String(targetItem.id).trim() : "",
-                targetItem && targetItem.alert_uid ? String(targetItem.alert_uid).trim() : ""
-            ].filter(Boolean)));
+            const nextStatus = normalizedAction === "approve" ? "approved" : "rejected";
+            const nextNotified = normalizedAction === "approve" ? 1 : 0;
+            const approvalToken = normalizedAction === "approve"
+                ? `approved_${primaryUid}_${Date.now()}`
+                : "";
 
-            const nextStatus = action === "approve" ? "approved" : "rejected";
-            const nextNotified = action === "approve" ? 1 : 0;
-
-            if (action === "approve") {
+            // حفظ الحالة محلياً أولاً حتى لا تضيع عند التحديث أو عند عدم توفر مسار في الـ Worker
+            if (normalizedAction === "approve") {
                 addToStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
                 removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
             } else {
@@ -2105,106 +2109,147 @@
                 removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
             }
 
-            const optimisticList = currentList.map((it) => {
+            const baseItem = targetItem || {
+                id: primaryUid,
+                alert_uid: primaryUid,
+                streamer_username: CORRECT_STREAMER_USER,
+                donor_name: "داعم",
+                amount: 10,
+                message: "دعم مباشر للبث!",
+                network: selectedNetwork,
+                video_url: activeLocalVideoUrl,
+                youtube_video_id: activeYoutubeVideoId,
+                created_at: new Date().toISOString()
+            };
+
+            const updatedRecord = Object.assign({}, baseItem, {
+                id: baseItem.id || primaryUid,
+                alert_uid: baseItem.alert_uid || primaryUid,
+                review_status: nextStatus,
+                alert_notified: nextNotified,
+                manual_approval_token: approvalToken || undefined
+            });
+
+            const hasInList = currentList.some((it) => {
                 const u = String(it.alert_uid || "").trim();
                 const i = String(it.id || "").trim();
-                if (relatedIds.includes(u) || relatedIds.includes(i)) {
-                    return Object.assign({}, it, {
-                        review_status: nextStatus,
-                        alert_notified: nextNotified
-                    });
-                }
-                return it;
+                return relatedIds.includes(u) || relatedIds.includes(i);
             });
-            syncDonationsState(optimisticList);
 
-            try {
-                if (isApiConfigured()) {
-                    const candidateIds = Array.from(new Set([
-                        targetItem && targetItem.alert_uid ? String(targetItem.alert_uid).trim() : "",
-                        cleanUid,
-                        rawUid,
-                        targetItem && targetItem.id ? String(targetItem.id).trim() : ""
-                    ].filter(Boolean)));
-
-                    let res = null;
-                    let data = {};
-                    let lastStatus = 0;
-
-                    for (let idx = 0; idx < candidateIds.length; idx++) {
-                        const targetId = candidateIds[idx];
-                        res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(targetId)}/${action}`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-Streamer-Pass": CORRECT_STREAMER_PASS
-                            }
-                        });
-                        lastStatus = res.status;
-                        data = await res.json().catch(() => ({}));
-                        if (res.ok && data.ok) break;
-                        if (res.status !== 404 && idx === candidateIds.length - 1) break;
-                    }
-
-                    if (!res || !res.ok || !data.ok) {
-                        const rollbackList = (cachedDonations.length ? cachedDonations : currentList).map((it) => {
-                            const u = String(it.alert_uid || "").trim();
-                            const i = String(it.id || "").trim();
-                            if (relatedIds.includes(u) || relatedIds.includes(i)) {
-                                return Object.assign({}, it, {
-                                    review_status: "pending",
-                                    alert_notified: 0
-                                });
-                            }
-                            return it;
-                        });
-                        if (action === "approve") removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
-                        else removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
-                        syncDonationsState(rollbackList);
-                        showToast(`⚠️ خطأ الخادم (${lastStatus || 500}): ${data.error || "تعذر تحديث الطلب في D1"}`);
-                        return;
-                    }
-
-                    const serverItem = data.item || {};
-                    const confirmedList = (cachedDonations.length ? cachedDonations : optimisticList).map((it) => {
-                        const u = String(it.alert_uid || "").trim();
-                        const i = String(it.id || "").trim();
-                        if (relatedIds.includes(u) || relatedIds.includes(i)) {
-                            return Object.assign({}, it, serverItem, {
-                                review_status: nextStatus,
-                                alert_notified: nextNotified
-                            });
-                        }
-                        return it;
-                    });
-                    syncDonationsState(confirmedList);
-                }
-
-                showToast(
-                    action === "approve"
-                        ? "✅ تم قبول الطلب من لوحة الستريمر وإرساله للبث المباشر (?widget=true)"
-                        : "❌ تم رفض الطلب وإزالته من القائمة"
-                );
-            } catch (e) {
-                const rollbackList = (cachedDonations.length ? cachedDonations : currentList).map((it) => {
+            const optimisticList = hasInList
+                ? currentList.map((it) => {
                     const u = String(it.alert_uid || "").trim();
                     const i = String(it.id || "").trim();
                     if (relatedIds.includes(u) || relatedIds.includes(i)) {
-                        return Object.assign({}, it, {
-                            review_status: "pending",
-                            alert_notified: 0
-                        });
+                        return Object.assign({}, it, updatedRecord);
                     }
                     return it;
-                });
-                if (action === "approve") removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
-                else removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, relatedIds);
-                syncDonationsState(rollbackList);
-                showToast("⚠️ تعذر الاتصال بالـ Worker؛ تأكد من الإنترنت أو رابط الـ API");
-            } finally {
-                relatedIds.forEach((idKey) => activeReviewUidSet.delete(idKey));
-                isReviewActionInProgress = false;
-                startStreamerBackgroundPolling();
+                })
+                : [updatedRecord, ...currentList];
+
+            saveLocalDonation(updatedRecord);
+            syncDonationsState(optimisticList);
+
+            let workerSynced = false;
+            let workerErrorMsg = "";
+
+            if (isApiConfigured()) {
+                const candidateIds = Array.from(new Set([
+                    baseItem.alert_uid ? String(baseItem.alert_uid).trim() : "",
+                    primaryUid,
+                    rawUid,
+                    baseItem.id ? String(baseItem.id).trim() : ""
+                ].filter(Boolean)));
+
+                const headers = {
+                    "Content-Type": "application/json",
+                    "X-Streamer-Pass": CORRECT_STREAMER_PASS
+                };
+
+                // 1) محاولة المسار القياسي /api/donations/:id/approve أو /reject
+                for (let idx = 0; idx < candidateIds.length; idx++) {
+                    const idToTry = candidateIds[idx];
+                    try {
+                        const res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(idToTry)}/${normalizedAction}`, {
+                            method: "POST",
+                            headers,
+                            body: JSON.stringify({
+                                id: idToTry,
+                                alert_uid: baseItem.alert_uid || primaryUid,
+                                action: normalizedAction,
+                                review_status: nextStatus,
+                                alert_notified: nextNotified
+                            })
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (res.ok && (data.ok !== false)) {
+                            workerSynced = true;
+                            if (data.item && typeof data.item === "object") {
+                                const mergedFromServer = Object.assign({}, updatedRecord, data.item, {
+                                    review_status: nextStatus,
+                                    alert_notified: nextNotified,
+                                    manual_approval_token: approvalToken || undefined
+                                });
+                                saveLocalDonation(mergedFromServer);
+                            }
+                            break;
+                        }
+                        workerErrorMsg = data.error || `HTTP ${res.status}`;
+                    } catch (netErr) {
+                        workerErrorMsg = netErr && netErr.message ? netErr.message : "Network error";
+                    }
+                }
+
+                // 2) مسار احتياطي عام /api/donations/:id (PATCH/PUT) إذا لم يستجب المسار الفرعي
+                if (!workerSynced) {
+                    for (let idx = 0; idx < candidateIds.length; idx++) {
+                        const idToTry = candidateIds[idx];
+                        try {
+                            const patchRes = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(idToTry)}`, {
+                                method: "PATCH",
+                                headers,
+                                body: JSON.stringify({
+                                    review_status: nextStatus,
+                                    alert_notified: nextNotified,
+                                    approved: normalizedAction === "approve"
+                                })
+                            });
+                            const patchData = await patchRes.json().catch(() => ({}));
+                            if (patchRes.ok && (patchData.ok !== false)) {
+                                workerSynced = true;
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+
+            // بث التنبيه فوراً عبر BroadcastChannel لأي نافذة مفتوحة للويدجت في نفس المتصفح
+            if (normalizedAction === "approve") {
+                try {
+                    if (broadcastChannel) {
+                        broadcastChannel.postMessage({
+                            type: "LIVE_ALERT_DISPATCH",
+                            payload: stripDonorPhoneArtifacts(Object.assign({}, updatedRecord, {
+                                manual_approval_token: approvalToken
+                            }))
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            relatedIds.forEach((k) => activeReviewUidSet.delete(k));
+            isReviewActionInProgress = false;
+            startStreamerBackgroundPolling();
+
+            if (normalizedAction === "approve") {
+                if (workerSynced) {
+                    showToast("✅ تم قبول الطلب وإرساله للبث المباشر (?widget=true)");
+                } else {
+                    showToast(`✅ تم اعتماد الطلب محلياً وإرساله للبث${workerErrorMsg ? ` (ملاحظة الخادم: ${workerErrorMsg})` : ""}`);
+                }
+            } else {
+                showToast(workerSynced ? "❌ تم رفض الطلب وتحديث الحالة" : "❌ تم رفض الطلب محلياً");
             }
         }
 
@@ -2378,6 +2423,8 @@
                     if (!event || !event.data) return;
                     if (event.data.type === "DONATIONS_UPDATED" && event.data.payload && Array.isArray(event.data.payload.items)) {
                         syncDonationsState(event.data.payload.items);
+                    } else if (event.data.type === "LIVE_ALERT_DISPATCH" && event.data.payload && isWidgetMode()) {
+                        enqueueAlert(event.data.payload);
                     }
                 };
             } catch (e) {}
