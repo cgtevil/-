@@ -1856,9 +1856,9 @@
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve', this)" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject', this)" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
-                            <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
+                            <button type="button" data-review-action="approve" data-review-uid="${escapeHtml(uid)}" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
+                            <button type="button" data-review-action="reject" data-review-uid="${escapeHtml(uid)}" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
+                            <button type="button" data-review-action="delete" data-review-uid="${escapeHtml(uid)}" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
                 `;
@@ -2498,6 +2498,19 @@
                 }
             }
         }
+
+        document.addEventListener("click", (event) => {
+            const btn = event.target && event.target.closest ? event.target.closest("[data-review-action]") : null;
+            if (!btn) return;
+            const action = btn.getAttribute("data-review-action");
+            const uid = btn.getAttribute("data-review-uid") || "";
+            if (!uid) return;
+            if (action === "approve" || action === "reject") {
+                reviewDonation(uid, action, btn);
+            } else if (action === "delete") {
+                deleteSingleDonation(uid);
+            }
+        });
 
         window.addEventListener("DOMContentLoaded", initApp);
         window.addEventListener("hashchange", () => {
