@@ -179,7 +179,7 @@
                             <span>دعم البث المباشر</span>
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">@cgtevil</span>
                         </h1>
-                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار وعرض الفيديو حصراً في رابط البث بعد القبول من لوحة الستريمر</p>
+                        <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار وعرض الفيديو حصراً في رابط البث بعد القبول من D1</p>
                     </div>
                 </div>
 
@@ -204,7 +204,7 @@
                         دعم فوري ومباشر
                     </span>
                     <h2 class="text-2xl font-black text-white">ادعم الستريمر واظهر على شاشة البث</h2>
-                    <p class="text-sm text-slate-400">اكتب اسمك واختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل وأدخل آخر 4 أرقام من رقمك واضغط "تم التحويل" ليتم إرسال طلبك للمراجعة داخل لوحة الستريمر.</p>
+                    <p class="text-sm text-slate-400">اكتب اسمك واختر الشبكة والمبلغ ضمن الحدود المسموحة، ثم نفّذ التحويل وأدخل آخر 4 أرقام من رقمك واضغط "تم التحويل" ليتم إرسال طلبك للمراجعة.</p>
                 </div>
 
                 <div class="space-y-2">
@@ -269,7 +269,7 @@
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
                         <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> من رقمك المحوّل منه لتفعيل زر <strong>"تم التحويل"</strong>.</li>
-                        <li>• يُسجَّل طلبك في قاعدة D1 ويتم قبوله وإرسال الفيديو إلى <strong>رابط البث المباشر (?widget=true)</strong> من داخل <strong>لوحة الستريمر</strong> فقط.</li>
+                        <li>• يُسجَّل طلبك في قاعدة D1 ولا يظهر الفيديو إلا في <strong>رابط البث المباشر (?widget=true)</strong> بعد قبوله من لوحة الستريمر.</li>
                     </ul>
                 </div>
             </aside>
@@ -304,7 +304,7 @@
             </div>
 
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-400/25 text-amber-200 text-xs font-bold leading-relaxed text-center">
-                ⚠️ تنبيه: الظهور على رابط البث مشروط بقبول الطلب من داخل لوحة الستريمر؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
+                ⚠️ تنبيه: الظهور على رابط البث مشروط بقبول الطلب من خانة D1 داخل لوحة الستريمر؛ الطلبات العشوائية أو غير المؤكدة لا تظهر على البث.
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -352,13 +352,13 @@
         </div>
     </div>
 
-    <!-- لوحة تحكم الستريمر (مكان القبول والرفض وإرسال التنبيه للبث المباشر) -->
+    <!-- لوحة تحكم الستريمر -->
     <div id="streamer-panel-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
         <div class="glass-card w-full max-w-2xl rounded-3xl p-6 space-y-5 border border-amber-400/30 shadow-2xl my-auto">
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                     <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgtevil)</h3>
-                    <p class="text-xs text-slate-400">قبول أو رفض الطلبات الواردة من D1 وإرسال التنبيه لرابط البث المباشر من هنا فقط</p>
+                    <p class="text-xs text-slate-400">مراجعة الطلبات الواردة من خانة D1 واستعراض الداعمين المقبولين</p>
                 </div>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
             </div>
@@ -366,7 +366,7 @@
             <div id="streamer-phone-alert-box" class="hidden p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex flex-wrap items-center justify-between gap-2">
                 <div class="space-y-0.5">
                     <div class="text-xs font-black text-emerald-300">تنبيه الهاتف الفوري عند وصول دعم (صوت + اهتزاز + إشعار)</div>
-                    <div class="text-[11px] text-slate-300">ينبّهك فوراً عند وصول أي طلب جديد لتقبله من داخل لوحة الستريمر أو ترفضه.</div>
+                    <div class="text-[11px] text-slate-300">ينبّهك فوراً عند وصول أي طلب جديد لتقبله من خانة D1 أو ترفضه.</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="playStreamerNotificationChime(true)" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer">
@@ -378,7 +378,7 @@
                 </div>
             </div>
 
-            <!-- خانة طلبات الدعم وحالة الاعتماد (D1) داخل لوحة الستريمر -->
+            <!-- خانة طلبات الدعم وحالة الاعتماد (D1) - تعرض الطلبات الواردة فقط -->
             <div id="d1-approval-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/75 border border-emerald-400/30">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span id="donations-panel-title" class="text-xs font-black text-emerald-300">طلبات الدعم الواردة (D1)</span>
@@ -392,7 +392,7 @@
                     </div>
                 </div>
                 <p class="text-[11px] text-amber-200/90 font-semibold">
-                    القبول يتم من هنا فقط: عند الضغط على «قبول وإرسال للبث» يُنقل الداعم إلى «الداعمين المقبولين» ويُرسل التنبيه إلى رابط البث المباشر.
+                    تعرض هذه الخانة الطلبات الواردة بانتظار المراجعة فقط؛ عند القبول ينتقل الداعم إلى خانة «الداعمين المقبولين».
                 </p>
                 <div id="recent-donations-list" class="space-y-2 max-h-60 overflow-y-auto">
                     <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
@@ -401,7 +401,7 @@
                 </div>
             </div>
 
-            <!-- خانة الداعمين المقبولين -->
+            <!-- خانة الداعمين المقبولين (بديلة عن خانة اختبار إرسال إشعار رابط البث المباشر) -->
             <div id="approved-supporters-section" class="space-y-2.5 p-4 rounded-2xl bg-slate-950/70 border border-emerald-400/25">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
@@ -436,7 +436,7 @@
             </div>
 
             <div class="space-y-2">
-                <label class="block text-xs font-bold text-amber-300">رابط البث المباشر المخصص (TikTok Live Studio) — يعرض الفيديو هنا فقط بعد القبول من لوحة الستريمر</label>
+                <label class="block text-xs font-bold text-amber-300">رابط البث المباشر المخصص (TikTok Live Studio) — يعرض الفيديو هنا فقط بعد القبول من D1</label>
                 <div class="flex flex-wrap gap-2">
                     <input id="widget-url-input" type="text" readonly class="flex-1 min-w-[210px] px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-xs text-slate-200">
                     <button type="button" onclick="copyWidgetUrl()" class="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs cursor-pointer">
@@ -537,6 +537,9 @@
         let copyUnlockDeadlineMs = 0;
         let wasCopyDelayRunning = false;
         let cachedDonations = [];
+        let isReviewActionInProgress = false;
+        let isFetchingDonations = false;
+        let activeReviewUidSet = new Set();
         let streamerAudioCtx = null;
         let hasInitializedPendingTracker = false;
         let knownPendingUidSet = new Set();
@@ -616,7 +619,7 @@
                 const amt = Number(item?.amount) || 0;
                 const netLabel = getNetworkLabel(item?.network);
                 const digits = item?.sender_last_digits || (item?.message && (item.message.match(/رقم:([0-9]{4})/) || [])[1]) || "";
-                const bodyText = `${amt} د.ل (${netLabel})${digits ? ` • آخر 4 أرقام: ${digits}` : ""} — افتح لوحة الستريمر للمراجعة`;
+                const bodyText = `${amt} د.ل (${netLabel})${digits ? ` • آخر 4 أرقام: ${digits}` : ""} — اقبل من خانة D1 في لوحة الستريمر`;
 
                 const notif = new Notification(`🔔 طلب دعم جديد من ${donor}`, {
                     body: bodyText,
@@ -818,6 +821,7 @@
                     return item;
                 }
 
+                // إذا عاد السجل من الخادم بحالة approved تلقائياً دون أي اعتماد يدوي مسجّل، أعده إلى pending ليظهر في خانة D1 للمراجعة
                 if (item.review_status === "approved") {
                     const localStatus = localMatch && localMatch.review_status;
                     if (!localStatus || localStatus === "pending") {
@@ -1052,10 +1056,10 @@
             if (ytInput && !ytInput.value && activeYoutubeVideoId) ytInput.value = buildYoutubeWatchUrl(activeYoutubeVideoId);
             if (!statusEl) return;
             if (activeYoutubeVideoId) {
-                statusEl.textContent = `✅ فيديو يوتيوب (${activeYoutubeVideoId}) مفعّل وسيُعرض فقط في رابط البث (?widget=true) بعد القبول من لوحة الستريمر.`;
+                statusEl.textContent = `✅ فيديو يوتيوب (${activeYoutubeVideoId}) مفعّل وسيُعرض فقط في رابط البث (?widget=true) بعد القبول من D1.`;
                 statusEl.className = "text-xs text-rose-300 font-bold";
             } else {
-                statusEl.textContent = `يتم عرض الفيديو في رابط البث المباشر (?widget=true) فقط بعد القبول من داخل لوحة الستريمر.`;
+                statusEl.textContent = `يتم عرض الفيديو في رابط البث المباشر (?widget=true) فقط بعد القبول من D1.`;
                 statusEl.className = "text-xs text-emerald-300 font-semibold";
             }
         }
@@ -1667,6 +1671,7 @@
                 if (res.ok) anyOk = true;
             } catch (e) {}
 
+            // حذف كل عنصر بشكل مباشر أيضاً لضمان الحذف الفعلي في قاعدة D1
             const results = await Promise.all(list.map((uid) => deleteDonationFromWorker(uid)));
             return anyOk || results.some(Boolean);
         }
@@ -1685,6 +1690,7 @@
 
             markUidsAsPermanentlyDeleted(idsToPurge);
 
+            // إزالة فورية من الذاكرة والتخزين المحلي
             const remaining = sourceList.filter((item) => {
                 const u = String(item.alert_uid || "").trim();
                 const i = String(item.id || "").trim();
@@ -1692,6 +1698,7 @@
             });
             syncDonationsState(remaining);
 
+            // حذف نهائي من قاعدة البيانات D1 عبر الـ Worker
             if (isApiConfigured()) {
                 await clearOldDonationsFromWorker(idsToPurge);
             }
@@ -1796,6 +1803,7 @@
             }
         }
 
+        // تعرض خانة D1 الطلبات الواردة (قيد المراجعة) فقط
         function renderStreamerDonations(items) {
             const container = document.getElementById("recent-donations-list");
             const titleEl = document.getElementById("donations-panel-title");
@@ -1835,8 +1843,8 @@
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(item.message || "دعم مباشر للبث!")}</p>
                         <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve')" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
-                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject')" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'approve', this)" class="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[11px] cursor-pointer transition">✅ قبول وإرسال للبث</button>
+                            <button type="button" onclick="reviewDonation('${escapeHtml(uid)}', 'reject', this)" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 font-bold text-[11px] cursor-pointer transition">❌ رفض</button>
                             <button type="button" onclick="deleteSingleDonation('${escapeHtml(uid)}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/70 border border-white/15 hover:border-rose-500/40 text-slate-200 hover:text-rose-200 font-bold text-[11px] cursor-pointer transition">🗑️ حذف</button>
                         </div>
                     </div>
@@ -1844,6 +1852,7 @@
             }).join("");
         }
 
+        // خانة الداعمين المقبولين
         function renderApprovedSupporters(items) {
             const container = document.getElementById("approved-supporters-list");
             const countEl = document.getElementById("approved-supporters-count");
@@ -1878,15 +1887,19 @@
             }).join("");
         }
 
-        async function fetchDonationsFromDb() {
-            if (!isApiConfigured()) {
-                const localItems = getLocalDonations();
-                syncDonationsState(localItems);
+        async function fetchDonationsFromDb(force = false) {
+            if (!force && (isReviewActionInProgress || isFetchingDonations)) {
                 return;
             }
+            if (!isApiConfigured()) {
+                syncDonationsState(getLocalDonations());
+                return;
+            }
+            isFetchingDonations = true;
             try {
-                const res = await fetch(`${API_BASE_URL}/api/donations`, { cache: "no-store" });
+                const res = await fetch(`${API_BASE_URL}/api/donations?_t=${Date.now()}`, { cache: "no-store" });
                 const data = await res.json();
+                if (!force && isReviewActionInProgress) return;
                 if (data && data.ok && Array.isArray(data.items)) {
                     const remoteIds = new Set(
                         data.items.map((x) => String(x.alert_uid || x.id || "").trim()).filter(Boolean)
@@ -1897,11 +1910,21 @@
                         const ageMs = Date.now() - (new Date(localItem.created_at || 0).getTime() || 0);
                         return (!localItem.review_status || localItem.review_status === "pending") && ageMs < 2 * 60 * 1000;
                     });
-                    syncDonationsState([...recentLocalPending, ...data.items]);
+                    const mergedMap = new Map();
+                    [...recentLocalPending, ...data.items].forEach((item) => {
+                        const key = String(item.alert_uid || item.id || "").trim();
+                        if (key && !mergedMap.has(key)) {
+                            mergedMap.set(key, item);
+                        }
+                    });
+                    syncDonationsState(Array.from(mergedMap.values()));
                 }
             } catch (e) {
-                const localItems = getLocalDonations();
-                syncDonationsState(localItems);
+                if (!isReviewActionInProgress) {
+                    syncDonationsState(getLocalDonations());
+                }
+            } finally {
+                isFetchingDonations = false;
             }
         }
 
@@ -1909,8 +1932,10 @@
             clearInterval(window.__streamerPendingPollInterval);
             if (!isStreamerAuthenticated()) return;
             window.__streamerPendingPollInterval = setInterval(() => {
-                if (isStreamerAuthenticated()) fetchDonationsFromDb();
-            }, 4000);
+                if (isStreamerAuthenticated() && !isReviewActionInProgress && !isFetchingDonations) {
+                    fetchDonationsFromDb(false);
+                }
+            }, 4500);
         }
 
         async function confirmAndDispatchSupport() {
@@ -1965,6 +1990,7 @@
                 alert_notified: 0
             };
 
+            // إزالة أي أثر سابق لهذا المعرّف من قائمة المحذوفات الدائمة عند إرسال طلب دعم جديد
             loadDeletedUidSet();
             permanentlyDeletedUidSet.delete(alertUid);
             persistDeletedUidSet();
@@ -2004,7 +2030,7 @@
                     wasCopyDelayRunning = false;
                     closeTransferModal();
                     startTransferCooldown();
-                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) إلى لوحة الستريمر للمراجعة`);
+                    showToast(`⏳ تم إرسال طلبك (${trackingCode}) إلى D1؛ سيظهر الفيديو في رابط البث بعد قبوله`);
                     return;
                 } catch (e) {
                     showToast("⚠️ تعذر الاتصال بالخادم، تم تسجيل الطلب محلياً قيد المراجعة");
@@ -2023,17 +2049,35 @@
             showToast(`⏳ تم تسجيل طلبك (${trackingCode}) قيد المراجعة`);
         }
 
-        // القبول والرفض يتم من داخل لوحة الستريمر فقط
-        async function reviewDonation(alertUid, action) {
-            if (!isStreamerAuthenticated()) { openLoginModal(); return; }
+        async function reviewDonation(alertUid, action, btnEl = null) {
+            if (!isStreamerAuthenticated()) {
+                openLoginModal();
+                return;
+            }
+
             const cleanUid = String(alertUid || "").trim();
-            if (!cleanUid) return;
+            if (!cleanUid || activeReviewUidSet.has(cleanUid)) return;
+
+            activeReviewUidSet.add(cleanUid);
+            isReviewActionInProgress = true;
+            clearInterval(window.__streamerPendingPollInterval);
+
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = action === "approve" ? "⏳ جاري القبول..." : "⏳ جاري الرفض...";
+            }
 
             const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
-            const targetItem = currentList.find((it) => String(it.alert_uid || it.id || "") === cleanUid);
+            const targetItem = currentList.find(
+                (it) => String(it.alert_uid || "").trim() === cleanUid || String(it.id || "").trim() === cleanUid
+            );
+
             const relatedIds = [cleanUid];
             if (targetItem && targetItem.id) relatedIds.push(String(targetItem.id).trim());
             if (targetItem && targetItem.alert_uid) relatedIds.push(String(targetItem.alert_uid).trim());
+
+            const nextStatus = action === "approve" ? "approved" : "rejected";
+            const nextNotified = action === "approve" ? 1 : 0;
 
             if (action === "approve") {
                 addToStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
@@ -2043,8 +2087,21 @@
                 removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, relatedIds);
             }
 
-            if (isApiConfigured()) {
-                try {
+            const optimisticList = currentList.map((it) => {
+                const u = String(it.alert_uid || "").trim();
+                const i = String(it.id || "").trim();
+                if (relatedIds.includes(u) || relatedIds.includes(i)) {
+                    return Object.assign({}, it, {
+                        review_status: nextStatus,
+                        alert_notified: nextNotified
+                    });
+                }
+                return it;
+            });
+            syncDonationsState(optimisticList);
+
+            try {
+                if (isApiConfigured()) {
                     const res = await fetch(`${API_BASE_URL}/api/donations/${encodeURIComponent(cleanUid)}/${action}`, {
                         method: "POST",
                         headers: {
@@ -2052,46 +2109,39 @@
                             "X-Streamer-Pass": CORRECT_STREAMER_PASS
                         }
                     });
+
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok || !data.ok) {
-                        showToast(`⚠️ تعذر تحديث حالة الطلب: ${data.error || "خطأ من الخادم"}`);
+                        showToast(`⚠️ خطأ الخادم (${res.status}): ${data.error || "تعذر تحديث الطلب في D1"}`);
                         return;
                     }
-                    const nextStatus = action === "approve" ? "approved" : "rejected";
-                    const baseList = cachedDonations.length ? cachedDonations : getLocalDonations();
-                    const optimisticList = baseList.map((it) => {
-                        const idMatch = String(it.alert_uid || it.id || "") === cleanUid;
-                        if (!idMatch) return it;
-                        return Object.assign({}, it, data.item || {}, {
-                            review_status: nextStatus,
-                            alert_notified: action === "approve" ? 1 : 0
-                        });
-                    });
-                    syncDonationsState(optimisticList);
-                    if (action === "approve") {
-                        showToast("✅ تم قبول الطلب من لوحة الستريمر وإرساله للبث المباشر");
-                    } else {
-                        showToast("❌ تم رفض الطلب من لوحة الستريمر");
-                    }
-                    await fetchDonationsFromDb();
-                    return;
-                } catch (e) {
-                    showToast("⚠️ فشل الاتصال بالـ Worker أثناء المراجعة");
-                    return;
-                }
-            }
 
-            const list = getLocalDonations().map((item) => {
-                if ((item.alert_uid || item.id) === cleanUid) {
-                    return Object.assign({}, item, {
-                        review_status: action === "approve" ? "approved" : "rejected",
-                        alert_notified: action === "approve" ? 1 : 0
+                    const confirmedList = (cachedDonations.length ? cachedDonations : optimisticList).map((it) => {
+                        const u = String(it.alert_uid || "").trim();
+                        const i = String(it.id || "").trim();
+                        if (relatedIds.includes(u) || relatedIds.includes(i)) {
+                            return Object.assign({}, it, data.item || {}, {
+                                review_status: nextStatus,
+                                alert_notified: nextNotified
+                            });
+                        }
+                        return it;
                     });
+                    syncDonationsState(confirmedList);
                 }
-                return item;
-            });
-            syncDonationsState(list);
-            showToast(action === "approve" ? "✅ تم القبول وإضافته للداعمين المقبولين" : "❌ تم رفض الطلب");
+
+                showToast(
+                    action === "approve"
+                        ? "✅ تم قبول الطلب من لوحة الستريمر وإرساله للبث المباشر (?widget=true)"
+                        : "❌ تم رفض الطلب وإزالته من القائمة"
+                );
+            } catch (e) {
+                showToast("⚠️ تعذر الاتصال بالـ Worker؛ تأكد من الإنترنت أو رابط الـ API");
+            } finally {
+                activeReviewUidSet.delete(cleanUid);
+                isReviewActionInProgress = false;
+                startStreamerBackgroundPolling();
+            }
         }
 
         function escapeHtml(str) {
