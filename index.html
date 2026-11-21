@@ -1796,6 +1796,7 @@
             return clean ? clean.charAt(0) : "★";
         }
 
+        // التعديل هنا فقط: ضبط عرض الصف والمبلغ بوضوح في اتجاه RTL
         function renderTopSupporters(items) {
             const widgetTopContainer = document.getElementById("widget-top-supporters-list");
             const sorted = getTopThreeSupporters(items);
@@ -2396,5 +2397,3 @@
 </body>
 </html>
 ```[cite: 1]
-
-هل يظهر المبلغ الآن بشكل مضبوط داخل قائمة «أفضل الداعمين» على شاشتك؟
