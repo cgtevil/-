@@ -2587,7 +2587,11 @@
                 closeTransferModal();
             }
         });
-        window.addEventListener("DOMContentLoaded", initApp);
+        if (document.readyState === "loading") {
+            window.addEventListener("DOMContentLoaded", initApp);
+        } else {
+            initApp();
+        }
         window.addEventListener("hashchange", () => {
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
