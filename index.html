@@ -1276,11 +1276,39 @@
             return `${currentBase}?role=${encodeURIComponent(role)}`;
         }
 
-        function copyRoleLink(inputId, toastMessage) {
+        async function writeTextToClipboard(text) {
+            const value = String(text || "");
+            if (!value) return false;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(value);
+                    return true;
+                }
+            } catch (e) {}
+            try {
+                const temp = document.createElement("textarea");
+                temp.value = value;
+                temp.setAttribute("readonly", "");
+                temp.style.position = "fixed";
+                temp.style.opacity = "0";
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                const ok = document.execCommand("copy");
+                temp.remove();
+                return Boolean(ok);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function copyRoleLink(inputId, toastMessage) {
             const input = document.getElementById(inputId);
-            if (!input) return;
-            input.select();
-            try { document.execCommand("copy"); showToast(`✅ ${toastMessage}`); } catch (e) {}
+            if (!input || !input.value) return;
+            try { input.select(); input.setSelectionRange(0, input.value.length); } catch (e) {}
+            const copied = await writeTextToClipboard(input.value);
+            if (copied) showToast(`✅ ${toastMessage}`);
+            else showToast("⚠️ تعذر النسخ تلقائياً؛ انسخ الرابط يدوياً");
         }
 
         function getStreamerToken() {
@@ -1479,12 +1507,15 @@
             if (ytInput) ytInput.value = buildYoutubeWatchUrl(activeYoutubeVideoId);
         }
 
-        function copyWidgetUrl() {
+        async function copyWidgetUrl() {
             const input = document.getElementById("widget-url-input");
             if (!input) return;
-            input.value = buildShareableWidgetUrl();
-            input.select();
-            try { document.execCommand("copy"); showToast("✅ تم نسخ رابط البث المباشر"); } catch (e) {}
+            const url = buildShareableWidgetUrl();
+            input.value = url;
+            try { input.select(); input.setSelectionRange(0, url.length); } catch (e) {}
+            const copied = await writeTextToClipboard(url);
+            if (copied) showToast("✅ تم نسخ رابط البث المباشر");
+            else showToast("⚠️ تعذر النسخ تلقائياً؛ انسخ الرابط يدوياً");
         }
 
         function selectNetwork(net) {
@@ -1801,15 +1832,22 @@
         }
 
         function getTopThreeSupporters(items) {
-            const approvedOnly = (items || []).filter((item) => item.review_status === "approved");
+            const approvedOnly = (items || []).filter((item) => item && item.review_status === "approved");
             if (!approvedOnly.length) return [];
             const totalsMap = new Map();
             approvedOnly.forEach((item) => {
-                const name = item.donor_name || "داعم مجهول";
+                const rawName = String(item.donor_name || "").trim() || "داعم مجهول";
+                const key = rawName.toLowerCase();
                 const amt = Number(item.amount) || 0;
-                totalsMap.set(name, (totalsMap.get(name) || 0) + amt);
+                const prev = totalsMap.get(key) || { name: rawName, total: 0 };
+                prev.total += amt;
+                totalsMap.set(key, prev);
             });
-            return Array.from(totalsMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+            return Array.from(totalsMap.values())
+                .filter((entry) => entry.total > 0)
+                .map((entry) => [entry.name, entry.total])
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3);
         }
 
         function getSupporterInitial(name) {
@@ -2421,6 +2459,19 @@
             }
         }
 
+                window.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape") return;
+            const panel = document.getElementById("streamer-panel-modal");
+            const loginModal = document.getElementById("login-modal");
+            const transferModal = document.getElementById("transfer-modal");
+            if (panel && !panel.classList.contains("hidden")) {
+                toggleStreamerPanel(false);
+            } else if (loginModal && !loginModal.classList.contains("hidden")) {
+                closeLoginModal();
+            } else if (transferModal && !transferModal.classList.contains("hidden")) {
+                closeTransferModal();
+            }
+        });
         window.addEventListener("DOMContentLoaded", initApp);
         window.addEventListener("hashchange", () => {
             if (isTopWidgetMode()) {
