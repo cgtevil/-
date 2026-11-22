@@ -2013,7 +2013,7 @@
                 if (isStreamerAuthenticated() && !isReviewActionInProgress && !isFetchingDonations) {
                     fetchDonationsFromDb(false);
                 }
-            }, 4500);
+            }, 4000);
         }
 
         async function confirmAndDispatchSupport() {
@@ -2079,8 +2079,8 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(record)
                     });
-                    const data = await res.json();
-                    if (!data.ok) { showToast(`⚠️ تعذر حفظ الطلب: ${data.error || "خطأ"}`); return; }
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || !data.ok) { showToast(`⚠️ تعذر حفظ الطلب: ${data.error || `خطأ (${res.status})`}`); return; }
                     const resolvedUid = (data.item && data.item.alert_uid) || alertUid;
                     const resolvedId = (data.item && data.item.id) || alertUid;
                     removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, [alertUid, resolvedUid, resolvedId]);
