@@ -522,12 +522,6 @@
         let pendingTrackingCode = "";
         let transferModalOpenedAtMs = 0;
         let hasCopiedUssdCode = false;
-        let activeLocalVideoUrl = DEFAULT_LOCAL_VIDEO_URL;
-        let activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
-        let lastSeenAlertId = "";
-        const seenWidgetAlertIds = new Set();
-        let isShowingAlert = false;
-        let wasCooldownActive = false;
         let copyUnlockDeadlineMs = 0;
         let wasCopyDelayRunning = false;
         let cachedDonations = [];
@@ -2446,14 +2440,10 @@
         }
 
         function bindButtonResilienceGuards() {
-            // Ensure every <button> without an explicit type defaults safely to type="button"
-            // so it never triggers an unintended form/page reload behavior.
             document.querySelectorAll("button:not([type])").forEach((btn) => {
                 btn.setAttribute("type", "button");
             });
 
-            // Make sure no visible modal blocks clicks on itself via pointer-events issues,
-            // and allow clicking the dark backdrop of modals to close cleanly where safe.
             const backdropClosers = [
                 { modalId: "login-modal", closeFn: () => closeLoginModal() },
                 { modalId: "transfer-modal", closeFn: () => closeTransferModal() },
@@ -2470,7 +2460,6 @@
                 });
             });
 
-            // Global delegated listener to protect against double-tap / stuck buttons
             if (!window.__buttonResilienceDelegated) {
                 window.__buttonResilienceDelegated = true;
                 document.addEventListener("click", (event) => {
@@ -2481,7 +2470,6 @@
                         event.stopPropagation();
                         return;
                     }
-                    // Safety auto-release if any button stays marked busy for > 8 seconds
                     if (btn.dataset && btn.dataset.uiBusy === "1") {
                         clearTimeout(btn.__busySafetyTimer);
                         btn.__busySafetyTimer = setTimeout(() => {
@@ -2574,7 +2562,7 @@
             }
         }
 
-                window.addEventListener("keydown", (event) => {
+        window.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
             const panel = document.getElementById("streamer-panel-modal");
             const loginModal = document.getElementById("login-modal");
@@ -2597,16 +2585,4 @@
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
                 sessionStorage.removeItem(WIDGET_CURSOR_STORAGE_KEY);
-                purgeAllStoredWidgetAlerts();
-                document.body.classList.remove("top-widget-mode");
-                document.body.classList.add("widget-mode");
-                document.getElementById("main-app-view").classList.add("hidden");
-                document.getElementById("top-widget-view").classList.add("hidden");
-                document.getElementById("widget-view").classList.remove("hidden");
-                preloadLocalVideo(activeLocalVideoUrl);
-                pollApprovedLiveAlertsForWidget();
-            }
-        });
-    </script>
-</body>
-</html>
+                purgeAllStoredWidgetAlerts
