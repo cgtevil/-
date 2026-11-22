@@ -1468,6 +1468,7 @@
                 updateYoutubeVideoStatusUI();
                 updateStreamerSoundUI();
                 panel.classList.remove("hidden");
+                bindButtonResilienceGuards();
                 fetchDonationsFromDb();
             } else {
                 panel.classList.add("hidden");
@@ -2413,6 +2414,118 @@
             fetchDonationsFromDb(true);
         }
 
+
+        function runSafeUiAction(fnName, args = [], buttonEl = null) {
+            const fn = typeof window[fnName] === "function" ? window[fnName] : null;
+            if (!fn) {
+                showToast("⚠️ الإجراء غير متاح حالياً؛ أعد تحميل الصفحة");
+                return;
+            }
+            if (buttonEl && buttonEl.dataset && buttonEl.dataset.uiBusy === "1") {
+                return;
+            }
+            if (buttonEl && buttonEl.dataset) {
+                buttonEl.dataset.uiBusy = "1";
+            }
+            try {
+                const result = fn.apply(window, args);
+                if (result && typeof result.finally === "function") {
+                    return result.finally(() => {
+                        if (buttonEl && buttonEl.dataset) {
+                            delete buttonEl.dataset.uiBusy;
+                        }
+                    });
+                }
+            } catch (err) {
+                try { console.error("UI action error:", fnName, err); } catch (e) {}
+                showToast("⚠️ حدث خطأ أثناء تنفيذ الأمر؛ حاول مرة أخرى");
+            }
+            if (buttonEl && buttonEl.dataset) {
+                delete buttonEl.dataset.uiBusy;
+            }
+        }
+
+        function bindButtonResilienceGuards() {
+            // Ensure every <button> without an explicit type defaults safely to type="button"
+            // so it never triggers an unintended form/page reload behavior.
+            document.querySelectorAll("button:not([type])").forEach((btn) => {
+                btn.setAttribute("type", "button");
+            });
+
+            // Make sure no visible modal blocks clicks on itself via pointer-events issues,
+            // and allow clicking the dark backdrop of modals to close cleanly where safe.
+            const backdropClosers = [
+                { modalId: "login-modal", closeFn: () => closeLoginModal() },
+                { modalId: "transfer-modal", closeFn: () => closeTransferModal() },
+                { modalId: "streamer-panel-modal", closeFn: () => toggleStreamerPanel(false) }
+            ];
+            backdropClosers.forEach(({ modalId, closeFn }) => {
+                const modalEl = document.getElementById(modalId);
+                if (!modalEl || modalEl.dataset.backdropBound === "1") return;
+                modalEl.dataset.backdropBound = "1";
+                modalEl.addEventListener("click", (event) => {
+                    if (event.target === modalEl) {
+                        closeFn();
+                    }
+                });
+            });
+
+            // Global delegated listener to protect against double-tap / stuck buttons
+            if (!window.__buttonResilienceDelegated) {
+                window.__buttonResilienceDelegated = true;
+                document.addEventListener("click", (event) => {
+                    const btn = event.target && event.target.closest ? event.target.closest("button") : null;
+                    if (!btn) return;
+                    if (btn.disabled || btn.getAttribute("aria-disabled") === "true") {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return;
+                    }
+                    // Safety auto-release if any button stays marked busy for > 8 seconds
+                    if (btn.dataset && btn.dataset.uiBusy === "1") {
+                        clearTimeout(btn.__busySafetyTimer);
+                        btn.__busySafetyTimer = setTimeout(() => {
+                            if (btn.dataset) delete btn.dataset.uiBusy;
+                        }, 8000);
+                    }
+                }, true);
+            }
+        }
+
+        function exposeGlobalButtonHandlers() {
+            const handlers = {
+                toggleStreamerSoundAlert,
+                openLoginModal,
+                closeLoginModal,
+                submitStreamerLogin,
+                toggleStreamerPanel,
+                logoutStreamer,
+                selectNetwork,
+                setPresetAmount,
+                syncPresetHighlights,
+                openTransferModal,
+                closeTransferModal,
+                copyUssdCode,
+                confirmAndDispatchSupport,
+                playStreamerNotificationChime,
+                clearOldSupporters,
+                refreshAndPurgeOldDonations,
+                clearAllApprovedSupporters,
+                deleteSingleDonation,
+                reviewDonation,
+                applyYoutubeAlertVideo,
+                clearYoutubeAlertVideo,
+                copyWidgetUrl,
+                copyRoleLink,
+                renewTopSupportersInSupportPage
+            };
+            Object.keys(handlers).forEach((name) => {
+                if (typeof handlers[name] === "function") {
+                    window[name] = handlers[name];
+                }
+            });
+        }
+
         function initApp() {
             getOrCreateDeviceId();
             loadSavedYoutubeSettings();
@@ -2424,6 +2537,8 @@
                 safeStorageSet(YOUTUBE_VIDEO_STORAGE_KEY, activeYoutubeVideoId);
             }
 
+            exposeGlobalButtonHandlers();
+            bindButtonResilienceGuards();
             initRealtimeSync();
 
             if (isTopWidgetMode()) {
