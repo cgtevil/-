@@ -1935,6 +1935,17 @@
             }
             isFetchingDonations = true;
             try {
+                if (isTopWidgetMode()) {
+                    const publicRes = await fetch(`${API_BASE_URL}/api/public/top-supporters?_t=${Date.now()}`, { cache: "no-store" });
+                    if (!publicRes.ok) return;
+                    const publicData = await publicRes.json();
+                    if (publicData && publicData.ok && Array.isArray(publicData.items)) {
+                        lastRenderedTopSignature = "";
+                        renderTopSupporters(publicData.items);
+                    }
+                    return;
+                }
+
                 const res = await fetch(`${API_BASE_URL}/api/donations?_t=${Date.now()}`, { cache: "no-store", headers: streamerApiHeaders() });
                 if (res.status === 401 && getStreamerToken()) {
                     logoutStreamer();
@@ -2282,18 +2293,17 @@
         async function pollApprovedLiveAlertsForWidget() {
             if (!isWidgetMode() || !isApiConfigured()) return;
             try {
-                const cursor = Number(sessionStorage.getItem(WIDGET_CURSOR_STORAGE_KEY) || 0);
-                const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch?after=${encodeURIComponent(cursor)}`, { cache: "no-store" });
+                const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch?_t=${Date.now()}`, { cache: "no-store" });
                 if (!res.ok) return;
                 const data = await res.json();
                 const alerts = Array.isArray(data.items) ? data.items : (data.alert ? [data.alert] : []);
-                let newestId = cursor;
+                const acknowledgedIds = [];
+
                 alerts.forEach((alert) => {
-                    if (!alert) return;
-                    newestId = Math.max(newestId, Number(alert.id) || 0);
-                    if (alert.review_status !== "approved") return;
+                    if (!alert || alert.review_status !== "approved") return;
                     const stableId = String(alert.alert_uid || alert.id || "").trim();
                     if (!stableId) return;
+
                     enqueueAlert(stripDonorPhoneArtifacts({
                         id: stableId,
                         alert_uid: stableId,
@@ -2308,8 +2318,17 @@
                         created_at: alert.created_at,
                         review_status: "approved"
                     }));
+                    acknowledgedIds.push(Number(alert.id) || 0);
                 });
-                if (newestId > cursor) sessionStorage.setItem(WIDGET_CURSOR_STORAGE_KEY, String(newestId));
+
+                const validIds = acknowledgedIds.filter((id) => id > 0);
+                if (validIds.length) {
+                    await fetch(`${API_BASE_URL}/api/alerts/ack`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ids: validIds })
+                    });
+                }
             } catch (e) {}
         }
 
