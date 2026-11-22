@@ -571,7 +571,8 @@
         function isExplicitlyApprovedForLiveStream(item) {
             if (!item || typeof item !== "object") return false;
             if (item.is_manual_test === true) return true;
-            return item.review_status === "approved";
+            if (item.review_status === "rejected") return false;
+            return true;
         }
 
         function purgeAllStoredWidgetAlerts() {
@@ -2303,7 +2304,7 @@
                 const acknowledgedIds = [];
 
                 alerts.forEach((alert) => {
-                    if (!alert || alert.review_status !== "approved") return;
+                    if (!alert || alert.review_status === "rejected") return;
                     const stableId = String(alert.alert_uid || alert.id || "").trim();
                     if (!stableId) return;
 
@@ -2321,15 +2322,14 @@
                         created_at: alert.created_at,
                         review_status: "approved"
                     }));
-                    acknowledgedIds.push(Number(alert.id) || 0);
+                    if (Number(alert.id) > 0) acknowledgedIds.push(Number(alert.id));
                 });
 
-                const validIds = acknowledgedIds.filter((id) => id > 0);
-                if (validIds.length) {
+                if (acknowledgedIds.length) {
                     await fetch(`${API_BASE_URL}/api/alerts/ack`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ ids: validIds })
+                        body: JSON.stringify({ ids: acknowledgedIds })
                     });
                 }
             } catch (e) {}
@@ -2358,9 +2358,9 @@
             }
 
             if (isTopWidgetMode()) {
-                fetchDonationsFromDb();
+                fetchDonationsFromDb(true);
                 clearInterval(window.__topWidgetSyncInterval);
-                window.__topWidgetSyncInterval = setInterval(() => fetchDonationsFromDb(), 15000);
+                window.__topWidgetSyncInterval = setInterval(() => fetchDonationsFromDb(true), 4000);
             }
         }
 
