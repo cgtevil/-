@@ -174,7 +174,7 @@
                     <div>
                         <h1 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
                             <span>دعم البث المباشر</span>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">@cgtevil</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">@cgt_evil</span>
                         </h1>
                         <p class="text-xs text-slate-400">تحويل فوري عبر ليبيانا والمدار وعرض الفيديو حصراً في رابط البث بعد القبول من D1</p>
                     </div>
@@ -351,7 +351,7 @@
         <div class="glass-card w-full max-w-2xl rounded-3xl p-6 space-y-5 border border-amber-400/30 shadow-2xl my-auto">
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
-                    <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgtevil)</h3>
+                    <h3 class="text-xl font-black text-white">لوحة تحكم الستريمر (@cgt_evil)</h3>
                     <p class="text-xs text-slate-400">مراجعة الطلبات الواردة من خانة D1 واستعراض الداعمين المقبولين</p>
                 </div>
                 <button type="button" onclick="toggleStreamerPanel(false)" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer">✕</button>
@@ -489,7 +489,7 @@
     <script>
         const API_BASE_URL = "https://cgtevil-donations-api.dis517226.workers.dev";
 
-        const CORRECT_STREAMER_USER = "cgtevil";
+        const CORRECT_STREAMER_USER = "cgt_evil";
         const AUTH_STORAGE_KEY = "cgtevil_streamer_auth_session";
         const STREAMER_TOKEN_STORAGE_KEY = "cgtevil_streamer_token";
         const SOUND_ENABLED_STORAGE_KEY = "cgtevil_streamer_sound_enabled";
@@ -1303,9 +1303,12 @@
             const token = getStreamerToken();
             if (!token) return false;
             try {
-                const part = token.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
-                const payload = JSON.parse(atob(part + "=".repeat((4 - part.length % 4) % 4)));
-                return payload.sub === CORRECT_STREAMER_USER && Number(payload.exp) > Math.floor(Date.now() / 1000);
+                const part = token.split(".")[0];
+                if (!part) return false;
+                const normalized = part.replace(/-/g, "+").replace(/_/g, "/");
+                const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+                const payload = JSON.parse(atob(padded));
+                return payload && payload.sub === CORRECT_STREAMER_USER && Number(payload.exp) > Math.floor(Date.now() / 1000);
             } catch (e) {
                 return false;
             }
