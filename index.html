@@ -534,6 +534,12 @@
         let permanentlyDeletedUidSet = new Set();
         let lastRenderedTopSignature = "";
         const alertQueue = [];
+        const seenWidgetAlertIds = new Set();
+        const pendingAlertAckIds = new Set();
+        let activeAlertDbId = 0;
+        let isAlertAckInProgress = false;
+        let isShowingAlert = false;
+        let lastSeenAlertId = "";
         let broadcastChannel = null;
 
         function sanitizeAlertMessageForBroadcast(rawMsg) {
@@ -2199,8 +2205,34 @@
             window.__alertNextTimer = null;
         }
 
+        async function flushAlertAcknowledgements() {
+            if (isAlertAckInProgress || !pendingAlertAckIds.size || !isApiConfigured()) return;
+            isAlertAckInProgress = true;
+            const ids = Array.from(pendingAlertAckIds).slice(0, 20);
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/alerts/ack`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ids })
+                });
+                if (res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    if (data && data.ok) ids.forEach((id) => pendingAlertAckIds.delete(id));
+                }
+            } catch (e) {
+                // Keep IDs queued; the next poll retries them.
+            } finally {
+                isAlertAckInProgress = false;
+            }
+        }
+
         function finishCurrentAlert() {
             clearActiveAlertTimers();
+            if (activeAlertDbId > 0) {
+                pendingAlertAckIds.add(activeAlertDbId);
+                activeAlertDbId = 0;
+                flushAlertAcknowledgements();
+            }
             const card = document.getElementById("live-alert-card");
             const localVideo = document.getElementById("alert-local-video");
             const ytFrame = document.getElementById("alert-youtube-frame");
@@ -2233,6 +2265,7 @@
                 lastSeenAlertId = stableId;
             }
             cleanItem.id = stableId || cleanItem.id;
+            cleanItem.db_id = Number(cleanItem.db_id || cleanItem.database_id || 0) || 0;
             alertQueue.push(cleanItem);
             if (!isShowingAlert) processNextAlert();
         }
@@ -2278,8 +2311,10 @@
             }
             isShowingAlert = true;
             const current = stripDonorPhoneArtifacts(alertQueue.shift());
+            activeAlertDbId = Number(current.db_id || 0) || 0;
 
             if (!isExplicitlyApprovedForLiveStream(current)) {
+                activeAlertDbId = 0;
                 isShowingAlert = false;
                 processNextAlert();
                 return;
@@ -2329,12 +2364,13 @@
 
         async function pollApprovedLiveAlertsForWidget() {
             if (!isWidgetMode() || !isApiConfigured()) return;
+            // Retry any acknowledgements that failed after a previous alert finished.
+            flushAlertAcknowledgements();
             try {
                 const res = await fetch(`${API_BASE_URL}/api/alerts/pending-dispatch?_t=${Date.now()}`, { cache: "no-store" });
                 if (!res.ok) return;
                 const data = await res.json();
                 const alerts = Array.isArray(data.items) ? data.items : (data.alert ? [data.alert] : []);
-                const acknowledgedIds = [];
 
                 alerts.forEach((alert) => {
                     if (!alert || alert.review_status === "rejected") return;
@@ -2344,6 +2380,7 @@
                     enqueueAlert(stripDonorPhoneArtifacts({
                         id: stableId,
                         alert_uid: stableId,
+                        db_id: Number(alert.id) || 0,
                         manual_approval_token: `server-approved-${stableId}`,
                         streamer_username: CORRECT_STREAMER_USER,
                         donor_name: alert.donor_name,
@@ -2355,16 +2392,7 @@
                         created_at: alert.created_at,
                         review_status: "approved"
                     }));
-                    if (Number(alert.id) > 0) acknowledgedIds.push(Number(alert.id));
                 });
-
-                if (acknowledgedIds.length) {
-                    await fetch(`${API_BASE_URL}/api/alerts/ack`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ ids: acknowledgedIds })
-                    });
-                }
             } catch (e) {}
         }
 
@@ -2585,4 +2613,16 @@
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
                 sessionStorage.removeItem(WIDGET_CURSOR_STORAGE_KEY);
-                purgeAllStoredWidgetAlerts
+                purgeAllStoredWidgetAlerts();
+                document.body.classList.remove("top-widget-mode");
+                document.body.classList.add("widget-mode");
+                document.getElementById("main-app-view").classList.add("hidden");
+                document.getElementById("top-widget-view").classList.add("hidden");
+                document.getElementById("widget-view").classList.remove("hidden");
+                preloadLocalVideo(activeLocalVideoUrl);
+                pollApprovedLiveAlertsForWidget();
+            }
+        });
+    </script>
+</body>
+</html>
