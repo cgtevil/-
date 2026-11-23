@@ -518,6 +518,9 @@
             almadar: { min: 3, max: 20, label: "المدار", prefix: "MDR", presets: [3, 5, 10, 20] }
         };
 
+        let activeLocalVideoUrl = DEFAULT_LOCAL_VIDEO_URL;
+        let activeYoutubeVideoId = DEFAULT_YOUTUBE_VIDEO_ID;
+        let wasCooldownActive = false;
         let selectedNetwork = "libyana";
         let pendingTrackingCode = "";
         let transferModalOpenedAtMs = 0;
