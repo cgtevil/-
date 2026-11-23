@@ -282,7 +282,7 @@
 
             <div class="p-4 rounded-2xl bg-slate-950/90 border border-white/10 space-y-2 text-center">
                 <div class="text-xs text-slate-400">كود التحويل الفوري (USSD)</div>
-                <div id="ussd-code-display" dir="ltr" class="text-xl font-black text-emerald-400 select-all">*122*0944630534*10#</div>
+                <div id="ussd-code-display" dir="ltr" class="text-xl font-black text-emerald-400 select-all">*122*0944630534*10000#</div>
                 <div id="tracking-code-display" class="inline-block px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-300 font-black text-xs">
                     رمز التتبع: LBY-0000
                 </div>
@@ -307,7 +307,7 @@
                 <button id="btn-copy-ussd" type="button" onclick="copyUssdCode()" class="py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer">
                     📋 نسخ الكود
                 </button>
-                <a id="ussd-call-link" href="tel:*122*0944630534*10%23" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
+                <a id="ussd-call-link" href="tel:*122*0944630534*10000%23" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
                     📞 اتصال مباشر
                 </a>
             </div>
@@ -1558,8 +1558,9 @@
             const amount = check.amount;
             const donorName = nameCheck.name;
             const phone = selectedNetwork === "libyana" ? DEFAULT_LIBYANA_PHONE : DEFAULT_ALMADAR_PHONE;
+            const ussdAmount = selectedNetwork === "libyana" ? amount * 1000 : amount;
             const ussd = selectedNetwork === "libyana"
-                ? `*122*${phone}*${amount}#`
+                ? `*122*${phone}*${ussdAmount}#`
                 : `*140*4*1*${amount}*${phone}#`;
 
             pendingTrackingCode = generateTrackingCode(selectedNetwork);
@@ -1574,7 +1575,10 @@
             document.getElementById("ussd-code-display").textContent = ussd;
             document.getElementById("tracking-code-display").textContent = `رمز التتبع: ${pendingTrackingCode}`;
             document.getElementById("ussd-call-link").href = `tel:${encodeURIComponent(ussd)}`;
-            document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amount} د.ل • الشبكة: ${getNetworkLabel(selectedNetwork)} (${phone})`;
+            const amountText = selectedNetwork === "libyana"
+                ? `${amount} د.ل (${ussdAmount} درهم)`
+                : `${amount} د.ل`;
+            document.getElementById("transfer-summary").textContent = `الداعم: ${donorName} • المبلغ: ${amountText} • الشبكة: ${getNetworkLabel(selectedNetwork)} (${phone})`;
             updateTransferCooldownUI();
             document.getElementById("transfer-modal").classList.remove("hidden");
         }
