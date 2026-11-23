@@ -1335,7 +1335,7 @@
             const token = getStreamerToken();
             if (!token) return false;
             try {
-                const part = token.split(".")[0];
+                const part = token.split(".")[1];
                 if (!part) return false;
                 const normalized = part.replace(/-/g, "+").replace(/_/g, "/");
                 const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
