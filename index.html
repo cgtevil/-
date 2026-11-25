@@ -35,7 +35,6 @@
             border: none !important;
             box-shadow: none !important;
         }
-        /* تأثير الحد الأسود السميك المطابق للصورة */
         .top-stroke-white {
             color: #ffffff;
             -webkit-text-stroke: 5px #000000;
@@ -134,7 +133,6 @@
         </div>
     </div>
 
-    <!-- قائمة أفضل الداعمين بالتصميم المطابق للصورة -->
     <div id="top-widget-view" class="hidden fixed inset-0 w-screen h-screen p-5 flex items-start justify-start pointer-events-none">
         <div class="top-overlay-card w-full max-w-[440px] space-y-3">
             <div class="flex items-center justify-center">
@@ -493,6 +491,7 @@
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const WIDGET_CURSOR_STORAGE_KEY = "cgtevil_widget_last_seen_id";
         const WIDGET_SEEN_ALERTS_SESSION_KEY = "cgtevil_widget_seen_alert_ids";
+        const WIDGET_SEEN_ALERTS_LOCAL_KEY = "cgtevil_widget_seen_alert_ids_v2";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const DEVICE_ID_STORAGE_KEY = "cgtevil_donor_device_id";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
@@ -536,23 +535,25 @@
 
         function loadSeenWidgetAlerts() {
             try {
-                const raw = sessionStorage.getItem(WIDGET_SEEN_ALERTS_SESSION_KEY);
-                const arr = raw ? JSON.parse(raw) : [];
-                if (Array.isArray(arr)) {
-                    arr.forEach((id) => {
+                const rawSession = sessionStorage.getItem(WIDGET_SEEN_ALERTS_SESSION_KEY);
+                const rawLocal = localStorage.getItem(WIDGET_SEEN_ALERTS_LOCAL_KEY);
+                const sessionArr = rawSession ? JSON.parse(rawSession) : [];
+                const localArr = rawLocal ? JSON.parse(rawLocal) : [];
+                [...(Array.isArray(sessionArr) ? sessionArr : []), ...(Array.isArray(localArr) ? localArr : [])]
+                    .forEach((id) => {
                         const clean = String(id || "").trim();
                         if (clean) seenWidgetAlertIds.add(clean);
                     });
-                }
+                persistSeenWidgetAlerts();
             } catch (e) {}
         }
 
         function persistSeenWidgetAlerts() {
             try {
-                sessionStorage.setItem(
-                    WIDGET_SEEN_ALERTS_SESSION_KEY,
-                    JSON.stringify(Array.from(seenWidgetAlertIds).slice(-200))
-                );
+                const list = Array.from(seenWidgetAlertIds).slice(-300);
+                const serialized = JSON.stringify(list);
+                sessionStorage.setItem(WIDGET_SEEN_ALERTS_SESSION_KEY, serialized);
+                localStorage.setItem(WIDGET_SEEN_ALERTS_LOCAL_KEY, serialized);
             } catch (e) {}
         }
 
@@ -567,6 +568,7 @@
         function clearSeenWidgetAlertsSession() {
             seenWidgetAlertIds.clear();
             try { sessionStorage.removeItem(WIDGET_SEEN_ALERTS_SESSION_KEY); } catch (e) {}
+            try { localStorage.removeItem(WIDGET_SEEN_ALERTS_LOCAL_KEY); } catch (e) {}
         }
 
         function sanitizeAlertMessageForBroadcast(rawMsg) {
@@ -995,7 +997,7 @@
                 else if (currentNum > limits.max) amountInput.value = String(limits.max);
             }
             if (badgeEl) {
-                badgeEl.textContent = `${limits.label}: الحد الأدنى ${limits.min} د.ل • الحد الأقصى ${limits.max} د.ل`;
+                badgeEl.textContent = `${limits.label}: الحد الأدنى 3 د.ل • الحد الأقصى ${limits.max} د.ل`;
                 badgeEl.className = selectedNetwork === "almadar"
                     ? "text-xs font-extrabold text-sky-300 bg-sky-500/10 border border-sky-500/25 px-2.5 py-0.5 rounded-full"
                     : "text-xs font-extrabold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 rounded-full";
@@ -1253,7 +1255,7 @@
 
         function getStatusBadge(status, notified) {
             if (status === "approved") {
-                const alertTag = Number(notified) === 1 ? " • بانتظار العرض في رابط البث" : " • تم الإرسال للبث";
+                const alertTag = Number(notified) === 0 ? " • بانتظار العرض في رابط البث" : " • تم الإرسال للبث";
                 return `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px]">مقبول${alertTag}</span>`;
             }
             if (status === "rejected") {
@@ -1626,6 +1628,7 @@
                     temp.style.position = "fixed";
                     temp.style.opacity = "0";
                     document.body.appendChild(temp);
+                    temp.focus();
                     temp.select();
                     copied = document.execCommand("copy");
                     temp.remove();
@@ -2289,9 +2292,6 @@
             const cleanItem = stripDonorPhoneArtifacts(item);
             const stableId = String(cleanItem.alert_uid || cleanItem.id || "").trim();
             if (stableId && seenWidgetAlertIds.has(stableId)) return;
-            if (stableId) {
-                markWidgetAlertAsSeen(stableId);
-            }
             cleanItem.id = stableId || cleanItem.id;
             cleanItem.db_id = Number(cleanItem.db_id || cleanItem.database_id || 0) || 0;
             alertQueue.push(cleanItem);
@@ -2341,6 +2341,10 @@
             const current = stripDonorPhoneArtifacts(alertQueue.shift());
             activeAlertDbId = Number(current.db_id || 0) || 0;
             activeAlertStableId = String(current.alert_uid || current.id || "").trim();
+
+            if (activeAlertStableId) {
+                markWidgetAlertAsSeen(activeAlertStableId);
+            }
 
             if (!isExplicitlyApprovedForLiveStream(current)) {
                 activeAlertDbId = 0;
