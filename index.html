@@ -495,7 +495,7 @@
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const DEVICE_ID_STORAGE_KEY = "cgtevil_donor_device_id";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
-        const TRANSFER_COOLDOWN_MS = 5 * 60 * 1000;
+        const TRANSFER_COOLDOWN_MS = 1 * 60 * 1000;
         const COPY_UNLOCK_DELAY_MS = 20 * 1000;
         const ALERT_MAX_DURATION_MS = 120000;
         const WINDOW_NAME_PREFIX = "CGTEVIL_LIVE_ALERT::";
@@ -1177,12 +1177,12 @@
                 }
                 if (confirmBtn) {
                     confirmBtn.disabled = true;
-                    confirmBtn.textContent = `⏳ مؤقت 5 دقائق نشط (${formatted})`;
+                    confirmBtn.textContent = `⏳ مؤقت دقيقة واحدة نشط (${formatted})`;
                     confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
                 }
-                if (copyReqEl) copyReqEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل (${formatted}).`;
+                if (copyReqEl) copyReqEl.textContent = `تم تفعيل مؤقت دقيقة واحدة بعد آخر تحويل (${formatted}).`;
                 if (hintEl) {
-                    hintEl.textContent = `تم تفعيل مؤقت 5 دقائق بعد آخر تحويل؛ يمكنك إجراء تحويل آخر بعد ${formatted}`;
+                    hintEl.textContent = `تم تفعيل مؤقت دقيقة واحدة بعد آخر تحويل؛ يمكنك إجراء تحويل آخر بعد ${formatted}`;
                     hintEl.classList.remove("hidden");
                 }
                 return;
