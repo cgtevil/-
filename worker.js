@@ -1,24 +1,27 @@
-const DEFAULT_USER = "cgt_evil";
-const DEFAULT_PASS = "cgt_evil01";
-const DEFAULT_SECRET = "cgtevil-worker-secret-2026";
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-const CORS_HEADERS = {
+// worker.js
+var DEFAULT_USER = "cgt_evil";
+var DEFAULT_PASS = "cgt_evil01";
+var DEFAULT_SECRET = "cgtevil-worker-secret-2026";
+var CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
   "Access-Control-Max-Age": "86400",
+  "Cache-Control": "no-store"
 };
-
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      ...CORS_HEADERS,
-    },
+      ...CORS_HEADERS
+    }
   });
 }
-
+__name(jsonResponse, "jsonResponse");
 function toBase64Url(input) {
   const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
   let binary = "";
@@ -27,12 +30,11 @@ function toBase64Url(input) {
   }
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
-
+__name(toBase64Url, "toBase64Url");
 async function signToken(payloadObj, secret) {
   const headerB64 = toBase64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
   const payloadB64 = toBase64Url(JSON.stringify(payloadObj));
   const data = `${headerB64}.${payloadB64}`;
-
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -44,16 +46,14 @@ async function signToken(payloadObj, secret) {
   const sigB64 = toBase64Url(new Uint8Array(sigBuffer));
   return `${data}.${sigB64}`;
 }
-
+__name(signToken, "signToken");
 async function verifyToken(token, secret, expectedSub = DEFAULT_USER) {
   try {
     if (!token || typeof token !== "string") return null;
     const parts = token.split(".");
     if (parts.length !== 3) return null;
-
     const [headerB64, payloadB64, sigB64] = parts;
     const data = `${headerB64}.${payloadB64}`;
-
     const key = await crypto.subtle.importKey(
       "raw",
       new TextEncoder().encode(secret),
@@ -61,16 +61,12 @@ async function verifyToken(token, secret, expectedSub = DEFAULT_USER) {
       false,
       ["verify"]
     );
-
-    const normalizedSig =
-      sigB64.replace(/-/g, "+").replace(/_/g, "/") +
-      "=".repeat((4 - (sigB64.length % 4)) % 4);
+    const normalizedSig = sigB64.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - sigB64.length % 4) % 4);
     const sigBinary = atob(normalizedSig);
     const sigBytes = new Uint8Array(sigBinary.length);
     for (let i = 0; i < sigBinary.length; i++) {
       sigBytes[i] = sigBinary.charCodeAt(i);
     }
-
     const valid = await crypto.subtle.verify(
       "HMAC",
       key,
@@ -78,16 +74,9 @@ async function verifyToken(token, secret, expectedSub = DEFAULT_USER) {
       new TextEncoder().encode(data)
     );
     if (!valid) return null;
-
-    const normalizedPayload =
-      payloadB64.replace(/-/g, "+").replace(/_/g, "/") +
-      "=".repeat((4 - (payloadB64.length % 4)) % 4);
+    const normalizedPayload = payloadB64.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - payloadB64.length % 4) % 4);
     const payload = JSON.parse(atob(normalizedPayload));
-    if (
-      !payload ||
-      payload.sub !== expectedSub ||
-      Number(payload.exp) <= Math.floor(Date.now() / 1000)
-    ) {
+    if (!payload || payload.sub !== expectedSub || Number(payload.exp) <= Math.floor(Date.now() / 1e3)) {
       return null;
     }
     return payload;
@@ -95,7 +84,7 @@ async function verifyToken(token, secret, expectedSub = DEFAULT_USER) {
     return null;
   }
 }
-
+__name(verifyToken, "verifyToken");
 async function isAuthorizedStreamer(request, env) {
   const authHeader = request.headers.get("Authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
@@ -104,11 +93,10 @@ async function isAuthorizedStreamer(request, env) {
   const payload = await verifyToken(token, secret, expectedUser);
   return Boolean(payload);
 }
-
+__name(isAuthorizedStreamer, "isAuthorizedStreamer");
 async function ensureSchema(db) {
-  await db
-    .prepare(
-      `
+  await db.prepare(
+    `
     CREATE TABLE IF NOT EXISTS donations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       alert_uid TEXT UNIQUE NOT NULL,
@@ -126,20 +114,26 @@ async function ensureSchema(db) {
       youtube_video_id TEXT DEFAULT '',
       review_status TEXT DEFAULT 'pending',
       alert_notified INTEGER DEFAULT 0,
-      created_at TEXT NOT NULL
+      created_at TEXT NOT NULL,
+      reviewed_at TEXT DEFAULT ''
     )
   `
-    )
-    .run();
-}
+  ).run();
 
+  const cols = await db.prepare("PRAGMA table_info(donations)").all();
+  const existing = new Set((cols.results || []).map((c) => c.name));
+  if (!existing.has("reviewed_at")) {
+    await db.prepare("ALTER TABLE donations ADD COLUMN reviewed_at TEXT DEFAULT ''").run();
+  }
+}
+__name(ensureSchema, "ensureSchema");
 function mapDonationRow(row) {
   return {
     id: row.id,
     alert_uid: row.alert_uid,
     streamer_username: row.streamer_username || DEFAULT_USER,
     device_id: row.device_id || "",
-    donor_name: row.donor_name || "داعم",
+    donor_name: row.donor_name || "\u062F\u0627\u0639\u0645",
     amount: Number(row.amount) || 0,
     message: row.message || "",
     tracking_code: row.tracking_code || "",
@@ -152,89 +146,72 @@ function mapDonationRow(row) {
     review_status: row.review_status || "pending",
     alert_notified: Number(row.alert_notified) || 0,
     created_at: row.created_at,
+    reviewed_at: row.reviewed_at || ""
   };
 }
-
-export default {
+__name(mapDonationRow, "mapDonationRow");
+var worker_default = {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
-
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
     const method = request.method.toUpperCase();
-
+    const expectedUser = String(env.STREAMER_USER || DEFAULT_USER).trim();
     try {
-      // 1. تسجيل دخول الستريمر -> يوقّع JWT بصيغة header.payload.signature
       if (path === "/api/auth/login" && method === "POST") {
         const body = await request.json().catch(() => ({}));
         const username = String(body.username || "").trim();
         const password = String(body.password || "");
-
-        const expectedUser = String(env.STREAMER_USER || DEFAULT_USER).trim();
         const expectedPass = String(env.STREAMER_PASS || DEFAULT_PASS);
-
         if (username !== expectedUser || password !== expectedPass) {
           return jsonResponse(
-            { ok: false, error: "اسم المستخدم أو رمز الدخول غير صحيح" },
+            { ok: false, error: "\u0627\u0633\u0645 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645 \u0623\u0648 \u0631\u0645\u0632 \u0627\u0644\u062F\u062E\u0648\u0644 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D" },
             401
           );
         }
-
-        const nowSec = Math.floor(Date.now() / 1000);
+        const nowSec = Math.floor(Date.now() / 1e3);
         const secret = env.JWT_SECRET || DEFAULT_SECRET;
         const token = await signToken(
           {
             sub: expectedUser,
             role: "streamer",
             iat: nowSec,
-            exp: nowSec + 60 * 60 * 24 * 7,
+            exp: nowSec + 60 * 60 * 24 * 7
           },
           secret
         );
-
         return jsonResponse({ ok: true, token, username: expectedUser });
       }
-
       if (!env.DB) {
         return jsonResponse(
-          { ok: false, error: "قاعدة البيانات D1 (Binding: DB) غير مرتبطة بالـ Worker" },
+          { ok: false, error: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A D1 (Binding: DB) \u063A\u064A\u0631 \u0645\u0631\u062A\u0628\u0637\u0629 \u0628\u0627\u0644\u0640 Worker" },
           500
         );
       }
       await ensureSchema(env.DB);
-
-      // 2. إرسال طلب دعم جديد من الداعم
       if (path === "/api/donations" && method === "POST") {
         const body = await request.json().catch(() => ({}));
         const donorName = String(body.donor_name || "").trim().slice(0, 40);
         const amount = Number(body.amount);
         const network = body.network === "almadar" ? "almadar" : "libyana";
         const maxAmount = network === "almadar" ? 20 : 50;
-
         if (!donorName) {
-          return jsonResponse({ ok: false, error: "اسم الداعم مطلوب" }, 400);
+          return jsonResponse({ ok: false, error: "\u0627\u0633\u0645 \u0627\u0644\u062F\u0627\u0639\u0645 \u0645\u0637\u0644\u0648\u0628" }, 400);
         }
         if (!Number.isInteger(amount) || amount < 3 || amount > maxAmount) {
           return jsonResponse(
-            { ok: false, error: `المبلغ يجب أن يكون بين 3 و ${maxAmount} د.ل` },
+            { ok: false, error: `\u0627\u0644\u0645\u0628\u0644\u063A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0628\u064A\u0646 3 \u0648 ${maxAmount} \u062F.\u0644` },
             400
           );
         }
-
         const alertUid = String(
-          body.alert_uid ||
-            body.id ||
-            `alert_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+          body.alert_uid || body.id || `alert_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
         ).trim();
-        const message = String(body.message || "دعم مباشر للبث!")
-          .trim()
-          .slice(0, 140);
+        const message = String(body.message || "\u062F\u0639\u0645 \u0645\u0628\u0627\u0634\u0631 \u0644\u0644\u0628\u062B!").trim().slice(0, 140);
         const trackingCode = String(body.tracking_code || "").trim().slice(0, 20);
-        const senderLastDigits = String(body.sender_last_digits || "")
-          .replace(/\D/g, "")
-          .slice(0, 4);
+        const senderLastDigits = String(body.sender_last_digits || "").replace(/\D/g, "").slice(0, 4);
         const copiedCode = body.copied_code ? 1 : 0;
         const elapsedSeconds = Math.max(
           0,
@@ -242,55 +219,43 @@ export default {
         );
         const deviceId = String(body.device_id || "").trim().slice(0, 80);
         const videoUrl = String(body.video_url || "").trim().slice(0, 300);
-        const youtubeVideoId = String(body.youtube_video_id || "")
-          .trim()
-          .slice(0, 30);
-        const createdAt = body.created_at
-          ? String(body.created_at)
-          : new Date().toISOString();
-
+        const youtubeVideoId = String(body.youtube_video_id || "").trim().slice(0, 30);
+        const createdAt = body.created_at ? String(body.created_at) : new Date().toISOString();
         await env.DB.prepare(
           `
           INSERT INTO donations (
             alert_uid, streamer_username, device_id, donor_name, amount, message,
             tracking_code, sender_last_digits, copied_code, elapsed_seconds,
-            network, video_url, youtube_video_id, review_status, alert_notified, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?)
+            network, video_url, youtube_video_id, review_status, alert_notified, created_at, reviewed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, '')
         `
-        )
-          .bind(
-            alertUid,
-            DEFAULT_USER,
-            deviceId,
-            donorName,
-            amount,
-            message,
-            trackingCode,
-            senderLastDigits,
-            copiedCode,
-            elapsedSeconds,
-            network,
-            videoUrl,
-            youtubeVideoId,
-            createdAt
-          )
-          .run();
-
+        ).bind(
+          alertUid,
+          expectedUser,
+          deviceId,
+          donorName,
+          amount,
+          message,
+          trackingCode,
+          senderLastDigits,
+          copiedCode,
+          elapsedSeconds,
+          network,
+          videoUrl,
+          youtubeVideoId,
+          createdAt
+        ).run();
         const created = await env.DB.prepare(
           `SELECT * FROM donations WHERE alert_uid = ?`
-        )
-          .bind(alertUid)
-          .first();
+        ).bind(alertUid).first();
         return jsonResponse(
           { ok: true, item: created ? mapDonationRow(created) : null },
           201
         );
       }
-
-      // 3. جلب جميع الطلبات للستريمر
       if (path === "/api/donations" && method === "GET") {
-        if (!(await isAuthorizedStreamer(request, env))) {
-          return jsonResponse({ ok: false, error: "غير مصرح لك بالوصول" }, 401);
+        if (!await isAuthorizedStreamer(request, env)) {
+          return jsonResponse({ ok: false, error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u062D \u0644\u0643 \u0628\u0627\u0644\u0648\u0635\u0648\u0644" }, 401);
         }
         const rows = await env.DB.prepare(
           `SELECT * FROM donations ORDER BY id DESC LIMIT 200`
@@ -298,114 +263,85 @@ export default {
         const items = (rows.results || []).map(mapDonationRow);
         return jsonResponse({ ok: true, items });
       }
-
-      // 4. قبول أو رفض طلب دعم
       const reviewMatch = path.match(
         /^\/api\/donations\/([^/]+)\/(approve|reject)$/
       );
       if (reviewMatch && method === "POST") {
-        if (!(await isAuthorizedStreamer(request, env))) {
-          return jsonResponse({ ok: false, error: "غير مصرح لك بالوصول" }, 401);
+        if (!await isAuthorizedStreamer(request, env)) {
+          return jsonResponse({ ok: false, error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u062D \u0644\u0643 \u0628\u0627\u0644\u0648\u0635\u0648\u0644" }, 401);
         }
         const uid = decodeURIComponent(reviewMatch[1]);
         const nextStatus = reviewMatch[2] === "reject" ? "rejected" : "approved";
-        const nextNotified = nextStatus === "approved" ? 1 : 0;
-
+        // عند القبول نضبط alert_notified = 0 لكي يُرسل مرة واحدة فقط، ثم يصبح 1 بعد /api/alerts/ack
+        const nextNotified = nextStatus === "approved" ? 0 : 1;
+        const reviewedAt = new Date().toISOString();
         await env.DB.prepare(
           `
           UPDATE donations
-          SET review_status = ?, alert_notified = ?
+          SET review_status = ?, alert_notified = ?, reviewed_at = ?
           WHERE alert_uid = ? OR CAST(id AS TEXT) = ?
         `
-        )
-          .bind(nextStatus, nextNotified, uid, uid)
-          .run();
-
+        ).bind(nextStatus, nextNotified, reviewedAt, uid, uid).run();
         const updated = await env.DB.prepare(
           `
           SELECT * FROM donations WHERE alert_uid = ? OR CAST(id AS TEXT) = ? LIMIT 1
         `
-        )
-          .bind(uid, uid)
-          .first();
-
+        ).bind(uid, uid).first();
         if (!updated) {
-          return jsonResponse({ ok: false, error: "الطلب غير موجود" }, 404);
+          return jsonResponse({ ok: false, error: "\u0627\u0644\u0637\u0644\u0628 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F" }, 404);
         }
         return jsonResponse({ ok: true, item: mapDonationRow(updated) });
       }
-
-      // 5. مسح عدة طلبات دفعة واحدة
       if (path === "/api/donations/clear" && method === "POST") {
-        if (!(await isAuthorizedStreamer(request, env))) {
-          return jsonResponse({ ok: false, error: "غير مصرح لك بالوصول" }, 401);
+        if (!await isAuthorizedStreamer(request, env)) {
+          return jsonResponse({ ok: false, error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u062D \u0644\u0643 \u0628\u0627\u0644\u0648\u0635\u0648\u0644" }, 401);
         }
         const body = await request.json().catch(() => ({}));
-        const uids = Array.isArray(body.alert_uids)
-          ? body.alert_uids.filter(Boolean)
-          : [];
-
+        const uids = Array.isArray(body.alert_uids) ? body.alert_uids.filter(Boolean) : [];
         if (uids.length > 0) {
           const placeholders = uids.map(() => "?").join(",");
           await env.DB.prepare(
             `DELETE FROM donations WHERE alert_uid IN (${placeholders}) OR CAST(id AS TEXT) IN (${placeholders})`
-          )
-            .bind(...uids, ...uids)
-            .run();
+          ).bind(...uids, ...uids).run();
         } else {
           await env.DB.prepare(`DELETE FROM donations`).run();
         }
         return jsonResponse({ ok: true });
       }
-
-      // 6. حذف طلب واحد
       const singleDeleteMatch = path.match(/^\/api\/donations\/([^/]+)$/);
       if (singleDeleteMatch && method === "DELETE") {
-        if (!(await isAuthorizedStreamer(request, env))) {
-          return jsonResponse({ ok: false, error: "غير مصرح لك بالوصول" }, 401);
+        if (!await isAuthorizedStreamer(request, env)) {
+          return jsonResponse({ ok: false, error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u062D \u0644\u0643 \u0628\u0627\u0644\u0648\u0635\u0648\u0644" }, 401);
         }
         const uid = decodeURIComponent(singleDeleteMatch[1]);
         await env.DB.prepare(
           `DELETE FROM donations WHERE alert_uid = ? OR CAST(id AS TEXT) = ?`
-        )
-          .bind(uid, uid)
-          .run();
+        ).bind(uid, uid).run();
         return jsonResponse({ ok: true });
       }
-
-      // 7. جلب التنبيهات المعتمدة بانتظار العرض في رابط البث (?widget=true)
       if (path === "/api/alerts/pending-dispatch" && method === "GET") {
         const rows = await env.DB.prepare(
           `
           SELECT * FROM donations
-          WHERE review_status = 'approved' AND alert_notified = 1
+          WHERE review_status = 'approved' AND COALESCE(alert_notified, 0) = 0
           ORDER BY id ASC LIMIT 10
         `
         ).all();
         const items = (rows.results || []).map(mapDonationRow);
         return jsonResponse({ ok: true, items });
       }
-
-      // 8. تأكيد عرض التنبيه في رابط البث
       if (path === "/api/alerts/ack" && method === "POST") {
         const body = await request.json().catch(() => ({}));
-        const ids = Array.isArray(body.ids)
-          ? body.ids
-              .map((x) => Number(x))
-              .filter((n) => Number.isInteger(n) && n > 0)
-          : [];
-        if (ids.length > 0) {
-          const placeholders = ids.map(() => "?").join(",");
+        const rawIds = Array.isArray(body.ids) ? body.ids : [];
+        const cleanIds = [...new Set(rawIds.map((x) => String(x || "").trim()).filter(Boolean))];
+        if (cleanIds.length > 0) {
+          const placeholders = cleanIds.map(() => "?").join(",");
           await env.DB.prepare(
-            `UPDATE donations SET alert_notified = 0 WHERE id IN (${placeholders})`
-          )
-            .bind(...ids)
-            .run();
+            `UPDATE donations SET alert_notified = 1 WHERE CAST(id AS TEXT) IN (${placeholders}) OR alert_uid IN (${placeholders})`
+          ).bind(...cleanIds, ...cleanIds).run();
         }
         return jsonResponse({ ok: true });
       }
-
-      // 9. جلب الداعمين المعتمدين لقائمة أبرز 3 داعمين (?top=true)
       if (path === "/api/public/top-supporters" && method === "GET") {
         const rows = await env.DB.prepare(
           `
@@ -417,13 +353,15 @@ export default {
         const items = (rows.results || []).map(mapDonationRow);
         return jsonResponse({ ok: true, items });
       }
-
-      return jsonResponse({ ok: false, error: "المسار غير موجود" }, 404);
+      return jsonResponse({ ok: false, error: "\u0627\u0644\u0645\u0633\u0627\u0631 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F" }, 404);
     } catch (err) {
       return jsonResponse(
-        { ok: false, error: err.message || "خطأ داخلي في الخادم" },
+        { ok: false, error: err.message || "\u062E\u0637\u0623 \u062F\u0627\u062E\u0644\u064A \u0641\u064A \u0627\u0644\u062E\u0627\u062F\u0645" },
         500
       );
     }
-  },
+  }
+};
+export {
+  worker_default as default
 };
