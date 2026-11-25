@@ -272,7 +272,6 @@ var worker_default = {
         }
         const uid = decodeURIComponent(reviewMatch[1]);
         const nextStatus = reviewMatch[2] === "reject" ? "rejected" : "approved";
-        // عند القبول نضبط alert_notified = 0 لكي يُرسل مرة واحدة فقط، ثم يصبح 1 بعد /api/alerts/ack
         const nextNotified = nextStatus === "approved" ? 0 : 1;
         const reviewedAt = new Date().toISOString();
         await env.DB.prepare(
