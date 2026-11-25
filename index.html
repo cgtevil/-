@@ -492,6 +492,7 @@
         const YOUTUBE_VIDEO_STORAGE_KEY = "cgtevil_alert_youtube_video_id";
         const LATEST_DISPATCH_KEY = "cgtevil_latest_donation_alert";
         const WIDGET_CURSOR_STORAGE_KEY = "cgtevil_widget_last_seen_id";
+        const WIDGET_SEEN_ALERTS_SESSION_KEY = "cgtevil_widget_seen_alert_ids";
         const DONATIONS_STORAGE_KEY = "cgtevil_donations_history";
         const DEVICE_ID_STORAGE_KEY = "cgtevil_donor_device_id";
         const TRANSFER_COOLDOWN_KEY = "cgtevil_last_transfer_timestamp";
@@ -527,10 +528,46 @@
         const seenWidgetAlertIds = new Set();
         const pendingAlertAckIds = new Set();
         let activeAlertDbId = 0;
+        let activeAlertStableId = "";
         let isAlertAckInProgress = false;
         let isShowingAlert = false;
         let lastSeenAlertId = "";
         let broadcastChannel = null;
+
+        function loadSeenWidgetAlerts() {
+            try {
+                const raw = sessionStorage.getItem(WIDGET_SEEN_ALERTS_SESSION_KEY);
+                const arr = raw ? JSON.parse(raw) : [];
+                if (Array.isArray(arr)) {
+                    arr.forEach((id) => {
+                        const clean = String(id || "").trim();
+                        if (clean) seenWidgetAlertIds.add(clean);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function persistSeenWidgetAlerts() {
+            try {
+                sessionStorage.setItem(
+                    WIDGET_SEEN_ALERTS_SESSION_KEY,
+                    JSON.stringify(Array.from(seenWidgetAlertIds).slice(-200))
+                );
+            } catch (e) {}
+        }
+
+        function markWidgetAlertAsSeen(stableId) {
+            const clean = String(stableId || "").trim();
+            if (!clean) return;
+            seenWidgetAlertIds.add(clean);
+            lastSeenAlertId = clean;
+            persistSeenWidgetAlerts();
+        }
+
+        function clearSeenWidgetAlertsSession() {
+            seenWidgetAlertIds.clear();
+            try { sessionStorage.removeItem(WIDGET_SEEN_ALERTS_SESSION_KEY); } catch (e) {}
+        }
 
         function sanitizeAlertMessageForBroadcast(rawMsg) {
             const text = String(rawMsg || "").trim();
@@ -1792,6 +1829,7 @@
                 return;
             }
             markUidsAsPermanentlyDeleted(approvedUids);
+            clearSeenWidgetAlertsSession();
             const remaining = sourceList.filter(item => {
                 const u = String(item.alert_uid || "").trim();
                 const i = String(item.id || "").trim();
@@ -1818,6 +1856,7 @@
                     return;
                 }
                 markUidsAsPermanentlyDeleted(ids);
+                clearSeenWidgetAlertsSession();
                 syncDonationsState([]);
                 showToast("🧹 تم مسح جميع الطلبات من D1");
             } finally {
@@ -2214,6 +2253,10 @@
 
         function finishCurrentAlert() {
             clearActiveAlertTimers();
+            if (activeAlertStableId) {
+                markWidgetAlertAsSeen(activeAlertStableId);
+                activeAlertStableId = "";
+            }
             if (activeAlertDbId > 0) {
                 pendingAlertAckIds.add(activeAlertDbId);
                 activeAlertDbId = 0;
@@ -2247,8 +2290,7 @@
             const stableId = String(cleanItem.alert_uid || cleanItem.id || "").trim();
             if (stableId && seenWidgetAlertIds.has(stableId)) return;
             if (stableId) {
-                seenWidgetAlertIds.add(stableId);
-                lastSeenAlertId = stableId;
+                markWidgetAlertAsSeen(stableId);
             }
             cleanItem.id = stableId || cleanItem.id;
             cleanItem.db_id = Number(cleanItem.db_id || cleanItem.database_id || 0) || 0;
@@ -2298,9 +2340,11 @@
             isShowingAlert = true;
             const current = stripDonorPhoneArtifacts(alertQueue.shift());
             activeAlertDbId = Number(current.db_id || 0) || 0;
+            activeAlertStableId = String(current.alert_uid || current.id || "").trim();
 
             if (!isExplicitlyApprovedForLiveStream(current)) {
                 activeAlertDbId = 0;
+                activeAlertStableId = "";
                 isShowingAlert = false;
                 processNextAlert();
                 return;
@@ -2360,7 +2404,7 @@
                 alerts.forEach((alert) => {
                     if (!alert || alert.review_status === "rejected") return;
                     const stableId = String(alert.alert_uid || alert.id || "").trim();
-                    if (!stableId) return;
+                    if (!stableId || seenWidgetAlertIds.has(stableId)) return;
 
                     enqueueAlert(stripDonorPhoneArtifacts({
                         id: stableId,
@@ -2396,6 +2440,7 @@
             } catch (e) {}
 
             if (isWidgetMode()) {
+                loadSeenWidgetAlerts();
                 purgeAllStoredWidgetAlerts();
                 preloadLocalVideo(activeLocalVideoUrl);
                 pollApprovedLiveAlertsForWidget();
@@ -2544,6 +2589,7 @@
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
+                loadSeenWidgetAlerts();
                 sessionStorage.removeItem(WIDGET_CURSOR_STORAGE_KEY);
                 purgeAllStoredWidgetAlerts();
                 document.body.classList.add("widget-mode");
@@ -2596,6 +2642,7 @@
             if (isTopWidgetMode()) {
                 activateTopWidgetView();
             } else if (isWidgetMode()) {
+                loadSeenWidgetAlerts();
                 sessionStorage.removeItem(WIDGET_CURSOR_STORAGE_KEY);
                 purgeAllStoredWidgetAlerts();
                 document.body.classList.remove("top-widget-mode");
