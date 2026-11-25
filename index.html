@@ -536,14 +536,11 @@
         function loadSeenWidgetAlerts() {
             try {
                 const rawSession = sessionStorage.getItem(WIDGET_SEEN_ALERTS_SESSION_KEY);
-                const rawLocal = localStorage.getItem(WIDGET_SEEN_ALERTS_LOCAL_KEY);
                 const sessionArr = rawSession ? JSON.parse(rawSession) : [];
-                const localArr = rawLocal ? JSON.parse(rawLocal) : [];
-                [...(Array.isArray(sessionArr) ? sessionArr : []), ...(Array.isArray(localArr) ? localArr : [])]
-                    .forEach((id) => {
-                        const clean = String(id || "").trim();
-                        if (clean) seenWidgetAlertIds.add(clean);
-                    });
+                (Array.isArray(sessionArr) ? sessionArr : []).forEach((id) => {
+                    const clean = String(id || "").trim();
+                    if (clean) seenWidgetAlertIds.add(clean);
+                });
                 persistSeenWidgetAlerts();
             } catch (e) {}
         }
@@ -551,9 +548,7 @@
         function persistSeenWidgetAlerts() {
             try {
                 const list = Array.from(seenWidgetAlertIds).slice(-300);
-                const serialized = JSON.stringify(list);
-                sessionStorage.setItem(WIDGET_SEEN_ALERTS_SESSION_KEY, serialized);
-                localStorage.setItem(WIDGET_SEEN_ALERTS_LOCAL_KEY, serialized);
+                sessionStorage.setItem(WIDGET_SEEN_ALERTS_SESSION_KEY, JSON.stringify(list));
             } catch (e) {}
         }
 
@@ -846,12 +841,16 @@
 
         function getIncomingPendingDonations(items) {
             return sortDonationsPendingFirst(normalizeIncomingDonationItems(items))
-                .filter((x) => x && (!x.review_status || x.review_status === "pending"));
+                .filter((x) => {
+                    if (!x) return false;
+                    const status = String(x.review_status || "pending").toLowerCase().trim();
+                    return status === "pending" || status === "";
+                });
         }
 
         function getApprovedSupporters(items) {
             return normalizeIncomingDonationItems(items)
-                .filter((x) => x && x.review_status === "approved")
+                .filter((x) => x && String(x.review_status || "").toLowerCase().trim() === "approved")
                 .slice()
                 .sort((a, b) => (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0));
         }
@@ -2181,11 +2180,19 @@
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
 
+                const nextStatus = normalizedAction === "approve" ? "approved" : "rejected";
                 const serverItem = Object.assign({}, data.item, {
-                    review_status: normalizedAction === "approve" ? "approved" : "rejected",
-                    alert_notified: normalizedAction === "approve" ? 0 : data.item.alert_notified,
-                    manual_approval_token: normalizedAction === "approve" ? "server-approved" : undefined
+                    review_status: nextStatus,
+                    alert_notified: normalizedAction === "approve" ? 0 : data.item.alert_notified
                 });
+
+                if (normalizedAction === "approve") {
+                    addToStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, [rawUid, serverItem.alert_uid, serverItem.id]);
+                    removeFromStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, [rawUid, serverItem.alert_uid, serverItem.id]);
+                } else {
+                    addToStoredIdSet(MANUALLY_REJECTED_UIDS_KEY, [rawUid, serverItem.alert_uid, serverItem.id]);
+                    removeFromStoredIdSet(MANUALLY_APPROVED_UIDS_KEY, [rawUid, serverItem.alert_uid, serverItem.id]);
+                }
 
                 const currentList = cachedDonations.length ? cachedDonations : getLocalDonations();
                 const serverId = String(serverItem.alert_uid || serverItem.id || rawUid);
@@ -2197,6 +2204,9 @@
                 saveLocalDonation(serverItem);
                 lastRenderedTopSignature = "";
                 syncDonationsState(nextList);
+                renderStreamerDonations(nextList);
+                renderApprovedSupporters(nextList);
+                renderTopSupporters(nextList);
 
                 if (normalizedAction === "approve" && broadcastChannel) {
                     broadcastChannel.postMessage({
@@ -2205,8 +2215,8 @@
                     });
                 }
                 showToast(normalizedAction === "approve"
-                    ? "✅ تم قبول الطلب في D1 وإرساله إلى رابط البث."
-                    : "❌ تم رفض الطلب وتحديث D1.");
+                    ? "✅ تم قبول الطلب ونقله إلى الداعمين المقبولين وإزالته من قائمة D1"
+                    : "❌ تم رفض الطلب وإزالته من قائمة D1");
             } catch (error) {
                 showToast(`⚠️ ${error.message || "لم يتم تغيير الطلب في الخادم"}`);
                 await fetchDonationsFromDb(true);
@@ -2234,19 +2244,27 @@
             window.__alertNextTimer = null;
         }
 
-        async function flushAlertAcknowledgements() {
-            if (isAlertAckInProgress || !pendingAlertAckIds.size || !isApiConfigured()) return;
+        async function sendAlertAck(alertKeys) {
+            if (!isApiConfigured()) return;
+            const keys = Array.isArray(alertKeys)
+                ? [...new Set(alertKeys.map((k) => String(k || "").trim()).filter(Boolean))]
+                : [];
+            if (!keys.length) return;
+            keys.forEach((k) => pendingAlertAckIds.add(k));
+            if (isAlertAckInProgress) return;
             isAlertAckInProgress = true;
-            const ids = Array.from(pendingAlertAckIds).slice(0, 20);
             try {
+                const batch = Array.from(pendingAlertAckIds).slice(0, 20);
                 const res = await fetch(`${API_BASE_URL}/api/alerts/ack`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ids })
+                    body: JSON.stringify({ ids: batch, alert_uids: batch })
                 });
                 if (res.ok) {
                     const data = await res.json().catch(() => ({}));
-                    if (data && data.ok) ids.forEach((id) => pendingAlertAckIds.delete(id));
+                    if (data && data.ok) {
+                        batch.forEach((id) => pendingAlertAckIds.delete(id));
+                    }
                 }
             } catch (e) {
             } finally {
@@ -2254,16 +2272,25 @@
             }
         }
 
+        async function flushAlertAcknowledgements() {
+            if (!pendingAlertAckIds.size) return;
+            await sendAlertAck(Array.from(pendingAlertAckIds));
+        }
+
         function finishCurrentAlert() {
             clearActiveAlertTimers();
+            const ackKeys = [];
             if (activeAlertStableId) {
                 markWidgetAlertAsSeen(activeAlertStableId);
+                ackKeys.push(activeAlertStableId);
                 activeAlertStableId = "";
             }
             if (activeAlertDbId > 0) {
-                pendingAlertAckIds.add(activeAlertDbId);
+                ackKeys.push(String(activeAlertDbId));
                 activeAlertDbId = 0;
-                flushAlertAcknowledgements();
+            }
+            if (ackKeys.length) {
+                sendAlertAck(ackKeys);
             }
             const card = document.getElementById("live-alert-card");
             const localVideo = document.getElementById("alert-local-video");
@@ -2283,6 +2310,7 @@
             if (scrim) scrim.classList.add("hidden");
             if (card) card.classList.add("hidden");
 
+            isShowingAlert = false;
             window.__alertNextTimer = setTimeout(() => processNextAlert(), 400);
         }
 
@@ -2300,9 +2328,9 @@
 
         async function playLocalVideoFull(videoEl, videoUrl) {
             if (!videoEl || !videoUrl) return false;
-            preloadLocalVideo(videoUrl);
-            videoEl.muted = false;
+            videoEl.src = videoUrl;
             videoEl.currentTime = 0;
+            videoEl.muted = false;
             videoEl.classList.remove("hidden");
 
             return new Promise((resolve) => {
@@ -2317,17 +2345,14 @@
                 videoEl.onended = () => done(true);
                 videoEl.onerror = () => done(false);
 
-                const tryPlay = async () => {
+                videoEl.play().catch(async () => {
+                    videoEl.muted = true;
                     try {
                         await videoEl.play();
-                    } catch (err) {
-                        videoEl.muted = true;
-                        try { await videoEl.play(); } catch (mutedErr) { done(false); }
+                    } catch (mutedErr) {
+                        done(false);
                     }
-                };
-
-                if (videoEl.readyState >= 2) tryPlay();
-                else videoEl.addEventListener("canplay", tryPlay, { once: true });
+                });
             });
         }
 
