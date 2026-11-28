@@ -250,7 +250,7 @@
                     <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
                         <li>• حدود الدعم: <strong>ليبيانا</strong> من 3 إلى 50 د.ل، و<strong>المدار</strong> من 3 إلى 20 د.ل.</li>
                         <li>• أدخل اسمك واختر الشبكة والمبلغ ثم اضغط على زر إظهار كود التحويل.</li>
-                        <li>• انسخ الكود وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> كمرجع للمراجعة اليدوية فقط.</li>
+                        <li>• انسخ الكود أو اضغط اتصال مباشر وانتظر 20 ثانية وأدخل <strong>آخر 4 أرقام</strong> كمرجع للمراجعة اليدوية فقط.</li>
                         <li>• يُسجَّل طلبك في قاعدة D1 ولا يظهر الفيديو إلا في <strong>رابط البث المباشر (?widget=true)</strong> بعد قبوله من لوحة الستريمر.</li>
                     </ul>
                 </div>
@@ -292,13 +292,13 @@
                 <button id="btn-copy-ussd" type="button" onclick="copyUssdCode()" class="py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer">
                     📋 نسخ الكود
                 </button>
-                <a id="ussd-call-link" href="tel:*122*0944630534*10000%23" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
+                <a id="ussd-call-link" href="tel:*122*0944630534*10000%23" onclick="handleDirectDialClick(event)" class="py-3 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-sm text-center transition">
                     📞 اتصال مباشر
                 </a>
             </div>
 
             <p id="transfer-copy-requirement" class="text-center text-xs font-bold text-amber-300">
-                اضغط على "نسخ الكود" وانتظر 20 ثانية وأدخل آخر 4 أرقام من رقمك لتفعيل زر "تم التحويل".
+                اضغط على "نسخ الكود" أو "اتصال مباشر" وانتظر 20 ثانية وأدخل آخر 4 أرقام من رقمك لتفعيل زر "تم التحويل".
             </p>
 
             <button id="btn-confirm-transfer" type="button" disabled onclick="confirmAndDispatchSupport()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-black text-base shadow-xl transition opacity-50 cursor-not-allowed">
@@ -1206,7 +1206,7 @@
                     confirmBtn.classList.add("cursor-pointer");
                 } else {
                     confirmBtn.disabled = true;
-                    if (!copyUnlockDeadlineMs) confirmBtn.textContent = "🔒 تم التحويل (انسخ الكود وأدخل 4 أرقام)";
+                    if (!copyUnlockDeadlineMs) confirmBtn.textContent = "🔒 تم التحويل (انسخ أو اتصل وأدخل 4 أرقام)";
                     else if (remainingCopySec > 0) confirmBtn.textContent = `⏳ انتظر ${remainingCopySec}ث وأدخل 4 أرقام (${digitsVal.length}/4)`;
                     else confirmBtn.textContent = `🔒 أدخل آخر 4 أرقام من رقمك (${digitsVal.length}/4)`;
                     confirmBtn.classList.add("opacity-50", "cursor-not-allowed");
@@ -1218,10 +1218,10 @@
                     copyReqEl.textContent = "✅ اكتملت الشروط؛ يمكنك الآن الضغط على \"تم التحويل\".";
                     copyReqEl.className = "text-center text-xs font-bold text-emerald-300";
                 } else if (!copyUnlockDeadlineMs) {
-                    copyReqEl.textContent = "اضغط على \"نسخ الكود\" أولاً وانتظر 20 ثانية مع إدخال آخر 4 أرقام من رقمك.";
+                    copyReqEl.textContent = "اضغط على \"نسخ الكود\" أو \"اتصال مباشر\" وانتظر 20 ثانية مع إدخال آخر 4 أرقام من رقمك.";
                     copyReqEl.className = "text-center text-xs font-bold text-amber-300";
                 } else if (remainingCopySec > 0) {
-                    copyReqEl.textContent = `متبقي ${remainingCopySec} ثانية بعد النسخ، وتأكد من إدخال 4 أرقام (${digitsVal.length}/4).`;
+                    copyReqEl.textContent = `متبقي ${remainingCopySec} ثانية، وتأكد من إدخال 4 أرقام (${digitsVal.length}/4).`;
                     copyReqEl.className = "text-center text-xs font-bold text-sky-300";
                 } else {
                     copyReqEl.textContent = `⚠️ يرجى إدخال آخر 4 أرقام من رقمك المحوّل منه (${digitsVal.length}/4).`;
@@ -1599,7 +1599,7 @@
 
             document.getElementById("ussd-code-display").textContent = ussd;
             document.getElementById("tracking-code-display").textContent = `رمز التتبع: ${pendingTrackingCode}`;
-            document.getElementById("ussd-call-link").href = `tel:${encodeURIComponent(ussd)}`;
+            document.getElementById("ussd-call-link").href = `tel:${ussd.replace(/#/g, "%23")}`;
             const amountText = selectedNetwork === "libyana"
                 ? `${amount} د.ل (${ussdAmount} درهم)`
                 : `${amount} د.ل`;
@@ -1646,6 +1646,25 @@
             }
             updateTransferCooldownUI();
             showToast("✅ تم نسخ الكود؛ انتظر 20 ثانية وأدخل آخر 4 أرقام من رقمك");
+        }
+
+        function handleDirectDialClick(event) {
+            const code = document.getElementById("ussd-code-display")?.textContent?.trim() || "";
+            if (!code) return;
+
+            hasCopiedUssdCode = true;
+            if (!copyUnlockDeadlineMs || Date.now() >= copyUnlockDeadlineMs) {
+                copyUnlockDeadlineMs = Date.now() + COPY_UNLOCK_DELAY_MS;
+                wasCopyDelayRunning = true;
+            }
+            updateTransferCooldownUI();
+
+            const telUri = `tel:${code.replace(/#/g, "%23")}`;
+            const linkEl = document.getElementById("ussd-call-link");
+            if (linkEl) linkEl.href = telUri;
+
+            if (event) event.preventDefault();
+            window.location.href = telUri;
         }
 
         function getLocalDonations() {
@@ -2053,7 +2072,7 @@
             }
             if (!copyUnlockDeadlineMs || Date.now() < copyUnlockDeadlineMs) {
                 const remSec = getRemainingCopySeconds();
-                showToast(remSec > 0 ? `⏳ يرجى انتظار ${remSec} ثانية بعد نسخ الكود` : "⚠️ اضغط على \"نسخ الكود\" أولاً وانتظر 20 ثانية");
+                showToast(remSec > 0 ? `⏳ يرجى انتظار ${remSec} ثانية بعد نسخ الكود` : "⚠️ اضغط على \"نسخ الكود\" أو \"اتصال مباشر\" أولاً وانتظر 20 ثانية");
                 updateTransferCooldownUI();
                 return;
             }
@@ -2580,6 +2599,7 @@
                 openTransferModal,
                 closeTransferModal,
                 copyUssdCode,
+                handleDirectDialClick,
                 confirmAndDispatchSupport,
                 playStreamerNotificationChime,
                 clearOldSupporters,
@@ -2686,3 +2706,6 @@
     </script>
 </body>
 </html>
+```[cite: 1]
+
+ارفع هذا الملف مباشرة إلى مستودع GitHub Pages الخاص بك وسيعمل التعديل فوراً[cite: 1].
